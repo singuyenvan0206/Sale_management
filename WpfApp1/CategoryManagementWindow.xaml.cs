@@ -24,7 +24,7 @@ namespace WpfApp1
         private void UpdateStatusText()
         {
             int count = _categories.Count;
-            StatusTextBlock.Text = count == 1 ? "1 category found" : $"{count} categories found";
+            StatusTextBlock.Text = count == 1 ? "Tìm thấy 1 danh mục" : $"Tìm thấy {count} danh mục";
         }
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
@@ -32,14 +32,14 @@ namespace WpfApp1
             string name = CategoryNameTextBox.Text.Trim();
             if (string.IsNullOrWhiteSpace(name))
             {
-                MessageBox.Show("Please enter a category name.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Vui lòng nhập tên danh mục.", "Lỗi xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                 CategoryNameTextBox.Focus();
                 return;
             }
             
             if (name.Length > 255)
             {
-                MessageBox.Show("Category name is too long. Maximum 255 characters allowed.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Tên danh mục quá dài. Tối đa 255 ký tự được phép.", "Lỗi xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             
@@ -47,11 +47,11 @@ namespace WpfApp1
             {
                 LoadCategories();
                 CategoryNameTextBox.Clear();
-                MessageBox.Show($"Category '{name}' added successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Danh mục '{name}' đã được thêm thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
-                MessageBox.Show($"Category '{name}' already exists or an error occurred.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Danh mục '{name}' đã tồn tại hoặc có lỗi xảy ra.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -67,21 +67,21 @@ namespace WpfApp1
                 }
                 catch
                 {
-                    MessageBox.Show("Invalid selection.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Lựa chọn không hợp lệ.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
                 string name = CategoryNameTextBox.Text.Trim();
                 if (string.IsNullOrWhiteSpace(name))
                 {
-                    MessageBox.Show("Please enter a category name.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Vui lòng nhập tên danh mục.", "Lỗi xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                     CategoryNameTextBox.Focus();
                     return;
                 }
                 
                 if (name.Length > 255)
                 {
-                    MessageBox.Show("Category name is too long. Maximum 255 characters allowed.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Tên danh mục quá dài. Tối đa 255 ký tự được phép.", "Lỗi xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
                 
@@ -89,16 +89,16 @@ namespace WpfApp1
                 {
                     LoadCategories();
                     CategoryNameTextBox.Clear();
-                    MessageBox.Show($"Category updated successfully to '{name}'!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show($"Danh mục đã được cập nhật thành công thành '{name}'!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
                 {
-                    MessageBox.Show($"Failed to update category. The name '{name}' might already exist.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"Không thể cập nhật danh mục. Tên '{name}' có thể đã tồn tại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             else
             {
-                MessageBox.Show("Please select a category to update.", "Selection Required", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Vui lòng chọn danh mục để cập nhật.", "Yêu cầu chọn", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
@@ -114,14 +114,14 @@ namespace WpfApp1
                 }
                 catch
                 {
-                    MessageBox.Show("Invalid selection.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Lựa chọn không hợp lệ.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
                 string categoryName = selected.Name;
                 var result = MessageBox.Show(
-                    $"Are you sure you want to delete the category '{categoryName}'?\n\nThis action cannot be undone.",
-                    "Confirm Delete",
+                    $"Bạn có chắc chắn muốn xóa danh mục '{categoryName}'?\n\nHành động này không thể hoàn tác.",
+                    "Xác nhận xóa",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question);
                 
@@ -131,17 +131,17 @@ namespace WpfApp1
                     {
                         LoadCategories();
                         CategoryNameTextBox.Clear();
-                        MessageBox.Show($"Category '{categoryName}' deleted successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show($"Danh mục '{categoryName}' đã được xóa thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     else
                     {
-                        MessageBox.Show($"Cannot delete category '{categoryName}'. It may be in use by existing products.", "Delete Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageBox.Show($"Không thể xóa danh mục '{categoryName}'. Nó có thể đang được sử dụng bởi các sản phẩm hiện có.", "Xóa thất bại", MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
                 }
             }
             else
             {
-                MessageBox.Show("Please select a category to delete.", "Selection Required", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Vui lòng chọn danh mục để xóa.", "Yêu cầu chọn", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 

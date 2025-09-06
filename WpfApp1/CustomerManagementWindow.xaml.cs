@@ -35,7 +35,7 @@ namespace WpfApp1
         private void UpdateStatusText()
         {
             int count = _customers.Count;
-            StatusTextBlock.Text = count == 1 ? "1 customer found" : $"{count} customers found";
+            StatusTextBlock.Text = count == 1 ? "Tìm thấy 1 khách hàng" : $"Tìm thấy {count} khách hàng";
         }
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
@@ -55,11 +55,11 @@ namespace WpfApp1
             {
                 LoadCustomers();
                 ClearForm();
-                MessageBox.Show($"Customer '{customer.Name}' added successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Khách hàng '{customer.Name}' đã được thêm thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
-                MessageBox.Show("Failed to add customer. Please try again.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Không thể thêm khách hàng. Vui lòng thử lại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -67,7 +67,7 @@ namespace WpfApp1
         {
             if (_selectedCustomer == null)
             {
-                MessageBox.Show("Please select a customer to update.", "Selection Required", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Vui lòng chọn khách hàng để cập nhật.", "Yêu cầu chọn", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -87,11 +87,11 @@ namespace WpfApp1
             {
                 LoadCustomers();
                 ClearForm();
-                MessageBox.Show($"Customer '{customer.Name}' updated successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Khách hàng '{customer.Name}' đã được cập nhật thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
-                MessageBox.Show("Failed to update customer. Please try again.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Không thể cập nhật khách hàng. Vui lòng thử lại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -99,7 +99,7 @@ namespace WpfApp1
         {
             if (_selectedCustomer == null)
             {
-                MessageBox.Show("Please select a customer to delete.", "Selection Required", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Vui lòng chọn khách hàng để xóa.", "Yêu cầu chọn", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -107,8 +107,8 @@ namespace WpfApp1
             int customerId = _selectedCustomer.Id;
 
             var result = MessageBox.Show(
-                $"Are you sure you want to delete the customer '{customerName}'?\n\nThis action cannot be undone.",
-                "Confirm Delete",
+                $"Bạn có chắc chắn muốn xóa khách hàng '{customerName}'?\n\nHành động này không thể hoàn tác.",
+                "Xác nhận xóa",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
 
@@ -118,11 +118,11 @@ namespace WpfApp1
                 {
                     LoadCustomers();
                     ClearForm();
-                    MessageBox.Show($"Customer '{customerName}' deleted successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show($"Khách hàng '{customerName}' đã được xóa thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
                 {
-                    MessageBox.Show("Failed to delete customer. It may be in use by existing invoices.", "Delete Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Không thể xóa khách hàng. Khách hàng có thể đang được sử dụng trong hóa đơn.", "Xóa thất bại", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
         }
@@ -148,14 +148,14 @@ namespace WpfApp1
         {
             if (string.IsNullOrWhiteSpace(CustomerNameTextBox.Text))
             {
-                MessageBox.Show("Please enter a customer name.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Vui lòng nhập tên khách hàng.", "Lỗi xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                 CustomerNameTextBox.Focus();
                 return false;
             }
 
             if (!string.IsNullOrWhiteSpace(EmailTextBox.Text) && !IsValidEmail(EmailTextBox.Text))
             {
-                MessageBox.Show("Please enter a valid email address.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Vui lòng nhập địa chỉ email hợp lệ.", "Lỗi xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                 EmailTextBox.Focus();
                 return false;
             }

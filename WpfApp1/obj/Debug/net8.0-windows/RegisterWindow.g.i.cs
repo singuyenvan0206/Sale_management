@@ -76,7 +76,7 @@ namespace WpfApp1 {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/WpfApp1.Debug;component/registerwindow.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/WpfApp1.Debug;V1.0.0.0;component/registerwindow.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\RegisterWindow.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

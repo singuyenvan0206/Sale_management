@@ -33,7 +33,7 @@ namespace WpfApp1
 
             bool ok = SettingsManager.TestConnection(cfg, out string message);
             StatusTextBlock.Text = message;
-            MessageBox.Show(message, ok ? "Success" : "Error", MessageBoxButton.OK, ok ? MessageBoxImage.Information : MessageBoxImage.Error);
+            MessageBox.Show(message, ok ? "Thành công" : "Lỗi", MessageBoxButton.OK, ok ? MessageBoxImage.Information : MessageBoxImage.Error);
         }
 
         private void SaveSettingsButton_Click(object sender, RoutedEventArgs e)
@@ -48,12 +48,12 @@ namespace WpfApp1
 
             if (SettingsManager.Save(cfg, out string error))
             {
-                StatusTextBlock.Text = "Settings saved. Restart app to apply.";
-                MessageBox.Show("Settings saved. Please restart the app to apply the new database connection.", "Saved", MessageBoxButton.OK, MessageBoxImage.Information);
+                StatusTextBlock.Text = "Cài đặt đã được lưu. Khởi động lại ứng dụng để áp dụng.";
+                MessageBox.Show("Cài đặt đã được lưu. Vui lòng khởi động lại ứng dụng để áp dụng kết nối cơ sở dữ liệu mới.", "Đã lưu", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
-                MessageBox.Show(error, "Save Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(error, "Lưu thất bại", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

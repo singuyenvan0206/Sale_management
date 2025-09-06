@@ -29,7 +29,7 @@ namespace WpfApp1
             FromDatePicker.SelectedDate = DateTime.Today.AddDays(-30);
 
             var customers = DatabaseHelper.GetAllCustomers();
-            var list = new List<CustomerList> { new CustomerList { Id = 0, Name = "All Customers" } };
+            var list = new List<CustomerList> { new CustomerList { Id = 0, Name = "Tất cả khách hàng" } };
             list.AddRange(customers.ConvertAll(c => new CustomerList { Id = c.Id, Name = c.Name }));
             CustomerComboBox.ItemsSource = list;
             CustomerComboBox.SelectedIndex = 0;
@@ -57,7 +57,7 @@ namespace WpfApp1
             InvoicesDataGrid.ItemsSource = _invoices;
             CountTextBlock.Text = _invoices.Count.ToString();
             RevenueTextBlock.Text = _invoices.Sum(x => x.Total).ToString("F2");
-            StatusTextBlock.Text = _invoices.Count == 0 ? "No invoices found for the selected filters." : string.Empty;
+            StatusTextBlock.Text = _invoices.Count == 0 ? "Không tìm thấy hóa đơn nào với bộ lọc đã chọn." : string.Empty;
 
             LoadCharts();
         }
@@ -113,7 +113,7 @@ namespace WpfApp1
         {
             if (_invoices.Count == 0)
             {
-                MessageBox.Show("Nothing to export.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Không có gì để xuất.", "Xuất dữ liệu", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -127,7 +127,7 @@ namespace WpfApp1
             var downloads = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             var path = System.IO.Path.Combine(downloads, $"invoices_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
             File.WriteAllText(path, sb.ToString());
-            MessageBox.Show($"Exported to {path}", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show($"Đã xuất đến {path}", "Xuất dữ liệu", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void DetailsButton_Click(object sender, RoutedEventArgs e)
@@ -136,19 +136,19 @@ namespace WpfApp1
             {
                 var detail = DatabaseHelper.GetInvoiceDetails(row.Id);
                 var sb = new StringBuilder();
-                sb.AppendLine($"Invoice #{detail.Header.Id} - {detail.Header.CreatedDate:yyyy-MM-dd HH:mm}");
-                sb.AppendLine($"Customer: {detail.Header.CustomerName}");
-                sb.AppendLine("Items:");
+                sb.AppendLine($"Hóa đơn #{detail.Header.Id} - {detail.Header.CreatedDate:yyyy-MM-dd HH:mm}");
+                sb.AppendLine($"Khách hàng: {detail.Header.CustomerName}");
+                sb.AppendLine("Sản phẩm:");
                 foreach (var it in detail.Items)
                 {
                     sb.AppendLine($" - {it.ProductName} x{it.Quantity} @ {it.UnitPrice:F2} = {it.LineTotal:F2}");
                 }
-                sb.AppendLine($"Subtotal: {detail.Header.Subtotal:F2}");
-                sb.AppendLine($"Tax: {detail.Header.TaxAmount:F2}");
-                sb.AppendLine($"Discount: {detail.Header.Discount:F2}");
-                sb.AppendLine($"Total: {detail.Header.Total:F2}");
-                sb.AppendLine($"Paid: {detail.Header.Paid:F2}");
-                MessageBox.Show(sb.ToString(), $"Invoice #{detail.Header.Id}", MessageBoxButton.OK, MessageBoxImage.Information);
+                sb.AppendLine($"Tạm tính: {detail.Header.Subtotal:F2}");
+                sb.AppendLine($"Thuế: {detail.Header.TaxAmount:F2}");
+                sb.AppendLine($"Giảm giá: {detail.Header.Discount:F2}");
+                sb.AppendLine($"Tổng cộng: {detail.Header.Total:F2}");
+                sb.AppendLine($"Đã trả: {detail.Header.Paid:F2}");
+                MessageBox.Show(sb.ToString(), $"Hóa đơn #{detail.Header.Id}", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
@@ -156,17 +156,17 @@ namespace WpfApp1
         {
             if (sender is Button btn && btn.DataContext is InvoiceListItem row)
             {
-                var confirm = MessageBox.Show($"Delete invoice #{row.Id}?\nThis cannot be undone.", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                var confirm = MessageBox.Show($"Xóa hóa đơn #{row.Id}?\nHành động này không thể hoàn tác.", "Xác nhận xóa", MessageBoxButton.YesNo, MessageBoxImage.Warning);
                 if (confirm == MessageBoxResult.Yes)
                 {
                     if (DatabaseHelper.DeleteInvoice(row.Id))
                     {
                         LoadInvoices();
-                        MessageBox.Show($"Invoice #{row.Id} deleted.", "Deleted", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show($"Hóa đơn #{row.Id} đã được xóa.", "Đã xóa", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     else
                     {
-                        MessageBox.Show("Delete failed.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show("Xóa thất bại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
             }

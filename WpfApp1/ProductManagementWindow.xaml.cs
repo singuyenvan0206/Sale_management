@@ -52,7 +52,7 @@ namespace WpfApp1
         private void UpdateStatusText()
         {
             int count = _products.Count;
-            StatusTextBlock.Text = count == 1 ? "1 product found" : $"{count} products found";
+            StatusTextBlock.Text = count == 1 ? "Tìm thấy 1 sản phẩm" : $"Tìm thấy {count} sản phẩm";
         }
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
@@ -73,11 +73,11 @@ namespace WpfApp1
             {
                 LoadProducts();
                 ClearForm();
-                MessageBox.Show($"Product '{product.Name}' added successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Sản phẩm '{product.Name}' đã được thêm thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
-                MessageBox.Show("Failed to add product. Product code might already exist.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Không thể thêm sản phẩm. Mã sản phẩm có thể đã tồn tại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -85,7 +85,7 @@ namespace WpfApp1
         {
             if (_selectedProduct == null)
             {
-                MessageBox.Show("Please select a product to update.", "Selection Required", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Vui lòng chọn sản phẩm để cập nhật.", "Yêu cầu chọn", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -106,11 +106,11 @@ namespace WpfApp1
             {
                 LoadProducts();
                 ClearForm();
-                MessageBox.Show($"Product '{product.Name}' updated successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Sản phẩm '{product.Name}' đã được cập nhật thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
-                MessageBox.Show("Failed to update product. Product code might already exist.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Không thể cập nhật sản phẩm. Mã sản phẩm có thể đã tồn tại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -118,7 +118,7 @@ namespace WpfApp1
         {
             if (_selectedProduct == null)
             {
-                MessageBox.Show("Please select a product to delete.", "Selection Required", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Vui lòng chọn sản phẩm để xóa.", "Yêu cầu chọn", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -126,8 +126,8 @@ namespace WpfApp1
             int productId = _selectedProduct.Id;
 
             var result = MessageBox.Show(
-                $"Are you sure you want to delete the product '{productName}'?\n\nThis action cannot be undone.",
-                "Confirm Delete",
+                $"Bạn có chắc chắn muốn xóa sản phẩm '{productName}'?\n\nHành động này không thể hoàn tác.",
+                "Xác nhận xóa",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
 
@@ -137,11 +137,11 @@ namespace WpfApp1
                 {
                     LoadProducts();
                     ClearForm();
-                    MessageBox.Show($"Product '{productName}' deleted successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show($"Sản phẩm '{productName}' đã được xóa thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
                 {
-                    MessageBox.Show("Failed to delete product. It may be in use by existing invoices.", "Delete Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Không thể xóa sản phẩm. Sản phẩm có thể đang được sử dụng trong hóa đơn.", "Xóa thất bại", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
         }
@@ -168,21 +168,21 @@ namespace WpfApp1
         {
             if (string.IsNullOrWhiteSpace(ProductNameTextBox.Text))
             {
-                MessageBox.Show("Please enter a product name.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Vui lòng nhập tên sản phẩm.", "Lỗi xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                 ProductNameTextBox.Focus();
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(PriceTextBox.Text) || !decimal.TryParse(PriceTextBox.Text, out decimal price) || price < 0)
             {
-                MessageBox.Show("Please enter a valid price.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Vui lòng nhập giá hợp lệ.", "Lỗi xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                 PriceTextBox.Focus();
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(StockQuantityTextBox.Text) || !int.TryParse(StockQuantityTextBox.Text, out int stock) || stock < 0)
             {
-                MessageBox.Show("Please enter a valid stock quantity.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Vui lòng nhập số lượng tồn hợp lệ.", "Lỗi xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                 StockQuantityTextBox.Focus();
                 return false;
             }

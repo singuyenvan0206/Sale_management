@@ -56,13 +56,13 @@ namespace WpfApp1
         {
             if (ProductComboBox.SelectedItem is not ProductListItem selectedProduct)
             {
-                MessageBox.Show("Please select a product.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Vui lòng chọn sản phẩm.", "Xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (!int.TryParse(QuantityTextBox.Text, out int quantity) || quantity <= 0)
             {
-                MessageBox.Show("Please enter a valid quantity.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Vui lòng nhập số lượng hợp lệ.", "Xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                 QuantityTextBox.Focus();
                 return;
             }
@@ -255,13 +255,13 @@ namespace WpfApp1
         {
             if (_items.Count == 0)
             {
-                MessageBox.Show("Add at least one item to print invoice.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Vui lòng thêm ít nhất một sản phẩm để in hóa đơn.", "Xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (CustomerComboBox.SelectedItem is not CustomerListItem customer)
             {
-                MessageBox.Show("Select a customer.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Vui lòng chọn khách hàng.", "Xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -283,13 +283,13 @@ namespace WpfApp1
         {
             if (_items.Count == 0)
             {
-                MessageBox.Show("Add at least one item.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Vui lòng thêm ít nhất một sản phẩm.", "Xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (CustomerComboBox.SelectedValue is not int customerId || customerId <= 0)
             {
-                MessageBox.Show("Select a customer.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Vui lòng chọn khách hàng.", "Xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -305,7 +305,7 @@ namespace WpfApp1
             if (ok)
             {
                 int invoiceId = DatabaseHelper.LastSavedInvoiceId;
-                MessageBox.Show($"Invoice #{invoiceId} saved.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Hóa đơn #{invoiceId} đã được lưu.", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
              
                 _items.Clear();
                 RefreshItemsGrid();
@@ -316,7 +316,7 @@ namespace WpfApp1
             }
             else
             {
-                MessageBox.Show("Failed to save invoice.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Không thể lưu hóa đơn.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
