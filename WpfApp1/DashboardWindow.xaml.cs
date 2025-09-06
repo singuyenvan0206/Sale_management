@@ -17,7 +17,7 @@ namespace WpfApp1
             InitializeComponent();
             _currentUsername = username;
             _currentRole = role;
-            UserInfoTextBlock.Text = $"Welcome, {username} ({role})";
+            UserInfoTextBlock.Text = $"Chào mừng, {username} ({role})";
             LoadKpis();
             
             // Hide user management for non-admin users
@@ -143,7 +143,7 @@ namespace WpfApp1
 
         private void LogoutButton_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show("Are you sure you want to logout?", "Confirm Logout", 
+            var result = MessageBox.Show("Bạn có chắc chắn muốn đăng xuất?", "Xác nhận đăng xuất", 
                 MessageBoxButton.YesNo, MessageBoxImage.Question);
             
             if (result == MessageBoxResult.Yes)
@@ -225,7 +225,7 @@ namespace WpfApp1
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error showing demo invoice: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Lỗi hiển thị demo hóa đơn: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
