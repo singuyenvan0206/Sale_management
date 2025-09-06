@@ -58,15 +58,8 @@
                 </StackPanel>
                 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="DebugButton" Content="Debug" 
-                            Width="80" 
-                            Height="35" 
-                            Background="#FF9800" 
-                            Foreground="White" 
-                            Click="DebugButton_Click"
-                            Margin="0,0,10,0"/>
-                    <Button Content="Logout" 
-                            Width="100" 
+                    <Button Content="🚪 Đăng Xuất" 
+                            Width="120" 
                             Height="35" 
                             Background="#FC5C7D" 
                             Foreground="White" 
@@ -161,35 +154,10 @@
                     
                     <!-- Footer -->
                     <Border Grid.Row="2" Background="#0F172A" CornerRadius="0,0,20,0" Padding="20,15,20,20">
-                        <Button x:Name="LogoutButton"
-                                Content="🚪 Đăng Xuất"
-                                Background="#EF4444"
-                                Foreground="White"
-                                BorderThickness="0"
-                                Padding="16,10"
-                                FontSize="14"
-                                FontWeight="SemiBold"
-                                Click="LogoutButton_Click"
-                                Cursor="Hand">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border Background="{TemplateBinding Background}"
-                                                        CornerRadius="10"
-                                                        BorderBrush="{TemplateBinding BorderBrush}"
-                                                        BorderThickness="{TemplateBinding BorderThickness}">
-                                                    <ContentPresenter HorizontalAlignment="Center"
-                                                                      VerticalAlignment="Center"
-                                                                      Margin="{TemplateBinding Padding}"/>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </Button.Style>
-                        </Button>
+                        <TextBlock Text="💡 Hệ thống POS v1.0" 
+                                   Foreground="#94A3B8" 
+                                   FontSize="12" 
+                                   HorizontalAlignment="Center"/>
                     </Border>
                 </Grid>
             </Border>
@@ -439,7 +407,7 @@
                     </Border>
                 </Grid>
 
-                <!-- Settings -->
+                <!-- Data Visualization -->
                 <Border Grid.Row="3" Grid.Column="0" 
                         Background="White" 
                         CornerRadius="20" 
@@ -448,16 +416,16 @@
                     <Button Style="{StaticResource {x:Type Button}}" 
                             Background="Transparent" 
                             BorderThickness="0"
-                            Click="Settings_Click">
+                            Click="DataVisualization_Click">
                         <StackPanel>
-                            <TextBlock Text="⚙️" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,15"/>
-                            <TextBlock Text="Cài Đặt" 
+                            <TextBlock Text="📈" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+                            <TextBlock Text="Trực Quan Hóa Dữ Liệu" 
                                        FontSize="20" 
                                        FontWeight="Bold" 
-                                       Foreground="#1CB5E0" 
+                                       Foreground="#FF5722" 
                                        HorizontalAlignment="Center"
                                        Margin="0,0,0,10"/>
-                            <TextBlock Text="Cấu hình hệ thống, cài đặt ứng dụng và tùy chọn." 
+                            <TextBlock Text="Dashboard trực quan với KPI, biểu đồ và thống kê real-time." 
                                        FontSize="14" 
                                        Foreground="#666666" 
                                        HorizontalAlignment="Center"
@@ -467,7 +435,7 @@
                     </Button>
                 </Border>
 
-                <!-- Demo Section -->
+                <!-- Charts and Analytics Section -->
                 <Border Grid.Row="3" Grid.Column="1" 
                         Background="White" 
                         CornerRadius="20" 
@@ -476,16 +444,16 @@
                     <Button Style="{StaticResource {x:Type Button}}" 
                             Background="Transparent" 
                             BorderThickness="0"
-                            Click="DemoInvoice_Click">
+                            Click="ChartsAnalytics_Click">
                         <StackPanel>
-                            <TextBlock Text="🎯" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,15"/>
-                            <TextBlock Text="Demo Hóa Đơn" 
+                            <TextBlock Text="📊" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+                            <TextBlock Text="Biểu Đồ &amp; Phân Tích" 
                                        FontSize="20" 
                                        FontWeight="Bold" 
-                                       Foreground="#FF9800" 
+                                       Foreground="#9C27B0" 
                                        HorizontalAlignment="Center"
                                        Margin="0,0,0,10"/>
-                            <TextBlock Text="Xem các mẫu hóa đơn chuyên nghiệp với thiết kế mới." 
+                            <TextBlock Text="Xem biểu đồ doanh thu, thống kê sản phẩm và phân tích xu hướng bán hàng." 
                                        FontSize="14" 
                                        Foreground="#666666" 
                                        HorizontalAlignment="Center"

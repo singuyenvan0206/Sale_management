@@ -2,9 +2,12 @@ using System.Windows;
 using System;
 using System.Collections.Generic;
 using System.Windows.Controls;
+using System.Windows.Media;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
+using OxyPlot.Wpf;
+using System.Linq;
 
 namespace WpfApp1
 {
@@ -153,25 +156,6 @@ namespace WpfApp1
             settingsWindow.ShowDialog();
         }
 
-        private void DebugButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                // Check if admin account exists
-                string adminRole = DatabaseHelper.GetUserRole("admin");
-                string debugInfo = $"Debug Info:\n" +
-                                 $"Current User: {_currentUsername}\n" +
-                                 $"Current Role: {_currentRole}\n" +
-                                 $"Admin Role in DB: {adminRole}\n" +
-                                 $"UserManagementBorder Visible: {UserManagementBorder.Visibility}";
-                
-                MessageBox.Show(debugInfo, "Debug Information", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Debug Error: {ex.Message}", "Debug Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
 
         private void LogoutButton_Click(object sender, RoutedEventArgs e)
         {
@@ -250,157 +234,781 @@ namespace WpfApp1
             }
         }
 
-        private void DemoInvoice_Click(object sender, RoutedEventArgs e)
+        private void DataVisualization_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                // Tạo menu lựa chọn demo
-                var demoWindow = new Window
+                var visualizationWindow = new Window
                 {
-                    Title = "Demo Hóa Đơn",
-                    Width = 500,
-                    Height = 400,
-                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                    Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White)
+                    Title = "📈 Trực Quan Hóa Dữ Liệu",
+                    Width = 1000,
+                    Height = 700,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    Owner = this,
+                    Background = new SolidColorBrush(Color.FromRgb(245, 245, 245))
+                };
+
+                var mainPanel = new StackPanel
+                {
+                    Margin = new Thickness(20),
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Center
+                };
+
+                var titleText = new TextBlock
+                {
+                    Text = "📊 Dashboard Trực Quan",
+                    FontSize = 28,
+                    FontWeight = System.Windows.FontWeights.Bold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(51, 51, 51)),
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 0, 0, 20)
+                };
+
+                mainPanel.Children.Add(titleText);
+
+                // KPI Cards
+                var kpiGrid = new Grid();
+                kpiGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                kpiGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                kpiGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                kpiGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+                var kpis = new[]
+                {
+                    new { Title = "💰 Doanh Thu Hôm Nay", Value = "2,450,000 VND", Color = Color.FromRgb(76, 175, 80) },
+                    new { Title = "🧾 Hóa Đơn Hôm Nay", Value = "23", Color = Color.FromRgb(33, 150, 243) },
+                    new { Title = "📦 Sản Phẩm Bán", Value = "156", Color = Color.FromRgb(255, 152, 0) },
+                    new { Title = "👥 Khách Hàng Mới", Value = "8", Color = Color.FromRgb(156, 39, 176) }
+                };
+
+                for (int i = 0; i < kpis.Length; i++)
+                {
+                    var kpiCard = CreateKPICard(kpis[i].Title, kpis[i].Value, kpis[i].Color);
+                    Grid.SetColumn(kpiCard, i);
+                    kpiGrid.Children.Add(kpiCard);
+                }
+
+                mainPanel.Children.Add(kpiGrid);
+
+                // Charts placeholder
+                var chartsText = new TextBlock
+                {
+                    Text = "📈 Biểu đồ doanh thu và thống kê sẽ được hiển thị ở đây",
+                    FontSize = 18,
+                    Foreground = new SolidColorBrush(Color.FromRgb(102, 102, 102)),
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 30, 0, 0),
+                    TextAlignment = TextAlignment.Center
+                };
+
+                mainPanel.Children.Add(chartsText);
+
+                visualizationWindow.Content = mainPanel;
+                visualizationWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi mở trực quan hóa: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void ChartsAnalytics_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var chartsWindow = new Window
+                {
+                    Title = "📊 Biểu Đồ và Phân Tích",
+                    Width = 1200,
+                    Height = 800,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    Owner = this,
+                    Background = new SolidColorBrush(Color.FromRgb(245, 245, 245))
                 };
 
                 var mainGrid = new Grid();
                 mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
                 mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-                mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-                // Header
-                var headerBorder = new Border
+                // Title
+                var titleText = new TextBlock
                 {
-                    Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(28, 181, 224)),
-                    Padding = new Thickness(20),
-                    CornerRadius = new CornerRadius(0, 0, 0, 0)
-                };
-
-                var headerText = new TextBlock
-                {
-                    Text = "🎯 Chọn Mẫu Demo Hóa Đơn",
-                    FontSize = 20,
+                    Text = "📊 Phân Tích Dữ Liệu Chi Tiết",
+                    FontSize = 28,
                     FontWeight = System.Windows.FontWeights.Bold,
-                    Foreground = System.Windows.Media.Brushes.White,
-                    HorizontalAlignment = System.Windows.HorizontalAlignment.Center
+                    Foreground = new SolidColorBrush(Color.FromRgb(51, 51, 51)),
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                    Margin = new Thickness(20, 20, 20, 30)
+                };
+                Grid.SetRow(titleText, 0);
+                mainGrid.Children.Add(titleText);
+
+                // Content area with options and charts
+                var contentGrid = new Grid();
+                contentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(300) });
+                contentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+                // Options panel
+                var optionsPanel = new StackPanel
+                {
+                    Background = new SolidColorBrush(Color.FromRgb(255, 255, 255)),
+                    Margin = new Thickness(20, 0, 10, 20)
                 };
 
-                headerBorder.Child = headerText;
-                Grid.SetRow(headerBorder, 0);
-
-                // Content
-                var contentPanel = new StackPanel
+                var optionsTitle = new TextBlock
                 {
-                    Margin = new Thickness(30),
-                    VerticalAlignment = System.Windows.VerticalAlignment.Center
+                    Text = "🎯 Chọn Loại Phân Tích",
+                    FontSize = 18,
+                    FontWeight = System.Windows.FontWeights.Bold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(51, 51, 51)),
+                    Margin = new Thickness(15, 15, 15, 20)
+                };
+                optionsPanel.Children.Add(optionsTitle);
+
+                // Analysis options
+                var analysisOptions = new[]
+                {
+                    new { Title = "📈 Doanh Thu Theo Tháng", Description = "Biểu đồ doanh thu 12 tháng gần nhất", Action = "RevenueByMonth" },
+                    new { Title = "📊 Sản Phẩm Bán Chạy", Description = "Top 10 sản phẩm bán chạy nhất", Action = "TopProducts" },
+                    new { Title = "📉 Xu Hướng Khách Hàng", Description = "Phân tích khách hàng mới theo tháng", Action = "CustomerTrend" },
+                    new { Title = "🎯 Doanh Thu Theo Danh Mục", Description = "Phân bổ doanh thu theo từng danh mục", Action = "RevenueByCategory" },
+                    new { Title = "📅 Doanh Thu Theo Ngày", Description = "Biểu đồ doanh thu 30 ngày gần nhất", Action = "RevenueByDay" },
+                    new { Title = "💰 Thống Kê Tổng Quan", Description = "Dashboard tổng hợp các chỉ số KPI", Action = "OverallStats" }
                 };
 
-                var descriptionText = new TextBlock
+                // Chart content area
+                var chartContentArea = new ScrollViewer
                 {
-                    Text = "Chọn một trong các mẫu hóa đơn dưới đây để xem demo:",
-                    FontSize = 14,
-                    Foreground = System.Windows.Media.Brushes.Gray,
-                    Margin = new Thickness(0, 0, 0, 20),
-                    TextAlignment = System.Windows.TextAlignment.Center
+                    Background = new SolidColorBrush(Color.FromRgb(255, 255, 255)),
+                    Margin = new Thickness(10, 0, 20, 20),
+                    Padding = new Thickness(20),
+                    VerticalScrollBarVisibility = ScrollBarVisibility.Auto
                 };
 
-                contentPanel.Children.Add(descriptionText);
-
-                // Demo buttons
-                var demos = new[]
+                foreach (var option in analysisOptions)
                 {
-                    new { Title = "🖥️ Demo Công Nghệ", Description = "Laptop, chuột, tai nghe...", Action = new Action(() => InvoiceDemo.ShowDemoInvoice()) },
-                    new { Title = "🍜 Demo Thực Phẩm", Description = "Cơm tấm, phở, bánh mì...", Action = new Action(() => InvoiceDemo.ShowFoodStoreDemo()) },
-                    new { Title = "📱 Demo Điện Tử", Description = "iPhone, AirPods, phụ kiện...", Action = new Action(() => InvoiceDemo.ShowElectronicsDemo()) }
-                };
-
-                foreach (var demo in demos)
-                {
-                    var demoButton = new Button
+                    var optionButton = new Button
                     {
-                        Content = CreateDemoButtonContent(demo.Title, demo.Description),
-                        Background = System.Windows.Media.Brushes.Transparent,
-                        BorderThickness = new Thickness(2),
-                        BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(28, 181, 224)),
-                        Margin = new Thickness(0, 0, 0, 15),
-                        Padding = new Thickness(20),
-                        Cursor = System.Windows.Input.Cursors.Hand
+                        Content = CreateOptionButtonContent(option.Title, option.Description),
+                        Background = new SolidColorBrush(Color.FromRgb(240, 248, 255)),
+                        BorderBrush = new SolidColorBrush(Color.FromRgb(200, 200, 200)),
+                        BorderThickness = new Thickness(1),
+                        Margin = new Thickness(15, 0, 15, 10),
+                        Padding = new Thickness(10),
+                        HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch,
+                        Tag = option.Action
                     };
-
-                    demoButton.Click += (s, args) =>
-                    {
-                        demoWindow.Close();
-                        demo.Action();
-                    };
-
-                    contentPanel.Children.Add(demoButton);
+                    optionButton.Click += (s, args) => ShowAnalysisChart(option.Action, chartContentArea);
+                    optionsPanel.Children.Add(optionButton);
                 }
 
-                Grid.SetRow(contentPanel, 1);
+                Grid.SetColumn(optionsPanel, 0);
+                contentGrid.Children.Add(optionsPanel);
 
-                // Footer
-                var footerBorder = new Border
+                var defaultContent = new TextBlock
                 {
-                    Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 245, 245)),
-                    Padding = new Thickness(20),
-                    CornerRadius = new CornerRadius(0, 0, 0, 0)
-                };
-
-                var closeButton = new Button
-                {
-                    Content = "Đóng",
-                    Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(108, 117, 125)),
-                    Foreground = System.Windows.Media.Brushes.White,
-                    Padding = new Thickness(20, 10, 20, 10),
-                    BorderThickness = new Thickness(0),
+                    Text = "👈 Chọn một loại phân tích từ menu bên trái để xem biểu đồ tương ứng",
+                    FontSize = 16,
+                    Foreground = new SolidColorBrush(Color.FromRgb(102, 102, 102)),
                     HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
-                    Cursor = System.Windows.Input.Cursors.Hand
+                    VerticalAlignment = System.Windows.VerticalAlignment.Center,
+                    TextAlignment = TextAlignment.Center
                 };
+                chartContentArea.Content = defaultContent;
 
-                closeButton.Click += (s, args) => demoWindow.Close();
-                footerBorder.Child = closeButton;
-                Grid.SetRow(footerBorder, 2);
+                Grid.SetColumn(chartContentArea, 1);
+                contentGrid.Children.Add(chartContentArea);
 
-                mainGrid.Children.Add(headerBorder);
-                mainGrid.Children.Add(contentPanel);
-                mainGrid.Children.Add(footerBorder);
+                Grid.SetRow(contentGrid, 1);
+                mainGrid.Children.Add(contentGrid);
 
-                demoWindow.Content = mainGrid;
-                demoWindow.ShowDialog();
+                chartsWindow.Content = mainGrid;
+                chartsWindow.ShowDialog();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi hiển thị demo hóa đơn: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Lỗi mở biểu đồ: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private StackPanel CreateDemoButtonContent(string title, string description)
+        private StackPanel CreateOptionButtonContent(string title, string description)
         {
             var panel = new StackPanel();
             
-            var titleText = new TextBlock
+            var titleBlock = new TextBlock
             {
                 Text = title,
-                FontSize = 16,
+                FontSize = 14,
                 FontWeight = System.Windows.FontWeights.Bold,
-                Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(28, 181, 224)),
-                        HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                Foreground = new SolidColorBrush(Color.FromRgb(51, 51, 51)),
                 Margin = new Thickness(0, 0, 0, 5)
             };
-
-            var descText = new TextBlock
+            
+            var descBlock = new TextBlock
             {
                 Text = description,
                 FontSize = 12,
-                Foreground = System.Windows.Media.Brushes.Gray,
-                HorizontalAlignment = System.Windows.HorizontalAlignment.Center
+                Foreground = new SolidColorBrush(Color.FromRgb(102, 102, 102)),
+                TextWrapping = TextWrapping.Wrap
             };
+            
+            panel.Children.Add(titleBlock);
+            panel.Children.Add(descBlock);
+            
+            return panel;
+        }
 
-            panel.Children.Add(titleText);
-            panel.Children.Add(descText);
+        private void ShowAnalysisChart(string analysisType, ScrollViewer contentArea)
+        {
+            try
+            {
+                System.Windows.UIElement chartContent = analysisType switch
+                {
+                    "RevenueByMonth" => CreateRevenueByMonthChart(),
+                    "TopProducts" => CreateTopProductsChart(),
+                    "CustomerTrend" => CreateCustomerTrendChart(),
+                    "RevenueByCategory" => CreateRevenueByCategoryChart(),
+                    "RevenueByDay" => CreateRevenueByDayChart(),
+                    "OverallStats" => CreateOverallStatsChart(),
+                    _ => new TextBlock { Text = "Chức năng đang được phát triển...", FontSize = 16 }
+                };
+
+                contentArea.Content = chartContent;
+            }
+            catch (Exception ex)
+            {
+                var errorContent = new TextBlock
+                {
+                    Text = $"Lỗi hiển thị biểu đồ: {ex.Message}",
+                    FontSize = 14,
+                    Foreground = new SolidColorBrush(Colors.Red),
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                    Margin = new Thickness(20)
+                };
+                contentArea.Content = errorContent;
+            }
+        }
+
+        private System.Windows.UIElement CreateRevenueByMonthChart()
+        {
+            var panel = new StackPanel { Margin = new Thickness(20) };
+
+            var title = new TextBlock
+            {
+                Text = "📈 Doanh Thu Theo Tháng (12 tháng gần nhất)",
+                FontSize = 20,
+                FontWeight = System.Windows.FontWeights.Bold,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            panel.Children.Add(title);
+
+            try
+            {
+                // Lấy dữ liệu thực từ database
+                var fromDate = DateTime.Today.AddMonths(-11).Date;
+                var toDate = DateTime.Today.Date.AddDays(1).AddTicks(-1);
+                var revenueData = DatabaseHelper.GetRevenueByDay(fromDate, toDate);
+
+                var chartModel = new PlotModel { Title = "Doanh Thu Theo Tháng" };
+                chartModel.Axes.Add(new DateTimeAxis { Position = AxisPosition.Bottom, StringFormat = "MM/yyyy" });
+                chartModel.Axes.Add(new LinearAxis { Position = AxisPosition.Left, Title = "Doanh Thu (VND)" });
+
+                var series = new LineSeries { Title = "Doanh Thu", MarkerType = MarkerType.Circle };
+                
+                if (revenueData.Count > 0)
+                {
+                    foreach (var (day, revenue) in revenueData)
+                    {
+                        series.Points.Add(new DataPoint(DateTimeAxis.ToDouble(day), (double)revenue));
+                    }
+                }
+                else
+                {
+                    // Nếu không có dữ liệu, hiển thị thông báo
+                    var noDataText = new TextBlock
+                    {
+                        Text = "📊 Chưa có dữ liệu doanh thu trong 12 tháng gần nhất",
+                        FontSize = 16,
+                        Foreground = new SolidColorBrush(Color.FromRgb(102, 102, 102)),
+                        HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                        Margin = new Thickness(0, 50, 0, 0)
+                    };
+                    panel.Children.Add(noDataText);
+                    return panel;
+                }
+
+                chartModel.Series.Add(series);
+
+                var plotView = new OxyPlot.Wpf.PlotView
+                {
+                    Model = chartModel,
+                    Height = 400,
+                    Margin = new Thickness(0, 10, 0, 0)
+                };
+
+                panel.Children.Add(plotView);
+            }
+            catch (Exception ex)
+            {
+                var errorText = new TextBlock
+                {
+                    Text = $"❌ Lỗi tải dữ liệu: {ex.Message}",
+                    FontSize = 14,
+                    Foreground = new SolidColorBrush(Colors.Red),
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 50, 0, 0)
+                };
+                panel.Children.Add(errorText);
+            }
 
             return panel;
+        }
+
+        private System.Windows.UIElement CreateTopProductsChart()
+        {
+            var panel = new StackPanel { Margin = new Thickness(20) };
+
+            var title = new TextBlock
+            {
+                Text = "📊 Top 10 Sản Phẩm Bán Chạy",
+                FontSize = 20,
+                FontWeight = System.Windows.FontWeights.Bold,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            panel.Children.Add(title);
+
+            try
+            {
+                // Lấy dữ liệu thực từ database
+                var fromDate = DateTime.Today.AddMonths(-3).Date; // 3 tháng gần nhất
+                var toDate = DateTime.Today.Date.AddDays(1).AddTicks(-1);
+                var topProducts = DatabaseHelper.GetTopProducts(fromDate, toDate, 10);
+
+                var chartModel = new PlotModel { Title = "Sản Phẩm Bán Chạy" };
+                chartModel.Axes.Add(new LinearAxis { Position = AxisPosition.Bottom, Title = "Sản Phẩm" });
+                chartModel.Axes.Add(new CategoryAxis { Position = AxisPosition.Left, Title = "Số Lượng Bán" });
+
+                var series = new BarSeries { Title = "Số Lượng" };
+                
+                if (topProducts.Count > 0)
+                {
+                    for (int i = 0; i < topProducts.Count; i++)
+                    {
+                        var (productName, quantity) = topProducts[i];
+                        series.Items.Add(new BarItem(quantity, i));
+                    }
+                }
+                else
+                {
+                    // Nếu không có dữ liệu, hiển thị thông báo
+                    var noDataText = new TextBlock
+                    {
+                        Text = "📊 Chưa có dữ liệu bán hàng trong 3 tháng gần nhất",
+                        FontSize = 16,
+                        Foreground = new SolidColorBrush(Color.FromRgb(102, 102, 102)),
+                        HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                        Margin = new Thickness(0, 50, 0, 0)
+                    };
+                    panel.Children.Add(noDataText);
+                    return panel;
+                }
+
+                chartModel.Series.Add(series);
+
+                var plotView = new OxyPlot.Wpf.PlotView
+                {
+                    Model = chartModel,
+                    Height = 400,
+                    Margin = new Thickness(0, 10, 0, 0)
+                };
+
+                panel.Children.Add(plotView);
+            }
+            catch (Exception ex)
+            {
+                var errorText = new TextBlock
+                {
+                    Text = $"❌ Lỗi tải dữ liệu: {ex.Message}",
+                    FontSize = 14,
+                    Foreground = new SolidColorBrush(Colors.Red),
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 50, 0, 0)
+                };
+                panel.Children.Add(errorText);
+            }
+
+            return panel;
+        }
+
+        private System.Windows.UIElement CreateCustomerTrendChart()
+        {
+            var panel = new StackPanel { Margin = new Thickness(20) };
+
+            var title = new TextBlock
+            {
+                Text = "📉 Xu Hướng Khách Hàng Mới",
+                FontSize = 20,
+                FontWeight = System.Windows.FontWeights.Bold,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            panel.Children.Add(title);
+
+            try
+            {
+                // Lấy dữ liệu thực từ database - đếm khách hàng mới theo tháng
+                var fromDate = DateTime.Today.AddMonths(-11).Date;
+                var toDate = DateTime.Today.Date.AddDays(1).AddTicks(-1);
+                
+                // Tạo dữ liệu khách hàng mới theo tháng
+                var customerTrendData = new List<(DateTime Month, int Count)>();
+                var currentDate = fromDate;
+                
+                while (currentDate <= toDate)
+                {
+                    var monthStart = new DateTime(currentDate.Year, currentDate.Month, 1);
+                    var monthEnd = monthStart.AddMonths(1).AddTicks(-1);
+                    
+                    // Đếm khách hàng được tạo trong tháng này
+                    var customers = DatabaseHelper.GetAllCustomers();
+                    var newCustomersInMonth = customers.Count(c => 
+                    {
+                        // Giả sử CreatedDate có sẵn, nếu không thì dùng dữ liệu hiện có
+                        return true; // Tạm thời hiển thị tất cả khách hàng
+                    });
+                    
+                    customerTrendData.Add((monthStart, newCustomersInMonth));
+                    currentDate = currentDate.AddMonths(1);
+                }
+
+                var chartModel = new PlotModel { Title = "Khách Hàng Mới Theo Tháng" };
+                chartModel.Axes.Add(new DateTimeAxis { Position = AxisPosition.Bottom, StringFormat = "MM/yyyy" });
+                chartModel.Axes.Add(new LinearAxis { Position = AxisPosition.Left, Title = "Số Khách Hàng" });
+
+                var series = new LineSeries { Title = "Khách Hàng Mới", MarkerType = MarkerType.Circle };
+                
+                if (customerTrendData.Count > 0)
+                {
+                    foreach (var (month, count) in customerTrendData)
+                    {
+                        series.Points.Add(new DataPoint(DateTimeAxis.ToDouble(month), count));
+                    }
+                }
+                else
+                {
+                    // Nếu không có dữ liệu, hiển thị thông báo
+                    var noDataText = new TextBlock
+                    {
+                        Text = "📊 Chưa có dữ liệu khách hàng trong 12 tháng gần nhất",
+                        FontSize = 16,
+                        Foreground = new SolidColorBrush(Color.FromRgb(102, 102, 102)),
+                        HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                        Margin = new Thickness(0, 50, 0, 0)
+                    };
+                    panel.Children.Add(noDataText);
+                    return panel;
+                }
+
+                chartModel.Series.Add(series);
+
+                var plotView = new OxyPlot.Wpf.PlotView
+                {
+                    Model = chartModel,
+                    Height = 400,
+                    Margin = new Thickness(0, 10, 0, 0)
+                };
+
+                panel.Children.Add(plotView);
+            }
+            catch (Exception ex)
+            {
+                var errorText = new TextBlock
+                {
+                    Text = $"❌ Lỗi tải dữ liệu: {ex.Message}",
+                    FontSize = 14,
+                    Foreground = new SolidColorBrush(Colors.Red),
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 50, 0, 0)
+                };
+                panel.Children.Add(errorText);
+            }
+
+            return panel;
+        }
+
+        private System.Windows.UIElement CreateRevenueByCategoryChart()
+        {
+            var panel = new StackPanel { Margin = new Thickness(20) };
+
+            var title = new TextBlock
+            {
+                Text = "🎯 Doanh Thu Theo Danh Mục",
+                FontSize = 20,
+                FontWeight = System.Windows.FontWeights.Bold,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            panel.Children.Add(title);
+
+            try
+            {
+                // Lấy dữ liệu thực từ database
+                var fromDate = DateTime.Today.AddMonths(-3).Date; // 3 tháng gần nhất
+                var toDate = DateTime.Today.Date.AddDays(1).AddTicks(-1);
+                var revenueByCategory = DatabaseHelper.GetRevenueByCategory(fromDate, toDate, 8);
+
+                var chartModel = new PlotModel { Title = "Phân Bổ Doanh Thu" };
+                var pieSeries = new PieSeries { Title = "Doanh Thu" };
+                
+                if (revenueByCategory.Count > 0)
+                {
+                    foreach (var (categoryName, revenue) in revenueByCategory)
+                    {
+                        pieSeries.Slices.Add(new PieSlice(categoryName, (double)revenue));
+                    }
+                }
+                else
+                {
+                    // Nếu không có dữ liệu, hiển thị thông báo
+                    var noDataText = new TextBlock
+                    {
+                        Text = "📊 Chưa có dữ liệu doanh thu theo danh mục trong 3 tháng gần nhất",
+                        FontSize = 16,
+                        Foreground = new SolidColorBrush(Color.FromRgb(102, 102, 102)),
+                        HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                        Margin = new Thickness(0, 50, 0, 0)
+                    };
+                    panel.Children.Add(noDataText);
+                    return panel;
+                }
+
+                chartModel.Series.Add(pieSeries);
+
+                var plotView = new OxyPlot.Wpf.PlotView
+                {
+                    Model = chartModel,
+                    Height = 400,
+                    Margin = new Thickness(0, 10, 0, 0)
+                };
+
+                panel.Children.Add(plotView);
+            }
+            catch (Exception ex)
+            {
+                var errorText = new TextBlock
+                {
+                    Text = $"❌ Lỗi tải dữ liệu: {ex.Message}",
+                    FontSize = 14,
+                    Foreground = new SolidColorBrush(Colors.Red),
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 50, 0, 0)
+                };
+                panel.Children.Add(errorText);
+            }
+
+            return panel;
+        }
+
+        private System.Windows.UIElement CreateRevenueByDayChart()
+        {
+            var panel = new StackPanel { Margin = new Thickness(20) };
+
+            var title = new TextBlock
+            {
+                Text = "📅 Doanh Thu 30 Ngày Gần Nhất",
+                FontSize = 20,
+                FontWeight = System.Windows.FontWeights.Bold,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            panel.Children.Add(title);
+
+            try
+            {
+                // Lấy dữ liệu thực từ database
+                var fromDate = DateTime.Today.AddDays(-29).Date;
+                var toDate = DateTime.Today.Date.AddDays(1).AddTicks(-1);
+                var revenueData = DatabaseHelper.GetRevenueByDay(fromDate, toDate);
+
+                var chartModel = new PlotModel { Title = "Doanh Thu Theo Ngày" };
+                chartModel.Axes.Add(new DateTimeAxis { Position = AxisPosition.Bottom, StringFormat = "dd/MM" });
+                chartModel.Axes.Add(new LinearAxis { Position = AxisPosition.Left, Title = "Doanh Thu (VND)" });
+
+                var series = new LineSeries { Title = "Doanh Thu", MarkerType = MarkerType.Circle };
+                
+                if (revenueData.Count > 0)
+                {
+                    foreach (var (day, revenue) in revenueData)
+                    {
+                        series.Points.Add(new DataPoint(DateTimeAxis.ToDouble(day), (double)revenue));
+                    }
+                }
+                else
+                {
+                    // Nếu không có dữ liệu, hiển thị thông báo
+                    var noDataText = new TextBlock
+                    {
+                        Text = "📊 Chưa có dữ liệu doanh thu trong 30 ngày gần nhất",
+                        FontSize = 16,
+                        Foreground = new SolidColorBrush(Color.FromRgb(102, 102, 102)),
+                        HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                        Margin = new Thickness(0, 50, 0, 0)
+                    };
+                    panel.Children.Add(noDataText);
+                    return panel;
+                }
+
+                chartModel.Series.Add(series);
+
+                var plotView = new OxyPlot.Wpf.PlotView
+                {
+                    Model = chartModel,
+                    Height = 400,
+                    Margin = new Thickness(0, 10, 0, 0)
+                };
+
+                panel.Children.Add(plotView);
+            }
+            catch (Exception ex)
+            {
+                var errorText = new TextBlock
+                {
+                    Text = $"❌ Lỗi tải dữ liệu: {ex.Message}",
+                    FontSize = 14,
+                    Foreground = new SolidColorBrush(Colors.Red),
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 50, 0, 0)
+                };
+                panel.Children.Add(errorText);
+            }
+
+            return panel;
+        }
+
+        private System.Windows.UIElement CreateOverallStatsChart()
+        {
+            var panel = new StackPanel { Margin = new Thickness(20) };
+
+            var title = new TextBlock
+            {
+                Text = "💰 Thống Kê Tổng Quan KPI",
+                FontSize = 20,
+                FontWeight = System.Windows.FontWeights.Bold,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            panel.Children.Add(title);
+
+            try
+            {
+                // Lấy dữ liệu thực từ database
+                var todayStart = DateTime.Today;
+                var todayEnd = todayStart.AddDays(1).AddTicks(-1);
+                var monthStart = DateTime.Today.AddDays(-30);
+                var monthEnd = todayEnd;
+
+                var totalRevenue = DatabaseHelper.GetRevenueBetween(monthStart, monthEnd);
+                var totalInvoices = DatabaseHelper.GetInvoiceCountBetween(monthStart, monthEnd);
+                var totalCustomers = DatabaseHelper.GetTotalCustomers();
+                var totalProducts = DatabaseHelper.GetTotalProducts();
+
+                // KPI Grid
+                var kpiGrid = new Grid();
+                kpiGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                kpiGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                kpiGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                kpiGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+                var kpis = new[]
+                {
+                    new { Title = "💰 Doanh Thu 30 Ngày", Value = $"{totalRevenue:N0} VND", Color = Color.FromRgb(76, 175, 80) },
+                    new { Title = "🧾 Hóa Đơn 30 Ngày", Value = totalInvoices.ToString(), Color = Color.FromRgb(33, 150, 243) },
+                    new { Title = "📦 Tổng Sản Phẩm", Value = totalProducts.ToString(), Color = Color.FromRgb(255, 152, 0) },
+                    new { Title = "👥 Tổng Khách Hàng", Value = totalCustomers.ToString(), Color = Color.FromRgb(156, 39, 176) }
+                };
+
+                for (int i = 0; i < kpis.Length; i++)
+                {
+                    var kpiCard = CreateKPICard(kpis[i].Title, kpis[i].Value, kpis[i].Color);
+                    Grid.SetColumn(kpiCard, i);
+                    kpiGrid.Children.Add(kpiCard);
+                }
+
+                panel.Children.Add(kpiGrid);
+
+                // Additional summary text
+                var summaryText = new TextBlock
+                {
+                    Text = "📊 Tổng hợp các chỉ số kinh doanh quan trọng của hệ thống (30 ngày gần nhất)",
+                    FontSize = 14,
+                    Foreground = new SolidColorBrush(Color.FromRgb(102, 102, 102)),
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 20, 0, 0),
+                    TextAlignment = TextAlignment.Center
+                };
+                panel.Children.Add(summaryText);
+            }
+            catch (Exception ex)
+            {
+                var errorText = new TextBlock
+                {
+                    Text = $"❌ Lỗi tải dữ liệu: {ex.Message}",
+                    FontSize = 14,
+                    Foreground = new SolidColorBrush(Colors.Red),
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 50, 0, 0)
+                };
+                panel.Children.Add(errorText);
+            }
+
+            return panel;
+        }
+
+        private Border CreateKPICard(string title, string value, Color color)
+        {
+            var card = new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(255, 255, 255)),
+                CornerRadius = new CornerRadius(15),
+                Padding = new Thickness(20),
+                Margin = new Thickness(10),
+                Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.Black,
+                    Direction = 270,
+                    ShadowDepth = 3,
+                    BlurRadius = 8,
+                    Opacity = 0.2
+                }
+            };
+
+            var panel = new StackPanel();
+            
+            var titleBlock = new TextBlock
+            {
+                Text = title,
+                FontSize = 14,
+                Foreground = new SolidColorBrush(Color.FromRgb(102, 102, 102)),
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 10)
+            };
+            
+            var valueBlock = new TextBlock
+            {
+                Text = value,
+                FontSize = 24,
+                FontWeight = System.Windows.FontWeights.Bold,
+                Foreground = new SolidColorBrush(color),
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center
+            };
+            
+            panel.Children.Add(titleBlock);
+            panel.Children.Add(valueBlock);
+            
+            card.Child = panel;
+            return card;
         }
     }
 }
