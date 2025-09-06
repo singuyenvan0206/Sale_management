@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-using System.Windows.Media.Animation;
 
 namespace WpfApp1
 {
@@ -8,22 +7,6 @@ namespace WpfApp1
         public MainWindow()
         {
             InitializeComponent();
-        }
-
-        private void ShowRegisterForm_Click(object sender, RoutedEventArgs e)
-        {
-            RegisterPanel.Visibility = Visibility.Visible;
-            LoginPanel.Visibility = Visibility.Collapsed;
-            var sb = (Storyboard)FindResource("ShowRegisterStoryboard");
-            sb.Begin();
-        }
-
-        private void ShowLoginForm_Click(object sender, RoutedEventArgs e)
-        {
-            LoginPanel.Visibility = Visibility.Visible;
-            RegisterPanel.Visibility = Visibility.Collapsed;
-            var sb = (Storyboard)FindResource("ShowLoginStoryboard");
-            sb.Begin();
         }
 
         private void LoginButton_Click(object sender, RoutedEventArgs e)
@@ -61,35 +44,6 @@ namespace WpfApp1
             }
         }
 
-        private void RegisterButton_Click(object sender, RoutedEventArgs e)
-        {
-            string username = RegUsernameTextBox.Text;
-            string password = RegPasswordBox.Password;
-            string confirmPassword = RegConfirmPasswordBox.Password;
-
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
-            {
-                MessageBox.Show("Vui lòng nhập tên đăng nhập và mật khẩu.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            if (password != confirmPassword)
-            {
-                MessageBox.Show("Mật khẩu xác nhận không khớp.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            if (DatabaseHelper.RegisterAccount(username, password))
-            {
-                MessageBox.Show("Đăng ký thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
-                // Optionally, switch back to login form
-                ShowLoginForm_Click(null, null);
-            }
-            else
-            {
-                MessageBox.Show("Tên đăng nhập đã tồn tại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
 
         private void ChangePasswordButton_Click(object sender, RoutedEventArgs e)
         {

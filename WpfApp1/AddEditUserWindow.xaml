@@ -4,8 +4,8 @@
         Title="Thêm/Sửa Người Dùng" Height="464" Width="500"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize">
-    
-    <Grid Background="#F5F5F5">
+
+    <Grid Background="#F5F5F5" Margin="0,-64,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -22,7 +22,7 @@
         </Border>
 
         <!-- Form -->
-        <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="30" Margin="20,16,20,8">
+        <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="30" Margin="20,10,20,10">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -87,7 +87,7 @@
         </Border>
 
         <!-- Buttons -->
-        <Border Grid.Row="2" Background="#F0F0F0" Padding="16">
+        <Border Grid.Row="1" Background="#F0F0F0" Padding="16" Margin="0,371,0,0">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button x:Name="CancelButton" 
                         Content="Hủy" 

@@ -58,6 +58,13 @@
                 </StackPanel>
                 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="DebugButton" Content="Debug" 
+                            Width="80" 
+                            Height="35" 
+                            Background="#FF9800" 
+                            Foreground="White" 
+                            Click="DebugButton_Click"
+                            Margin="0,0,10,0"/>
                     <Button Content="Logout" 
                             Width="100" 
                             Height="35" 
@@ -76,20 +83,115 @@
             </Grid.ColumnDefinitions>
 
             <!-- Left Nav -->
-            <Border Grid.Column="0" Background="#263238">
-                <StackPanel>
-                    <TextBlock Text="Management" Foreground="#ECEFF1" FontWeight="Bold" Margin="16,20,0,10"/>
-                    <ListBox x:Name="NavList" SelectionChanged="NavList_SelectionChanged" Background="Transparent" BorderThickness="0" Foreground="#ECEFF1">
-                        <ListBoxItem Content="Home" IsSelected="True"/>
-                        <ListBoxItem Content="Products"/>
-                        <ListBoxItem Content="Categories"/>
-                        <ListBoxItem Content="Customers"/>
-                        <ListBoxItem Content="Invoices"/>
-                        <ListBoxItem Content="Reports"/>
-                        <ListBoxItem Content="Settings"/>
-                        <ListBoxItem Content="Logout"/>
-                    </ListBox>
-                </StackPanel>
+            <Border Grid.Column="0" Background="#1E293B" CornerRadius="0,20,20,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Header -->
+                    <Border Grid.Row="0" Background="#0F172A" CornerRadius="0,20,0,0" Padding="20,25,20,20">
+                        <StackPanel>
+                            <TextBlock Text="🎛️" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                            <TextBlock Text="QUẢN LÝ" 
+                                       Foreground="#F8FAFC" 
+                                       FontWeight="Bold" 
+                                       FontSize="18"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="Hệ thống POS" 
+                                       Foreground="#94A3B8" 
+                                       FontSize="12"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Navigation Menu -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="0,20,0,0">
+                            <ListBox x:Name="NavList" 
+                                     SelectionChanged="NavList_SelectionChanged" 
+                                     Background="Transparent" 
+                                     BorderThickness="0" 
+                                     Foreground="#F8FAFC"
+                                     Style="{StaticResource {x:Type ListBox}}">
+                                <ListBox.Resources>
+                                    <Style TargetType="ListBoxItem">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ListBoxItem">
+                                                    <Border x:Name="ItemBorder"
+                                                            Background="Transparent"
+                                                            Margin="12,4,12,4"
+                                                            CornerRadius="12"
+                                                            Padding="16,12">
+                                                        <ContentPresenter/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsSelected" Value="True">
+                                                            <Setter TargetName="ItemBorder" Property="Background" Value="#3B82F6"/>
+                                                            <Setter Property="Foreground" Value="White"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="ItemBorder" Property="Background" Value="#334155"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Setter Property="FontSize" Value="14"/>
+                                        <Setter Property="FontWeight" Value="Medium"/>
+                                        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                                    </Style>
+                                </ListBox.Resources>
+                                
+                                <ListBoxItem Content="🏠 Trang Chủ" IsSelected="True"/>
+                                <ListBoxItem Content="📦 Sản Phẩm"/>
+                                <ListBoxItem Content="📂 Danh Mục"/>
+                                <ListBoxItem Content="👥 Khách Hàng"/>
+                                <ListBoxItem Content="🧾 Hóa Đơn"/>
+                                <ListBoxItem Content="📊 Báo Cáo"/>
+                                <ListBoxItem x:Name="UserManagementNavItem" Content="👤 Quản Lý Người Dùng"/>
+                                <ListBoxItem Content="⚙️ Cài Đặt"/>
+                            </ListBox>
+                        </StackPanel>
+                    </ScrollViewer>
+                    
+                    <!-- Footer -->
+                    <Border Grid.Row="2" Background="#0F172A" CornerRadius="0,0,20,0" Padding="20,15,20,20">
+                        <Button x:Name="LogoutButton"
+                                Content="🚪 Đăng Xuất"
+                                Background="#EF4444"
+                                Foreground="White"
+                                BorderThickness="0"
+                                Padding="16,10"
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Click="LogoutButton_Click"
+                                Cursor="Hand">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}"
+                                                        CornerRadius="10"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}">
+                                                    <ContentPresenter HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Center"
+                                                                      Margin="{TemplateBinding Padding}"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </Border>
+                </Grid>
             </Border>
 
             <!-- Right Content -->
@@ -112,26 +214,26 @@
                     </Grid.ColumnDefinitions>
                     <Border Background="White" CornerRadius="16" Padding="20" Margin="8">
                         <StackPanel>
-                            <TextBlock Text="Revenue (Today)" Foreground="#777"/>
-                            <TextBlock x:Name="RevenueTodayText" Text="$0" FontSize="28" FontWeight="Bold"/>
+                            <TextBlock Text="💰 Doanh thu hôm nay" Foreground="#777" FontSize="12"/>
+                            <TextBlock x:Name="RevenueTodayText" Text="0₫" FontSize="28" FontWeight="Bold" Foreground="#059669"/>
                         </StackPanel>
                     </Border>
                     <Border Grid.Column="1" Background="White" CornerRadius="16" Padding="20" Margin="8">
                         <StackPanel>
-                            <TextBlock Text="Revenue (30 days)" Foreground="#777"/>
-                            <TextBlock x:Name="Revenue30Text" Text="$0" FontSize="28" FontWeight="Bold"/>
+                            <TextBlock Text="📈 Doanh thu 30 ngày" Foreground="#777" FontSize="12"/>
+                            <TextBlock x:Name="Revenue30Text" Text="0₫" FontSize="28" FontWeight="Bold" Foreground="#0D9488"/>
                         </StackPanel>
                     </Border>
                     <Border Grid.Column="2" Background="White" CornerRadius="16" Padding="20" Margin="8">
                         <StackPanel>
-                            <TextBlock Text="Invoices (Today)" Foreground="#777"/>
-                            <TextBlock x:Name="InvoicesTodayText" Text="0" FontSize="28" FontWeight="Bold"/>
+                            <TextBlock Text="🧾 Hóa đơn hôm nay" Foreground="#777" FontSize="12"/>
+                            <TextBlock x:Name="InvoicesTodayText" Text="0" FontSize="28" FontWeight="Bold" Foreground="#DC2626"/>
                         </StackPanel>
                     </Border>
                     <Border Grid.Column="3" Background="White" CornerRadius="16" Padding="20" Margin="8">
                         <StackPanel>
-                            <TextBlock Text="Customers / Products" Foreground="#777"/>
-                            <TextBlock x:Name="CountsText" Text="0 / 0" FontSize="28" FontWeight="Bold"/>
+                            <TextBlock Text="👥 Khách hàng / Sản phẩm" Foreground="#777" FontSize="12"/>
+                            <TextBlock x:Name="CountsText" Text="0 / 0" FontSize="28" FontWeight="Bold" Foreground="#7C3AED"/>
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -144,13 +246,13 @@
                     </Grid.ColumnDefinitions>
                     <Border Background="White" CornerRadius="16" Padding="12" Margin="8">
                         <StackPanel>
-                            <TextBlock Text="Revenue (Last 30 Days)" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                            <TextBlock Text="📊 Doanh thu 30 ngày qua" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="#374151"/>
                             <oxy:PlotView x:Name="HomeRevenuePlot" Height="220"/>
                         </StackPanel>
                     </Border>
                     <Border Grid.Column="1" Background="White" CornerRadius="16" Padding="12" Margin="8">
                         <StackPanel>
-                            <TextBlock Text="Revenue by Category" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                            <TextBlock Text="🥧 Doanh thu theo danh mục" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="#374151"/>
                             <oxy:PlotView x:Name="HomeCategoryPie" Height="220"/>
                         </StackPanel>
                     </Border>
@@ -377,13 +479,13 @@
                             Click="DemoInvoice_Click">
                         <StackPanel>
                             <TextBlock Text="🎯" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,15"/>
-                            <TextBlock Text="Demo Invoice" 
+                            <TextBlock Text="Demo Hóa Đơn" 
                                        FontSize="20" 
                                        FontWeight="Bold" 
                                        Foreground="#FF9800" 
                                        HorizontalAlignment="Center"
                                        Margin="0,0,0,10"/>
-                            <TextBlock Text="View a sample professional invoice with the new design." 
+                            <TextBlock Text="Xem các mẫu hóa đơn chuyên nghiệp với thiết kế mới." 
                                        FontSize="14" 
                                        Foreground="#666666" 
                                        HorizontalAlignment="Center"

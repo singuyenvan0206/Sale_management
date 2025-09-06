@@ -53,6 +53,8 @@
                                        FontSize="12" Foreground="#34495E" Margin="0,0,0,2"/>
                             <TextBlock x:Name="CompanyPhoneText" Text="Điện thoại: (555) 123-4567" 
                                        FontSize="12" Foreground="#34495E" Margin="0,0,0,2"/>
+                            <TextBlock x:Name="CompanyFaxText" Text="Fax: (555) 123-4568" 
+                                       FontSize="12" Foreground="#34495E" Margin="0,0,0,2"/>
                             <TextBlock x:Name="CompanyEmailText" Text="Email: info@company.com" 
                                        FontSize="12" Foreground="#34495E"/>
                         </StackPanel>
@@ -81,6 +83,8 @@
                                 <TextBlock Grid.Row="2" Grid.Column="0" Text="Giờ:" FontWeight="Bold" Margin="0,0,10,0"/>
                                 <TextBlock Grid.Row="2" Grid.Column="1" x:Name="InvoiceTimeText" Text="10:30 AM"/>
                             </Grid>
+                            <TextBlock x:Name="InvoiceForText" Text="Giao dịch bán hàng" 
+                                       FontSize="12" Foreground="#7F8C8D" HorizontalAlignment="Right" Margin="0,10,0,0"/>
                         </StackPanel>
                     </Grid>
 
@@ -97,7 +101,11 @@
                                            Foreground="#2C3E50" Margin="0,0,0,10"/>
                                 <TextBlock x:Name="CustomerNameText" Text="Tên khách hàng" 
                                            FontSize="14" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                <TextBlock x:Name="CustomerCompanyText" Text="Công ty khách hàng" 
+                                           FontSize="12" Margin="0,0,0,2"/>
                                 <TextBlock x:Name="CustomerAddressText" Text="Địa chỉ khách hàng" 
+                                           FontSize="12" Margin="0,0,0,2"/>
+                                <TextBlock x:Name="CustomerCityText" Text="Thành phố, Mã bưu điện" 
                                            FontSize="12" Margin="0,0,0,2"/>
                                 <TextBlock x:Name="CustomerPhoneText" Text="Số điện thoại" 
                                            FontSize="12" Margin="0,0,0,2"/>
@@ -144,7 +152,7 @@
                             </Border>
                             
                             <!-- Items List -->
-                            <ItemsControl Grid.Row="1" x:Name="ItemsList" Margin="0">
+                            <ItemsControl Grid.Row="1" x:Name="InvoiceItemsList" Margin="0">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border BorderBrush="#E0E0E0" BorderThickness="0,1,0,0" Padding="15,10,15,10">
@@ -199,24 +207,28 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
                                 
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Tạm tính:" FontSize="12" Margin="0,0,10,6"/>
                                 <TextBlock Grid.Row="0" Grid.Column="1" x:Name="SubtotalText" Text="$0.00" FontSize="12" HorizontalAlignment="Right" Margin="0,0,0,6"/>
                                 
-                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Thuế (10%):" FontSize="12" Margin="0,0,10,6"/>
-                                <TextBlock Grid.Row="1" Grid.Column="1" x:Name="TaxText" Text="$0.00" FontSize="12" HorizontalAlignment="Right" Margin="0,0,0,6"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Thuế:" FontSize="12" Margin="0,0,10,6"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" x:Name="TaxRateText" Text="0.00%" FontSize="12" HorizontalAlignment="Right" Margin="0,0,0,6"/>
                                 
-                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Giảm giá:" FontSize="12" Margin="0,0,10,6"/>
-                                <TextBlock Grid.Row="2" Grid.Column="1" x:Name="DiscountText" Text="$0.00" FontSize="12" HorizontalAlignment="Right" Margin="0,0,0,6"/>
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Số tiền thuế:" FontSize="12" Margin="0,0,10,6"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" x:Name="SalesTaxText" Text="$0.00" FontSize="12" HorizontalAlignment="Right" Margin="0,0,0,6"/>
                                 
-                                <Border Grid.Row="3" Grid.ColumnSpan="2" Background="#E0E0E0" Height="1" Margin="0,6,0,6"/>
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Giảm giá:" FontSize="12" Margin="0,0,10,6"/>
+                                <TextBlock Grid.Row="3" Grid.Column="1" x:Name="OtherText" Text="$0.00" FontSize="12" HorizontalAlignment="Right" Margin="0,0,0,6"/>
                                 
-                                <TextBlock Grid.Row="4" Grid.Column="0" Text="TỔNG CỘNG:" FontSize="14" FontWeight="Bold" Margin="0,0,10,6"/>
-                                <TextBlock Grid.Row="4" Grid.Column="1" x:Name="TotalText" Text="$0.00" FontSize="14" FontWeight="Bold" HorizontalAlignment="Right" Margin="0,0,0,6"/>
+                                <Border Grid.Row="4" Grid.ColumnSpan="2" Background="#E0E0E0" Height="1" Margin="0,6,0,6"/>
                                 
-                                <TextBlock Grid.Row="5" Grid.Column="0" Text="Đã trả:" FontSize="12" Margin="0,0,10,0"/>
-                                <TextBlock Grid.Row="5" Grid.Column="1" x:Name="PaidText" Text="$0.00" FontSize="12" HorizontalAlignment="Right"/>
+                                <TextBlock Grid.Row="5" Grid.Column="0" Text="TỔNG CỘNG:" FontSize="14" FontWeight="Bold" Margin="0,0,10,6"/>
+                                <TextBlock Grid.Row="5" Grid.Column="1" x:Name="TotalText" Text="$0.00" FontSize="14" FontWeight="Bold" HorizontalAlignment="Right" Margin="0,0,0,6"/>
+                                
+                                <TextBlock Grid.Row="6" Grid.Column="0" Text="Đã trả:" FontSize="12" Margin="0,0,10,0"/>
+                                <TextBlock Grid.Row="6" Grid.Column="1" x:Name="PaidText" Text="$0.00" FontSize="12" HorizontalAlignment="Right"/>
                             </Grid>
                         </Border>
                     </Grid>
