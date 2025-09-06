@@ -17,19 +17,19 @@ namespace WpfApp1
 
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(oldPassword) || string.IsNullOrWhiteSpace(newPassword))
             {
-                MessageBox.Show("Please fill in all fields.");
+                MessageBox.Show("Vui lòng điền đầy đủ tất cả các trường.");
                 return;
             }
 
             bool success = DatabaseHelper.ChangePassword(username, oldPassword, newPassword);
             if (success)
             {
-                MessageBox.Show("Password changed successfully.");
+                MessageBox.Show("Mật khẩu đã được thay đổi thành công.");
                 this.Close();
             }
             else
             {
-                MessageBox.Show("Incorrect username or old password.");
+                MessageBox.Show("Tên đăng nhập hoặc mật khẩu cũ không đúng.");
             }
         }
     }

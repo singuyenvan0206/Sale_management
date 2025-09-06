@@ -53,7 +53,7 @@ namespace WpfApp1.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/WpfApp1.Debug;V1.0.0.0;component/views/invoicemanagementview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/WpfApp1.Debug;component/views/invoicemanagementview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Views\InvoiceManagementView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

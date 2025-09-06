@@ -43,22 +43,22 @@ namespace WpfApp1
         private void LoadInvoiceData()
         {
             // Set company information
-            CompanyNameText.Text = "POS MANAGEMENT SYSTEM";
-            CompanySloganText.Text = "Professional Point of Sale Solutions";
-            CompanyAddressText.Text = "123 Business Street";
-            CompanyCityText.Text = "Ho Chi Minh City, 700000";
-            CompanyPhoneText.Text = "Phone: (028) 1234-5678";
+            CompanyNameText.Text = "HỆ THỐNG QUẢN LÝ BÁN HÀNG";
+            CompanySloganText.Text = "Giải pháp bán hàng chuyên nghiệp";
+            CompanyAddressText.Text = "123 Đường Kinh Doanh";
+            CompanyCityText.Text = "Thành phố Hồ Chí Minh, 700000";
+            CompanyPhoneText.Text = "Điện thoại: (028) 1234-5678";
             CompanyFaxText.Text = "Fax: (028) 1234-5679";
 
             // Set invoice information
-            InvoiceDateText.Text = _invoiceDate.ToString("MMMM dd, yyyy");
+            InvoiceDateText.Text = _invoiceDate.ToString("dd/MM/yyyy");
             InvoiceNumberText.Text = _invoiceId.ToString();
-            InvoiceForText.Text = "Sales Transaction";
+            InvoiceForText.Text = "Giao dịch bán hàng";
 
             // Set customer information
-            CustomerNameText.Text = _customer?.Name ?? "Walk-in Customer";
-            CustomerCompanyText.Text = "Customer Company";
-            CustomerAddressText.Text = "Customer Address";
+            CustomerNameText.Text = _customer?.Name ?? "Khách lẻ";
+            CustomerCompanyText.Text = "Công ty khách hàng";
+            CustomerAddressText.Text = "Địa chỉ khách hàng";
             CustomerCityText.Text = "City, ZIP Code";
             CustomerPhoneText.Text = "Phone Number";
 

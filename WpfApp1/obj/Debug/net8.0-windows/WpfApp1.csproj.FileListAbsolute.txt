@@ -145,3 +145,4 @@ C:\Users\Simsimi\source\repos\WpfApp1\WpfApp1\obj\Debug\net8.0-windows\AddEditUs
 C:\Users\Simsimi\source\repos\WpfApp1\WpfApp1\obj\Debug\net8.0-windows\CashierDashboardWindow.g.cs
 C:\Users\Simsimi\source\repos\WpfApp1\WpfApp1\obj\Debug\net8.0-windows\ProductSearchWindow.g.cs
 C:\Users\Simsimi\source\repos\WpfApp1\WpfApp1\obj\Debug\net8.0-windows\UserManagementWindow.g.cs
+C:\Users\Simsimi\source\repos\WpfApp1\WpfApp1\obj\Debug\net8.0-windows\WpfApp1.sourcelink.json

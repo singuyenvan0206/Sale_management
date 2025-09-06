@@ -78,7 +78,7 @@
 			</DataGrid>
 		</Grid>
 
-		<!-- Totals & actions -->
+		<!-- Totals and actions -->
 		<Border Grid.Row="2" Background="White" CornerRadius="12" Padding="16" Margin="20">
 			<Grid>
 				<Grid.ColumnDefinitions>

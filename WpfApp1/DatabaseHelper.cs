@@ -977,5 +977,120 @@ namespace WpfApp1
             cmd.Parameters.AddWithValue("@id", id);
             return cmd.ExecuteNonQuery() > 0;
         }
+
+        public static void InitializeDefaultVietnameseData()
+        {
+            using var connection = new MySqlConnection(ConnectionString);
+            connection.Open();
+
+            // Add default Vietnamese categories
+            var defaultCategories = new[]
+            {
+                "Thực phẩm",
+                "Đồ uống", 
+                "Điện tử",
+                "Quần áo",
+                "Gia dụng",
+                "Sách vở",
+                "Thể thao",
+                "Mỹ phẩm",
+                "Đồ chơi",
+                "Khác"
+            };
+
+            foreach (var category in defaultCategories)
+            {
+                try
+                {
+                    string insertCmd = "INSERT IGNORE INTO Categories (Name) VALUES (@name);";
+                    using var cmd = new MySqlCommand(insertCmd, connection);
+                    cmd.Parameters.AddWithValue("@name", category);
+                    cmd.ExecuteNonQuery();
+                }
+                catch
+                {
+                    // Category already exists, ignore
+                }
+            }
+
+            // Add default Vietnamese customers
+            var defaultCustomers = new[]
+            {
+                ("Khách lẻ", "", "", "Thường", ""),
+                ("Nguyễn Văn An", "0123456789", "an.nguyen@email.com", "VIP", "123 Đường ABC, Quận 1, TP.HCM"),
+                ("Trần Thị Bình", "0987654321", "binh.tran@email.com", "Thường", "456 Đường XYZ, Quận 2, TP.HCM"),
+                ("Lê Văn Cường", "0369258147", "cuong.le@email.com", "Sỉ", "789 Đường DEF, Quận 3, TP.HCM"),
+                ("Phạm Thị Dung", "0741852963", "dung.pham@email.com", "Doanh nghiệp", "321 Đường GHI, Quận 4, TP.HCM")
+            };
+
+            foreach (var (name, phone, email, type, address) in defaultCustomers)
+            {
+                try
+                {
+                    string insertCmd = "INSERT IGNORE INTO Customers (Name, Phone, Email, CustomerType, Address) VALUES (@name, @phone, @email, @type, @address);";
+                    using var cmd = new MySqlCommand(insertCmd, connection);
+                    cmd.Parameters.AddWithValue("@name", name);
+                    cmd.Parameters.AddWithValue("@phone", phone);
+                    cmd.Parameters.AddWithValue("@email", email);
+                    cmd.Parameters.AddWithValue("@type", type);
+                    cmd.Parameters.AddWithValue("@address", address);
+                    cmd.ExecuteNonQuery();
+                }
+                catch
+                {
+                    // Customer already exists, ignore
+                }
+            }
+
+            // Add default Vietnamese products
+            var defaultProducts = new[]
+            {
+                ("Cơm tấm sườn nướng", "CT001", 1, 35000, 100, "Cơm tấm với sườn nướng thơm ngon"),
+                ("Phở bò", "PB001", 1, 45000, 50, "Phở bò truyền thống"),
+                ("Bánh mì thịt nướng", "BM001", 1, 15000, 200, "Bánh mì với thịt nướng"),
+                ("Coca Cola", "CC001", 2, 12000, 300, "Nước ngọt Coca Cola 330ml"),
+                ("Nước suối", "NS001", 2, 5000, 500, "Nước suối tinh khiết 500ml"),
+                ("Trà sữa", "TS001", 2, 25000, 80, "Trà sữa trân châu"),
+                ("iPhone 15", "IP001", 3, 25000000, 10, "Điện thoại iPhone 15 128GB"),
+                ("Samsung Galaxy S24", "SG001", 3, 20000000, 15, "Điện thoại Samsung Galaxy S24"),
+                ("Laptop Dell", "LD001", 3, 15000000, 5, "Laptop Dell Inspiron 15"),
+                ("Áo thun nam", "AT001", 4, 150000, 50, "Áo thun cotton nam size M"),
+                ("Quần jean nữ", "QJ001", 4, 300000, 30, "Quần jean nữ size 28"),
+                ("Giày thể thao", "GT001", 4, 500000, 20, "Giày thể thao Nike size 42"),
+                ("Nồi cơm điện", "NC001", 5, 800000, 25, "Nồi cơm điện 1.8L"),
+                ("Máy xay sinh tố", "MX001", 5, 600000, 15, "Máy xay sinh tố 2L"),
+                ("Bàn ủi", "BU001", 5, 200000, 40, "Bàn ủi hơi nước"),
+                ("Sách lập trình", "SL001", 6, 150000, 20, "Sách học lập trình C#"),
+                ("Vở học sinh", "VH001", 6, 10000, 100, "Vở học sinh 200 trang"),
+                ("Bút bi", "BB001", 6, 5000, 200, "Bút bi xanh"),
+                ("Bóng đá", "BD001", 7, 200000, 30, "Bóng đá size 5"),
+                ("Vợt cầu lông", "VC001", 7, 300000, 15, "Vợt cầu lông Yonex"),
+                ("Kem dưỡng da", "KD001", 8, 250000, 25, "Kem dưỡng da ban đêm"),
+                ("Son môi", "SM001", 8, 120000, 40, "Son môi màu đỏ"),
+                ("Xe đồ chơi", "XD001", 9, 150000, 20, "Xe đồ chơi điều khiển"),
+                ("Búp bê", "BB001", 9, 100000, 15, "Búp bê Barbie"),
+                ("Sản phẩm khác", "SP001", 10, 50000, 10, "Sản phẩm khác")
+            };
+
+            foreach (var (name, code, categoryId, price, stock, description) in defaultProducts)
+            {
+                try
+                {
+                    string insertCmd = "INSERT IGNORE INTO Products (Name, Code, CategoryId, Price, StockQuantity, Description) VALUES (@name, @code, @categoryId, @price, @stock, @description);";
+                    using var cmd = new MySqlCommand(insertCmd, connection);
+                    cmd.Parameters.AddWithValue("@name", name);
+                    cmd.Parameters.AddWithValue("@code", code);
+                    cmd.Parameters.AddWithValue("@categoryId", categoryId);
+                    cmd.Parameters.AddWithValue("@price", price);
+                    cmd.Parameters.AddWithValue("@stock", stock);
+                    cmd.Parameters.AddWithValue("@description", description);
+                    cmd.ExecuteNonQuery();
+                }
+                catch
+                {
+                    // Product already exists, ignore
+                }
+            }
+        }
     }
 }

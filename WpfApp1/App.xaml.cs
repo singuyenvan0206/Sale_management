@@ -20,11 +20,12 @@ namespace WpfApp1
             try
             {
                 DatabaseHelper.InitializeDatabase();
+                DatabaseHelper.InitializeDefaultVietnameseData();
             }
             catch (System.Exception ex)
             {
-                MessageBox.Show($"Database initialization failed.\n\n{ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                var result = MessageBox.Show("Open Settings to configure the database connection now?", "Database Connection", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                MessageBox.Show($"Khởi tạo cơ sở dữ liệu thất bại.\n\n{ex.Message}", "Lỗi cơ sở dữ liệu", MessageBoxButton.OK, MessageBoxImage.Warning);
+                var result = MessageBox.Show("Mở cài đặt để cấu hình kết nối cơ sở dữ liệu ngay bây giờ?", "Kết nối cơ sở dữ liệu", MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (result == MessageBoxResult.Yes)
                 {
                     var settings = new SettingsWindow();
@@ -32,10 +33,11 @@ namespace WpfApp1
                     try
                     {
                         DatabaseHelper.InitializeDatabase();
+                        DatabaseHelper.InitializeDefaultVietnameseData();
                     }
                     catch (System.Exception retryEx)
                     {
-                        MessageBox.Show($"Database is still unavailable. The app may not function correctly.\n\n{retryEx.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"Cơ sở dữ liệu vẫn không khả dụng. Ứng dụng có thể không hoạt động đúng.\n\n{retryEx.Message}", "Lỗi cơ sở dữ liệu", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
             }
