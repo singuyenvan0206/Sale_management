@@ -1,0 +1,131 @@
+<Window x:Class="WpfApp1.ProductSearchWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Tìm Kiếm Sản Phẩm" Height="600" Width="900"
+        WindowStartupLocation="CenterScreen">
+    
+    <Grid Background="#F5F5F5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#4CAF50" Padding="16">
+            <TextBlock Text="🔍 Tìm Kiếm Sản Phẩm" 
+                       FontSize="22" 
+                       FontWeight="Bold" 
+                       Foreground="White"
+                       HorizontalAlignment="Center"/>
+        </Border>
+
+        <!-- Search Controls -->
+        <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="16" Margin="20,16,20,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBox x:Name="SearchTextBox" 
+                         Grid.Column="0" 
+                         Height="40" 
+                         FontSize="16"
+                         TextChanged="SearchTextBox_TextChanged"
+                         VerticalContentAlignment="Center"
+                         Padding="10,0">
+                    <TextBox.Style>
+                        <Style TargetType="TextBox">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="TextBox">
+                                        <Border Background="{TemplateBinding Background}" 
+                                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                                CornerRadius="8">
+                                            <ScrollViewer x:Name="PART_ContentHost" 
+                                                          VerticalAlignment="Center" 
+                                                          Margin="{TemplateBinding Padding}"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
+                
+                <Button x:Name="SearchButton" 
+                        Grid.Column="1" 
+                        Content="🔍 Tìm kiếm" 
+                        Width="120" 
+                        Height="40" 
+                        Background="#2196F3" 
+                        Foreground="White" 
+                        Margin="10,0,0,0"
+                        Click="SearchButton_Click"/>
+                
+                <Button x:Name="ClearButton" 
+                        Grid.Column="2" 
+                        Content="🗑️ Xóa" 
+                        Width="80" 
+                        Height="40" 
+                        Background="#FF9800" 
+                        Foreground="White" 
+                        Margin="10,0,0,0"
+                        Click="ClearButton_Click"/>
+            </Grid>
+        </Border>
+
+        <!-- Products List -->
+        <Border Grid.Row="2" Background="White" CornerRadius="12" Padding="16" Margin="20,8,20,8">
+            <DataGrid x:Name="ProductsDataGrid" 
+                      AutoGenerateColumns="False" 
+                      CanUserAddRows="False" 
+                      SelectionMode="Single"
+                      HeadersVisibility="Column" 
+                      GridLinesVisibility="Horizontal"
+                      Background="Transparent" 
+                      BorderThickness="0"
+                      MouseDoubleClick="ProductsDataGrid_MouseDoubleClick">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Mã SP" Binding="{Binding Code}" Width="100" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Tên sản phẩm" Binding="{Binding Name}" Width="*" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Danh mục" Binding="{Binding CategoryName}" Width="150" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Giá" Binding="{Binding Price, StringFormat=N0}" Width="120" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Tồn kho" Binding="{Binding StockQuantity}" Width="80" IsReadOnly="True"/>
+                    <DataGridTemplateColumn Header="Thao tác" Width="120">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Chọn" 
+                                        Background="#4CAF50" 
+                                        Foreground="White" 
+                                        Padding="8,4"
+                                        Click="SelectProductButton_Click"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <!-- Footer -->
+        <Border Grid.Row="3" Background="#F0F0F0" Padding="16">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBlock x:Name="StatusTextBlock" 
+                           Text="Sẵn sàng tìm kiếm..." 
+                           VerticalAlignment="Center" 
+                           Margin="0,0,20,0"/>
+                <Button x:Name="CloseButton" 
+                        Content="Đóng" 
+                        Width="100" 
+                        Height="35" 
+                        Background="#F44336" 
+                        Foreground="White" 
+                        Click="CloseButton_Click"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

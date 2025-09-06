@@ -1,0 +1,177 @@
+﻿<Window x:Class="WpfApp1.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Login/Register" Height="450" Width="800">
+    <Window.Resources>
+        <!-- Button Style -->
+        <Style TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="18"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+        <!-- TextBox Style -->
+        <Style TargetType="TextBox">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="#4FC3F7"
+                                BorderThickness="2"
+                                CornerRadius="16">
+                            <ScrollViewer x:Name="PART_ContentHost"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="FontSize" Value="16"/>
+        </Style>
+        <!-- PasswordBox Style -->
+        <Style TargetType="PasswordBox">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="#4FC3F7"
+                                BorderThickness="2"
+                                CornerRadius="16">
+                            <ScrollViewer x:Name="PART_ContentHost"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="FontSize" Value="16"/>
+        </Style>
+        <!-- Animations -->
+        <Storyboard x:Key="ShowRegisterStoryboard">
+            <DoubleAnimation Storyboard.TargetName="LoginFormTransform"
+                             Storyboard.TargetProperty="X"
+                             To="-450" Duration="0:0:0.3"/>
+            <DoubleAnimation Storyboard.TargetName="RegisterFormTransform"
+                             Storyboard.TargetProperty="X"
+                             To="0" Duration="0:0:0.3"/>
+        </Storyboard>
+        <Storyboard x:Key="ShowLoginStoryboard">
+            <DoubleAnimation Storyboard.TargetName="LoginFormTransform"
+                             Storyboard.TargetProperty="X"
+                             To="0" Duration="0:0:0.3"/>
+            <DoubleAnimation Storyboard.TargetName="RegisterFormTransform"
+                             Storyboard.TargetProperty="X"
+                             To="450" Duration="0:0:0.3"/>
+        </Storyboard>
+    </Window.Resources>
+    <Grid Background="#FAD2D2">
+        <!-- Login Form -->
+        <Border x:Name="LoginPanel" Width="400" Height="400" CornerRadius="40"
+                HorizontalAlignment="Left" VerticalAlignment="Center"
+                Padding="30" Margin="200,0,0,0">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#1CB5E0" Offset="0.0"/>
+                    <GradientStop Color="#000046" Offset="1.0"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Border.RenderTransform>
+                <TranslateTransform x:Name="LoginFormTransform" X="0"/>
+            </Border.RenderTransform>
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="Login" FontSize="28" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,24"/>
+                <TextBlock Text="Username" Foreground="#CCFFFFFF" Margin="0,0,0,4"/>
+                <TextBox x:Name="UsernameTextBox" Height="46" Margin="0,0,0,16"
+                         Background="#F0F0F0"/>
+                <TextBlock Text="Password" Foreground="#CCFFFFFF" Margin="0,0,0,4"/>
+                <PasswordBox x:Name="PasswordBox" Height="45" Margin="0,0,0,24"
+                             Background="#F0F0F0" Width="293"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,12">
+                    <Button Content="Login"
+                            Width="140"
+                            Height="40"
+                            FontSize="18"
+                            FontWeight="Bold"
+                            Background="#4FC3F7"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Margin="0,0,12,0"
+                            Click="LoginButton_Click"/>
+                    <Button Content="Register"
+                            Width="140"
+                            Height="40"
+                            FontSize="18"
+                            FontWeight="Bold"
+                            Background="#FF6A82FB"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Click="ShowRegisterForm_Click"/>
+                </StackPanel>
+                <Button x:Name="ChangePasswordButton" Content="Change Password"
+                        Height="40"
+                        FontSize="16"
+                        Background="#FC5C7D"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Click="ChangePasswordButton_Click"/>
+            </StackPanel>
+        </Border>
+        <!-- Register Form -->
+        <Border x:Name="RegisterPanel" Width="400" Height="400" CornerRadius="40"
+                HorizontalAlignment="Left" VerticalAlignment="Center"
+                Padding="30" Margin="200,0,0,0"
+                Visibility="Collapsed">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#1CB5E0" Offset="0.0"/>
+                    <GradientStop Color="#000046" Offset="1.0"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Border.RenderTransform>
+                <TranslateTransform x:Name="RegisterFormTransform" X="450"/>
+            </Border.RenderTransform>
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="Register" FontSize="28" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,24"/>
+                <TextBlock Text="Username" Foreground="#CCFFFFFF" Margin="0,0,0,4"/>
+                <TextBox x:Name="RegUsernameTextBox" Height="40" Margin="0,0,0,16"
+                         Background="#F0F0F0"/>
+                <TextBlock Text="Password" Foreground="#CCFFFFFF" Margin="0,0,0,4"/>
+                <PasswordBox x:Name="RegPasswordBox" Height="40" Margin="0,0,0,16"
+                             Background="#F0F0F0"/>
+                <TextBlock Text="Confirm Password" Foreground="#CCFFFFFF" Margin="0,0,0,4"/>
+                <PasswordBox x:Name="RegConfirmPasswordBox" Height="40" Margin="0,0,0,24"
+                             Background="#F0F0F0"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,0">
+                    <Button Content="Register"
+                            Width="140"
+                            Height="40"
+                            FontSize="18"
+                            FontWeight="Bold"
+                            Background="#FF6A82FB"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Margin="0,0,12,0"
+                            Click="RegisterButton_Click"/>
+                    <Button Content="Login"
+                            Width="140"
+                            Height="40"
+                            FontSize="18"
+                            FontWeight="Bold"
+                            Background="#4FC3F7"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Click="ShowLoginForm_Click"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

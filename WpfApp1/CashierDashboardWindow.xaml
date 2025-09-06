@@ -1,0 +1,282 @@
+<Window x:Class="WpfApp1.CashierDashboardWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Cashier Dashboard - POS System" Height="700" Width="1200"
+        WindowStartupLocation="CenterScreen"
+        WindowState="Maximized">
+    
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="15"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+    </Window.Resources>
+    
+    <Grid Background="#F5F5F5">
+        <!-- Header -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="80"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header Bar -->
+        <Border Grid.Row="0" Background="#4CAF50" Padding="20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="💰 Cashier Dashboard" 
+                               FontSize="24" 
+                               FontWeight="Bold" 
+                               Foreground="White" 
+                               Margin="0,0,20,0"/>
+                    <TextBlock x:Name="UserInfoTextBlock" 
+                               FontSize="16" 
+                               Foreground="White" 
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="LogoutButton" 
+                            Content="🚪 Logout" 
+                            Background="#F44336" 
+                            Foreground="White" 
+                            Padding="20,10" 
+                            Click="LogoutButton_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1" Margin="20">
+            <ScrollViewer x:Name="DefaultContentScrollViewer" VerticalScrollBarVisibility="Auto">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Quick Stats -->
+                    <Border Grid.Row="0" Background="White" CornerRadius="20" Padding="25" Margin="0,0,0,20">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Today's Sales -->
+                            <Border Grid.Column="0" Background="#E8F5E8" CornerRadius="15" Padding="20" Margin="10">
+                                <StackPanel>
+                                    <TextBlock Text="💰" FontSize="32" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                                    <TextBlock x:Name="TodaySalesText" Text="0 VND" FontSize="18" FontWeight="Bold" 
+                                               Foreground="#2E7D32" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+                                    <TextBlock Text="Doanh thu hôm nay" FontSize="12" Foreground="#666666" 
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- Today's Invoices -->
+                            <Border Grid.Column="1" Background="#E3F2FD" CornerRadius="15" Padding="20" Margin="10">
+                                <StackPanel>
+                                    <TextBlock Text="🧾" FontSize="32" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                                    <TextBlock x:Name="TodayInvoicesText" Text="0" FontSize="18" FontWeight="Bold" 
+                                               Foreground="#1976D2" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+                                    <TextBlock Text="Hóa đơn hôm nay" FontSize="12" Foreground="#666666" 
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- Total Products -->
+                            <Border Grid.Column="2" Background="#FFF3E0" CornerRadius="15" Padding="20" Margin="10">
+                                <StackPanel>
+                                    <TextBlock Text="📦" FontSize="32" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                                    <TextBlock x:Name="TotalProductsText" Text="0" FontSize="18" FontWeight="Bold" 
+                                               Foreground="#F57C00" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+                                    <TextBlock Text="Sản phẩm có sẵn" FontSize="12" Foreground="#666666" 
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- Total Customers -->
+                            <Border Grid.Column="3" Background="#F3E5F5" CornerRadius="15" Padding="20" Margin="10">
+                                <StackPanel>
+                                    <TextBlock Text="👥" FontSize="32" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                                    <TextBlock x:Name="TotalCustomersText" Text="0" FontSize="18" FontWeight="Bold" 
+                                               Foreground="#7B1FA2" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+                                    <TextBlock Text="Khách hàng" FontSize="12" Foreground="#666666" 
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- Main Functions -->
+                    <Grid Grid.Row="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Invoice Management -->
+                        <Border Grid.Row="0" Grid.Column="0" 
+                                Background="White" 
+                                CornerRadius="20" 
+                                Margin="10" 
+                                Padding="25">
+                            <Button Style="{StaticResource {x:Type Button}}" 
+                                    Background="Transparent" 
+                                    BorderThickness="0"
+                                    Click="InvoiceManagement_Click">
+                                <StackPanel>
+                                    <TextBlock Text="🧾" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+                                    <TextBlock Text="Tạo Hóa Đơn" 
+                                               FontSize="20" 
+                                               FontWeight="Bold" 
+                                               Foreground="#4CAF50" 
+                                               HorizontalAlignment="Center"
+                                               Margin="0,0,0,10"/>
+                                    <TextBlock Text="Tạo hóa đơn bán hàng mới, thêm sản phẩm và tính toán tổng tiền." 
+                                               FontSize="14" 
+                                               Foreground="#666666" 
+                                               HorizontalAlignment="Center"
+                                               TextAlignment="Center"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Button>
+                        </Border>
+                        
+                        <!-- Customer Management -->
+                        <Border Grid.Row="0" Grid.Column="1" 
+                                Background="White" 
+                                CornerRadius="20" 
+                                Margin="10" 
+                                Padding="25">
+                            <Button Style="{StaticResource {x:Type Button}}" 
+                                    Background="Transparent" 
+                                    BorderThickness="0"
+                                    Click="CustomerManagement_Click">
+                                <StackPanel>
+                                    <TextBlock Text="👥" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+                                    <TextBlock Text="Quản Lý Khách Hàng" 
+                                               FontSize="20" 
+                                               FontWeight="Bold" 
+                                               Foreground="#4CAF50" 
+                                               HorizontalAlignment="Center"
+                                               Margin="0,0,0,10"/>
+                                    <TextBlock Text="Thêm, sửa thông tin khách hàng và tìm kiếm khách hàng." 
+                                               FontSize="14" 
+                                               Foreground="#666666" 
+                                               HorizontalAlignment="Center"
+                                               TextAlignment="Center"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Button>
+                        </Border>
+                        
+                        <!-- Product Search -->
+                        <Border Grid.Row="1" Grid.Column="0" 
+                                Background="White" 
+                                CornerRadius="20" 
+                                Margin="10" 
+                                Padding="25">
+                            <Button Style="{StaticResource {x:Type Button}}" 
+                                    Background="Transparent" 
+                                    BorderThickness="0"
+                                    Click="ProductSearch_Click">
+                                <StackPanel>
+                                    <TextBlock Text="🔍" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+                                    <TextBlock Text="Tìm Kiếm Sản Phẩm" 
+                                               FontSize="20" 
+                                               FontWeight="Bold" 
+                                               Foreground="#4CAF50" 
+                                               HorizontalAlignment="Center"
+                                               Margin="0,0,0,10"/>
+                                    <TextBlock Text="Tìm kiếm sản phẩm theo tên, mã sản phẩm để bán hàng." 
+                                               FontSize="14" 
+                                               Foreground="#666666" 
+                                               HorizontalAlignment="Center"
+                                               TextAlignment="Center"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Button>
+                        </Border>
+                        
+                        <!-- Quick Invoice -->
+                        <Border Grid.Row="1" Grid.Column="1" 
+                                Background="White" 
+                                CornerRadius="20" 
+                                Margin="10" 
+                                Padding="25">
+                            <Button Style="{StaticResource {x:Type Button}}" 
+                                    Background="Transparent" 
+                                    BorderThickness="0"
+                                    Click="QuickInvoice_Click">
+                                <StackPanel>
+                                    <TextBlock Text="⚡" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+                                    <TextBlock Text="Hóa Đơn Nhanh" 
+                                               FontSize="20" 
+                                               FontWeight="Bold" 
+                                               Foreground="#4CAF50" 
+                                               HorizontalAlignment="Center"
+                                               Margin="0,0,0,10"/>
+                                    <TextBlock Text="Tạo hóa đơn nhanh cho khách hàng không cần đăng ký." 
+                                               FontSize="14" 
+                                               Foreground="#666666" 
+                                               HorizontalAlignment="Center"
+                                               TextAlignment="Center"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Button>
+                        </Border>
+                    </Grid>
+
+                    <!-- Recent Activity -->
+                    <Border Grid.Row="2" Background="White" CornerRadius="20" Padding="25" Margin="0,20,0,0">
+                        <StackPanel>
+                            <TextBlock Text="📋 Hoạt Động Gần Đây" FontSize="18" FontWeight="Bold" 
+                                       Foreground="#333333" Margin="0,0,0,15"/>
+                            <DataGrid x:Name="RecentInvoicesGrid" AutoGenerateColumns="False" 
+                                      CanUserAddRows="False" SelectionMode="Single" 
+                                      HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                                      Background="Transparent" BorderThickness="0">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Thời gian" Binding="{Binding CreatedDate, StringFormat=HH:mm}" Width="80" IsReadOnly="True"/>
+                                    <DataGridTextColumn Header="Số HD" Binding="{Binding Id}" Width="60" IsReadOnly="True"/>
+                                    <DataGridTextColumn Header="Khách hàng" Binding="{Binding CustomerName}" Width="*" IsReadOnly="True"/>
+                                    <DataGridTextColumn Header="Tổng tiền" Binding="{Binding Total, StringFormat=N0}" Width="120" IsReadOnly="True"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </ScrollViewer>
+            
+            <ContentControl x:Name="MainContentHost" Visibility="Collapsed"/>
+        </Grid>
+    </Grid>
+</Window>
