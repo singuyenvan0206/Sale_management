@@ -19,6 +19,9 @@ namespace WpfApp1
             UserInfoTextBlock.Text = $"Xin chào, {username} ({role.GetDisplayName()})";
             LoadKpis();
             LoadRecentInvoices();
+            
+            // Set default selection
+            DashboardNavItem.IsSelected = true;
         }
 
         private void LoadKpis()
@@ -77,62 +80,32 @@ namespace WpfApp1
             }
         }
 
-        private void InvoiceManagement_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var invoiceWindow = new InvoiceManagementWindow();
-                invoiceWindow.ShowDialog();
-                LoadKpis(); // Refresh data after invoice operations
-                LoadRecentInvoices();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Lỗi mở quản lý hóa đơn: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
 
-        private void CustomerManagement_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var customerWindow = new CustomerManagementWindow();
-                customerWindow.ShowDialog();
-                LoadKpis(); // Refresh data
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Lỗi mở quản lý khách hàng: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
 
-        private void ProductSearch_Click(object sender, RoutedEventArgs e)
+        private void NavList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            try
+            if (NavList.SelectedItem is ListBoxItem selectedItem)
             {
-                // Tạo một window tìm kiếm sản phẩm đơn giản cho cashier
-                var searchWindow = new ProductSearchWindow();
-                searchWindow.ShowDialog();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Lỗi mở tìm kiếm sản phẩm: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void QuickInvoice_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                // Tạo hóa đơn nhanh với khách hàng mặc định
-                var invoiceWindow = new InvoiceManagementWindow();
-                invoiceWindow.ShowDialog();
-                LoadKpis();
-                LoadRecentInvoices();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Lỗi tạo hóa đơn nhanh: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                string tab = selectedItem.Content.ToString();
+                
+                System.Windows.Window? contentWindow = tab switch
+                {
+                    "📊 Dashboard" => null, // Stay on current dashboard
+                    "🧾 Tạo Hóa Đơn" => new InvoiceManagementWindow(),
+                    "👥 Khách Hàng" => new CustomerManagementWindow(),
+                    "📦 Sản Phẩm" => new ProductManagementWindow(),
+                    "📂 Danh Mục" => new CategoryManagementWindow(),
+                    "🔍 Tìm Kiếm" => new ProductSearchWindow(),
+                    "📈 Báo Cáo" => new ReportsWindow(),
+                    _ => null
+                };
+                
+                if (contentWindow != null)
+                {
+                    contentWindow.ShowDialog();
+                    LoadKpis(); // Refresh data after closing window
+                    LoadRecentInvoices();
+                }
             }
         }
 

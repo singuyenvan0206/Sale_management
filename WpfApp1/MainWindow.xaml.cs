@@ -30,7 +30,6 @@ namespace WpfApp1
                 Window dashboard = userRole switch
                 {
                     UserRole.Cashier => new CashierDashboardWindow(username, userRole),
-                    UserRole.Manager => new DashboardWindow(username, userRole.ToString()),
                     UserRole.Admin => new DashboardWindow(username, userRole.ToString()),
                     _ => new CashierDashboardWindow(username, userRole)
                 };

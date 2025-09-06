@@ -81,7 +81,6 @@
                           SelectionChanged="FilterChanged">
                     <ComboBoxItem Content="Tất cả vai trò" Tag=""/>
                     <ComboBoxItem Content="Quản trị viên" Tag="Admin"/>
-                    <ComboBoxItem Content="Quản lý" Tag="Manager"/>
                     <ComboBoxItem Content="Thu ngân" Tag="Cashier"/>
                 </ComboBox>
                 

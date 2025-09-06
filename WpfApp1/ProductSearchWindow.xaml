@@ -23,12 +23,20 @@
 
         <!-- Search Controls -->
         <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="16" Margin="20,16,20,8">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+            <StackPanel>
+                <!-- Instructions -->
+                <TextBlock Text="💡 Hướng dẫn: Nhập tên, mã sản phẩm hoặc danh mục để tìm kiếm. Nhấp đúp hoặc chọn sản phẩm rồi nhấn 'Chọn sản phẩm'." 
+                           FontSize="12" 
+                           Foreground="#666666" 
+                           Margin="0,0,0,10"
+                           TextWrapping="Wrap"/>
+                
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
                 
                 <TextBox x:Name="SearchTextBox" 
                          Grid.Column="0" 
@@ -76,7 +84,8 @@
                         Foreground="White" 
                         Margin="10,0,0,0"
                         Click="ClearButton_Click"/>
-            </Grid>
+                </Grid>
+            </StackPanel>
         </Border>
 
         <!-- Products List -->
@@ -99,10 +108,11 @@
                     <DataGridTemplateColumn Header="Thao tác" Width="120">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Button Content="Chọn" 
+                                <Button Content="✅ Chọn" 
                                         Background="#4CAF50" 
                                         Foreground="White" 
                                         Padding="8,4"
+                                        FontWeight="Bold"
                                         Click="SelectProductButton_Click"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>

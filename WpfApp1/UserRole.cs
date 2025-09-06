@@ -13,14 +13,9 @@ namespace WpfApp1
         Admin = 1,
         
         /// <summary>
-        /// Quản lý - có hầu hết quyền trừ quản lý người dùng
+        /// Thu ngân - có quyền bán hàng, quản lý sản phẩm và xem báo cáo cơ bản
         /// </summary>
-        Manager = 2,
-        
-        /// <summary>
-        /// Thu ngân - chỉ có quyền bán hàng và xem cơ bản
-        /// </summary>
-        Cashier = 3
+        Cashier = 2
     }
 
     /// <summary>
@@ -33,7 +28,7 @@ namespace WpfApp1
         /// </summary>
         public static bool CanManageProducts(this UserRole role)
         {
-            return role == UserRole.Admin || role == UserRole.Manager;
+            return role == UserRole.Admin || role == UserRole.Cashier;
         }
 
         /// <summary>
@@ -41,7 +36,7 @@ namespace WpfApp1
         /// </summary>
         public static bool CanManageCategories(this UserRole role)
         {
-            return role == UserRole.Admin || role == UserRole.Manager;
+            return role == UserRole.Admin || role == UserRole.Cashier;
         }
 
         /// <summary>
@@ -65,7 +60,7 @@ namespace WpfApp1
         /// </summary>
         public static bool CanViewReports(this UserRole role)
         {
-            return role == UserRole.Admin || role == UserRole.Manager;
+            return role == UserRole.Admin || role == UserRole.Cashier;
         }
 
         /// <summary>
@@ -92,7 +87,6 @@ namespace WpfApp1
             return role switch
             {
                 UserRole.Admin => "Quản trị viên",
-                UserRole.Manager => "Quản lý",
                 UserRole.Cashier => "Thu ngân",
                 _ => "Không xác định"
             };
@@ -106,8 +100,7 @@ namespace WpfApp1
             return role switch
             {
                 UserRole.Admin => "Có toàn quyền quản lý hệ thống, người dùng và dữ liệu",
-                UserRole.Manager => "Quản lý sản phẩm, báo cáo và hoạt động bán hàng",
-                UserRole.Cashier => "Thực hiện giao dịch bán hàng và quản lý khách hàng",
+                UserRole.Cashier => "Thực hiện giao dịch bán hàng, quản lý sản phẩm, danh mục, khách hàng và xem báo cáo",
                 _ => "Không có quyền hạn"
             };
         }

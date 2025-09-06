@@ -3,40 +3,56 @@
   "WorkspaceRootPath": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\addedituserwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\addedituserwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+      "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\cashierdashboardwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\cashierdashboardwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\settingswindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\settingswindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\usermanagementwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
       "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\usermanagementwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\customermanagementwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\customermanagementwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\dashboardwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\dashboardwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\cashierdashboardwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\cashierdashboardwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\invoicedemo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\invoicedemo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\databasehelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\databasehelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\invoicedemo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\invoicedemo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\dashboardwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\dashboardwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\customermanagementwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\customermanagementwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\categorymanagementwindow.xaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\categorymanagementwindow.xaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\views\\invoicemanagementview.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\views\\invoicemanagementview.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\invoicemanagementwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
       "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\invoicemanagementwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\invoiceprintwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\invoiceprintwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\addedituserwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\addedituserwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\productsearchwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
@@ -63,24 +79,12 @@
       "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\settingswindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\settingswindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\invoiceprintwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\invoiceprintwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\reportswindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
       "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\reportswindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\invoicemanagementwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\invoicemanagementwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\views\\invoicemanagementview.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\views\\invoicemanagementview.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\categorymanagementwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -93,10 +97,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\registerwindow.xaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
       "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\registerwindow.xaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|c:\\users\\simsimi\\source\\repos\\wpfapp1\\wpfapp1\\changepasswordwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{68B63EDE-488D-4BA4-B229-EA85E5F69682}|WpfApp1\\WpfApp1.csproj|solutionrelative:wpfapp1\\changepasswordwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
@@ -129,7 +129,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -137,7 +137,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "UserManagementWindow.xaml",
               "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\UserManagementWindow.xaml",
               "RelativeDocumentMoniker": "WpfApp1\\UserManagementWindow.xaml",
@@ -149,20 +149,19 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "InvoiceDemo.cs",
-              "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\InvoiceDemo.cs",
-              "RelativeDocumentMoniker": "WpfApp1\\InvoiceDemo.cs",
-              "ToolTip": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\InvoiceDemo.cs",
-              "RelativeToolTip": "WpfApp1\\InvoiceDemo.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-06T11:12:06.41Z",
+              "DocumentIndex": 1,
+              "Title": "SettingsWindow.xaml",
+              "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\SettingsWindow.xaml",
+              "RelativeDocumentMoniker": "WpfApp1\\SettingsWindow.xaml",
+              "ToolTip": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\SettingsWindow.xaml",
+              "RelativeToolTip": "WpfApp1\\SettingsWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-09-06T02:52:52.129Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 6,
               "Title": "CustomerManagementWindow.xaml",
               "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\CustomerManagementWindow.xaml",
               "RelativeDocumentMoniker": "WpfApp1\\CustomerManagementWindow.xaml",
@@ -174,31 +173,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "DashboardWindow.xaml",
-              "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\DashboardWindow.xaml",
-              "RelativeDocumentMoniker": "WpfApp1\\DashboardWindow.xaml",
-              "ToolTip": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\DashboardWindow.xaml",
-              "RelativeToolTip": "WpfApp1\\DashboardWindow.xaml",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2025-08-20T10:36:13.637Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "AddEditUserWindow.xaml",
-              "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\AddEditUserWindow.xaml",
-              "RelativeDocumentMoniker": "WpfApp1\\AddEditUserWindow.xaml",
-              "ToolTip": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\AddEditUserWindow.xaml*",
-              "RelativeToolTip": "WpfApp1\\AddEditUserWindow.xaml*",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2025-09-06T09:34:53.506Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
               "Title": "CashierDashboardWindow.xaml",
               "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\CashierDashboardWindow.xaml",
               "RelativeDocumentMoniker": "WpfApp1\\CashierDashboardWindow.xaml",
@@ -210,7 +185,70 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "InvoiceDemo.cs",
+              "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\InvoiceDemo.cs",
+              "RelativeDocumentMoniker": "WpfApp1\\InvoiceDemo.cs",
+              "ToolTip": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\InvoiceDemo.cs",
+              "RelativeToolTip": "WpfApp1\\InvoiceDemo.cs",
+              "ViewState": "AgIAAPEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-06T11:12:06.41Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "DatabaseHelper.cs",
+              "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\DatabaseHelper.cs",
+              "RelativeDocumentMoniker": "WpfApp1\\DatabaseHelper.cs",
+              "ToolTip": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\DatabaseHelper.cs",
+              "RelativeToolTip": "WpfApp1\\DatabaseHelper.cs",
+              "ViewState": "AgIAABIGAAAAAAAAAAAAAKcAAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-19T09:55:40.771Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "DashboardWindow.xaml",
+              "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\DashboardWindow.xaml",
+              "RelativeDocumentMoniker": "WpfApp1\\DashboardWindow.xaml",
+              "ToolTip": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\DashboardWindow.xaml",
+              "RelativeToolTip": "WpfApp1\\DashboardWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-08-20T10:36:13.637Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "CategoryManagementWindow.xaml",
+              "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\CategoryManagementWindow.xaml",
+              "RelativeDocumentMoniker": "WpfApp1\\CategoryManagementWindow.xaml",
+              "ToolTip": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\CategoryManagementWindow.xaml",
+              "RelativeToolTip": "WpfApp1\\CategoryManagementWindow.xaml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-09-06T12:02:31.933Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 8,
+              "Title": "InvoiceManagementView.xaml",
+              "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\Views\\InvoiceManagementView.xaml",
+              "RelativeDocumentMoniker": "WpfApp1\\Views\\InvoiceManagementView.xaml",
+              "ToolTip": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\Views\\InvoiceManagementView.xaml",
+              "RelativeToolTip": "WpfApp1\\Views\\InvoiceManagementView.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-09-06T02:52:41.749Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
               "Title": "InvoiceManagementWindow.xaml",
               "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\InvoiceManagementWindow.xaml",
               "RelativeDocumentMoniker": "WpfApp1\\InvoiceManagementWindow.xaml",
@@ -222,7 +260,31 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 10,
+              "Title": "InvoicePrintWindow.xaml",
+              "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\InvoicePrintWindow.xaml",
+              "RelativeDocumentMoniker": "WpfApp1\\InvoicePrintWindow.xaml",
+              "ToolTip": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\InvoicePrintWindow.xaml",
+              "RelativeToolTip": "WpfApp1\\InvoicePrintWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-09-06T05:03:22.822Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "AddEditUserWindow.xaml",
+              "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\AddEditUserWindow.xaml",
+              "RelativeDocumentMoniker": "WpfApp1\\AddEditUserWindow.xaml",
+              "ToolTip": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\AddEditUserWindow.xaml",
+              "RelativeToolTip": "WpfApp1\\AddEditUserWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-09-06T09:34:53.506Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
               "Title": "ProductSearchWindow.xaml",
               "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\ProductSearchWindow.xaml",
               "RelativeDocumentMoniker": "WpfApp1\\ProductSearchWindow.xaml",
@@ -234,7 +296,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 12,
               "Title": "AssemblyInfo.cs",
               "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\AssemblyInfo.cs",
               "RelativeDocumentMoniker": "WpfApp1\\AssemblyInfo.cs",
@@ -247,20 +309,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "DatabaseHelper.cs",
-              "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\DatabaseHelper.cs",
-              "RelativeDocumentMoniker": "WpfApp1\\DatabaseHelper.cs",
-              "ToolTip": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\DatabaseHelper.cs",
-              "RelativeToolTip": "WpfApp1\\DatabaseHelper.cs",
-              "ViewState": "AgIAABMGAAAAAAAAAAAAAKcAAAAqAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-19T09:55:40.771Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 14,
               "Title": "ProductManagementWindow.xaml",
               "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\ProductManagementWindow.xaml",
               "RelativeDocumentMoniker": "WpfApp1\\ProductManagementWindow.xaml",
@@ -272,7 +321,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 16,
               "Title": "InvoicePrintWindow.xaml.cs",
               "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\InvoicePrintWindow.xaml.cs",
               "RelativeDocumentMoniker": "WpfApp1\\InvoicePrintWindow.xaml.cs",
@@ -285,7 +334,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 15,
               "Title": "MainWindow.xaml",
               "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\MainWindow.xaml",
               "RelativeDocumentMoniker": "WpfApp1\\MainWindow.xaml",
@@ -297,31 +346,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
-              "Title": "InvoicePrintWindow.xaml",
-              "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\InvoicePrintWindow.xaml",
-              "RelativeDocumentMoniker": "WpfApp1\\InvoicePrintWindow.xaml",
-              "ToolTip": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\InvoicePrintWindow.xaml",
-              "RelativeToolTip": "WpfApp1\\InvoicePrintWindow.xaml",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2025-09-06T05:03:22.822Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 17,
               "Title": "UserRole.cs",
               "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\UserRole.cs",
               "RelativeDocumentMoniker": "WpfApp1\\UserRole.cs",
               "ToolTip": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\UserRole.cs",
               "RelativeToolTip": "WpfApp1\\UserRole.cs",
-              "ViewState": "AgIAAGAAAAAAAAAAAAAIwAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAFoAAAAAAAAAAAAIwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-09-06T10:18:53.282Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 19,
               "Title": "ReportsWindow.xaml",
               "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\ReportsWindow.xaml",
               "RelativeDocumentMoniker": "WpfApp1\\ReportsWindow.xaml",
@@ -332,19 +370,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
-              "Title": "SettingsWindow.xaml",
-              "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\SettingsWindow.xaml",
-              "RelativeDocumentMoniker": "WpfApp1\\SettingsWindow.xaml",
-              "ToolTip": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\SettingsWindow.xaml",
-              "RelativeToolTip": "WpfApp1\\SettingsWindow.xaml",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2025-09-06T02:52:52.129Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 18,
               "Title": "App.xaml",
               "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\App.xaml",
               "RelativeDocumentMoniker": "WpfApp1\\App.xaml",
@@ -356,7 +382,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 20,
               "Title": "InvoiceManagementWindow.xaml.cs",
               "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\InvoiceManagementWindow.xaml.cs",
               "RelativeDocumentMoniker": "WpfApp1\\InvoiceManagementWindow.xaml.cs",
@@ -368,18 +394,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
-              "Title": "InvoiceManagementView.xaml",
-              "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\Views\\InvoiceManagementView.xaml",
-              "RelativeDocumentMoniker": "WpfApp1\\Views\\InvoiceManagementView.xaml",
-              "ToolTip": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\Views\\InvoiceManagementView.xaml",
-              "RelativeToolTip": "WpfApp1\\Views\\InvoiceManagementView.xaml",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2025-09-06T02:52:41.749Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 21,
+              "DocumentIndex": 22,
               "Title": "RegisterWindow.xaml",
               "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\RegisterWindow.xaml",
               "RelativeDocumentMoniker": "WpfApp1\\RegisterWindow.xaml",
@@ -390,7 +405,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 23,
               "Title": "RegisterWindow.xaml",
               "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\RegisterWindow.xaml",
               "RelativeDocumentMoniker": "WpfApp1\\RegisterWindow.xaml",
@@ -402,7 +417,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 21,
               "Title": "CategoryManagementWindow.xaml.cs",
               "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\CategoryManagementWindow.xaml.cs",
               "RelativeDocumentMoniker": "WpfApp1\\CategoryManagementWindow.xaml.cs",
@@ -423,17 +438,6 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAlAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-08-19T10:18:51.525Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 23,
-              "Title": "ChangePasswordWindow.xaml",
-              "DocumentMoniker": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\ChangePasswordWindow.xaml",
-              "RelativeDocumentMoniker": "WpfApp1\\ChangePasswordWindow.xaml",
-              "ToolTip": "C:\\Users\\Simsimi\\source\\repos\\WpfApp1\\WpfApp1\\ChangePasswordWindow.xaml",
-              "RelativeToolTip": "WpfApp1\\ChangePasswordWindow.xaml",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2025-08-19T10:19:32.758Z"
             },
             {
               "$type": "Document",
@@ -481,7 +485,8 @@
               "RelativeToolTip": "WpfApp1\\WpfApp1.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-08-19T09:58:06.581Z"
+              "WhenOpened": "2025-08-19T09:58:06.581Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",

@@ -269,7 +269,6 @@ namespace WpfApp1
             return roleString.ToLower() switch
             {
                 "admin" => UserRole.Admin,
-                "manager" => UserRole.Manager,
                 "cashier" => UserRole.Cashier,
                 _ => UserRole.Cashier
             };

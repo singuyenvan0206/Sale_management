@@ -25,6 +25,47 @@
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
+        
+        <!-- Style for ListBox -->
+        <Style TargetType="ListBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+        </Style>
+        
+        <!-- Style for ListBoxItem -->
+        <Style TargetType="ListBoxItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="5,2"/>
+            <Setter Property="Padding" Value="15,12"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Foreground" Value="#E8F5E8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Margin="{TemplateBinding Margin}">
+                            <ContentPresenter HorizontalAlignment="Left"
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#4CAF50"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="#66BB6A"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
     
     <Grid Background="#F5F5F5">
@@ -47,16 +88,17 @@
                                FontSize="24" 
                                FontWeight="Bold" 
                                Foreground="White" 
-                               Margin="0,0,20,0"/>
+                               VerticalAlignment="Center"/>
                     <TextBlock x:Name="UserInfoTextBlock" 
                                FontSize="16" 
-                               Foreground="White" 
-                               VerticalAlignment="Center"/>
+                               Foreground="#E8F5E8" 
+                               VerticalAlignment="Center"
+                               Margin="20,0,0,0"/>
                 </StackPanel>
                 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button x:Name="LogoutButton" 
-                            Content="🚪 Logout" 
+                            Content="🚪 Đăng xuất" 
                             Background="#F44336" 
                             Foreground="White" 
                             Padding="20,10" 
@@ -64,10 +106,63 @@
                 </StackPanel>
             </Grid>
         </Border>
+        
+        <!-- Main Content with left nav -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-        <!-- Main Content -->
-        <Grid Grid.Row="1" Margin="20">
-            <ScrollViewer x:Name="DefaultContentScrollViewer" VerticalScrollBarVisibility="Auto">
+            <!-- Left Nav -->
+            <Border Grid.Column="0" Background="#2E7D32" CornerRadius="0,20,20,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Header -->
+                    <Border Grid.Row="0" Background="#1B5E20" CornerRadius="0,20,0,0" Padding="20,25,20,20">
+                        <StackPanel>
+                            <TextBlock Text="💰" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                            <TextBlock Text="THU NGÂN" 
+                                       Foreground="#E8F5E8" 
+                                       FontWeight="Bold" 
+                                       FontSize="14" 
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Navigation List -->
+                    <ListBox x:Name="NavList" 
+                             Grid.Row="1" 
+                             Background="Transparent" 
+                             BorderThickness="0" 
+                             SelectionChanged="NavList_SelectionChanged"
+                             Margin="10,20,10,10">
+                        <ListBoxItem x:Name="DashboardNavItem" Content="📊 Dashboard"/>
+                        <ListBoxItem x:Name="InvoiceNavItem" Content="🧾 Tạo Hóa Đơn"/>
+                        <ListBoxItem x:Name="CustomerNavItem" Content="👥 Khách Hàng"/>
+                        <ListBoxItem x:Name="ProductNavItem" Content="📦 Sản Phẩm"/>
+                        <ListBoxItem x:Name="CategoryNavItem" Content="📂 Danh Mục"/>
+                        <ListBoxItem x:Name="SearchNavItem" Content="🔍 Tìm Kiếm"/>
+                        <ListBoxItem x:Name="ReportsNavItem" Content="📈 Báo Cáo"/>
+                    </ListBox>
+                    
+                    <!-- Footer -->
+                    <Border Grid.Row="2" Background="#1B5E20" CornerRadius="0,0,0,20" Padding="20,15,20,20">
+                        <TextBlock Text="💡 Hệ thống POS" 
+                                   Foreground="#A5D6A7" 
+                                   FontSize="12" 
+                                   HorizontalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Main Content Area -->
+            <ScrollViewer Grid.Column="1" x:Name="DefaultContentScrollViewer" VerticalScrollBarVisibility="Auto" Margin="20">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -140,6 +235,7 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
                         <!-- Invoice Management -->
@@ -150,8 +246,7 @@
                                 Padding="25">
                             <Button Style="{StaticResource {x:Type Button}}" 
                                     Background="Transparent" 
-                                    BorderThickness="0"
-                                    Click="InvoiceManagement_Click">
+                                    BorderThickness="0">
                                 <StackPanel>
                                     <TextBlock Text="🧾" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,15"/>
                                     <TextBlock Text="Tạo Hóa Đơn" 
@@ -178,8 +273,7 @@
                                 Padding="25">
                             <Button Style="{StaticResource {x:Type Button}}" 
                                     Background="Transparent" 
-                                    BorderThickness="0"
-                                    Click="CustomerManagement_Click">
+                                    BorderThickness="0">
                                 <StackPanel>
                                     <TextBlock Text="👥" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,15"/>
                                     <TextBlock Text="Quản Lý Khách Hàng" 
@@ -206,8 +300,7 @@
                                 Padding="25">
                             <Button Style="{StaticResource {x:Type Button}}" 
                                     Background="Transparent" 
-                                    BorderThickness="0"
-                                    Click="ProductSearch_Click">
+                                    BorderThickness="0">
                                 <StackPanel>
                                     <TextBlock Text="🔍" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,15"/>
                                     <TextBlock Text="Tìm Kiếm Sản Phẩm" 
@@ -226,7 +319,7 @@
                             </Button>
                         </Border>
                         
-                        <!-- Quick Invoice -->
+                        <!-- Product Management -->
                         <Border Grid.Row="1" Grid.Column="1" 
                                 Background="White" 
                                 CornerRadius="20" 
@@ -234,17 +327,16 @@
                                 Padding="25">
                             <Button Style="{StaticResource {x:Type Button}}" 
                                     Background="Transparent" 
-                                    BorderThickness="0"
-                                    Click="QuickInvoice_Click">
+                                    BorderThickness="0">
                                 <StackPanel>
-                                    <TextBlock Text="⚡" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,15"/>
-                                    <TextBlock Text="Hóa Đơn Nhanh" 
+                                    <TextBlock Text="📦" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+                                    <TextBlock Text="Quản Lý Sản Phẩm" 
                                                FontSize="20" 
                                                FontWeight="Bold" 
                                                Foreground="#4CAF50" 
                                                HorizontalAlignment="Center"
                                                Margin="0,0,0,10"/>
-                                    <TextBlock Text="Tạo hóa đơn nhanh cho khách hàng không cần đăng ký." 
+                                    <TextBlock Text="Thêm, sửa, xóa sản phẩm và quản lý giá cả." 
                                                FontSize="14" 
                                                Foreground="#666666" 
                                                HorizontalAlignment="Center"
@@ -253,6 +345,34 @@
                                 </StackPanel>
                             </Button>
                         </Border>
+                        
+                        <!-- Category Management -->
+                        <Border Grid.Row="1" Grid.Column="2" 
+                                Background="White" 
+                                CornerRadius="20" 
+                                Margin="10" 
+                                Padding="25">
+                            <Button Style="{StaticResource {x:Type Button}}" 
+                                    Background="Transparent" 
+                                    BorderThickness="0">
+                                <StackPanel>
+                                    <TextBlock Text="📂" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+                                    <TextBlock Text="Quản Lý Danh Mục" 
+                                               FontSize="20" 
+                                               FontWeight="Bold" 
+                                               Foreground="#4CAF50" 
+                                               HorizontalAlignment="Center"
+                                               Margin="0,0,0,10"/>
+                                    <TextBlock Text="Quản lý danh mục sản phẩm và phân loại." 
+                                               FontSize="14" 
+                                               Foreground="#666666" 
+                                               HorizontalAlignment="Center"
+                                               TextAlignment="Center"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Button>
+                        </Border>
+                        
                     </Grid>
 
                     <!-- Recent Activity -->

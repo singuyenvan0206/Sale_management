@@ -101,9 +101,23 @@ namespace WpfApp1
         {
             if (ProductsDataGrid.SelectedItem is ProductSearchItem selectedProduct)
             {
-                // Tạo một event để thông báo sản phẩm được chọn
-                ProductSelected?.Invoke(selectedProduct);
-                this.Close();
+                // Hiển thị thông tin sản phẩm được chọn
+                string message = $"Bạn đã chọn sản phẩm:\n" +
+                               $"Tên: {selectedProduct.Name}\n" +
+                               $"Mã: {selectedProduct.Code}\n" +
+                               $"Giá: {selectedProduct.Price:N0} VND\n" +
+                               $"Tồn kho: {selectedProduct.StockQuantity}\n\n" +
+                               $"Bạn có muốn đóng cửa sổ tìm kiếm không?";
+                
+                var result = MessageBox.Show(message, "Sản phẩm đã chọn", 
+                    MessageBoxButton.YesNo, MessageBoxImage.Question);
+                
+                if (result == MessageBoxResult.Yes)
+                {
+                    // Tạo một event để thông báo sản phẩm được chọn
+                    ProductSelected?.Invoke(selectedProduct);
+                    this.Close();
+                }
             }
             else
             {

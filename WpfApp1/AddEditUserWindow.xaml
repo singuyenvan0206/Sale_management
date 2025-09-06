@@ -71,7 +71,6 @@
                               VerticalContentAlignment="Center"
                               Padding="10,0">
                         <ComboBoxItem Content="Thu ngân" Tag="Cashier"/>
-                        <ComboBoxItem Content="Quản lý" Tag="Manager"/>
                         <ComboBoxItem Content="Quản trị viên" Tag="Admin"/>
                     </ComboBox>
                 </StackPanel>
