@@ -7,7 +7,6 @@ Hệ thống quản lý bán hàng (Point of Sale - POS) được phát triển 
 
 ### 🔐 Quản lý người dùng và phân quyền
 - **Admin**: Toàn quyền quản lý hệ thống, bao gồm quản lý người dùng
-- **Manager**: Quản lý sản phẩm, khách hàng, hóa đơn và xem báo cáo
 - **Cashier**: Tạo hóa đơn, quản lý khách hàng cơ bản
 
 ### 📦 Quản lý sản phẩm
@@ -28,10 +27,14 @@ Hệ thống quản lý bán hàng (Point of Sale - POS) được phát triển 
 - Lưu trữ lịch sử giao dịch
 
 ### 📊 Báo cáo và thống kê
-- Báo cáo doanh thu theo ngày/tháng
-- Thống kê sản phẩm bán chạy
+- **Dashboard phân tích dữ liệu tương tác** với 6 loại biểu đồ:
+  - 📈 Doanh thu theo tháng (12 tháng gần nhất)
+  - 📊 Top 10 sản phẩm bán chạy
+  - 📉 Xu hướng khách hàng mới
+  - 🎯 Doanh thu theo danh mục
+  - 📅 Doanh thu theo ngày (30 ngày gần nhất)
+  - 💰 Thống kê tổng quan KPI
 - Xuất dữ liệu CSV
-- Biểu đồ trực quan
 
 ## Công nghệ sử dụng
 
@@ -39,7 +42,8 @@ Hệ thống quản lý bán hàng (Point of Sale - POS) được phát triển 
 - **Database**: MySQL
 - **Architecture**: Layered Architecture (UI, Business Logic, Data Access, Data)
 - **Pattern**: MVVM
-- **Charts**: OxyPlot.Wpf
+- **Charts**: OxyPlot.Wpf (với biểu đồ tương tác và dữ liệu thực)
+- **Data Visualization**: Biểu đồ đường, cột, tròn với dữ liệu real-time
 
 ## Cài đặt và chạy
 
@@ -97,7 +101,7 @@ Hệ thống tự động tạo dữ liệu mẫu tiếng Việt bao gồm:
 ```
 WpfApp1/
 ├── MainWindow.xaml                 # Cửa sổ đăng nhập
-├── DashboardWindow.xaml            # Bảng điều khiển Admin/Manager
+├── DashboardWindow.xaml            # Bảng điều khiển Admin với biểu đồ phân tích
 ├── CashierDashboardWindow.xaml     # Bảng điều khiển Cashier
 ├── ProductManagementWindow.xaml    # Quản lý sản phẩm
 ├── CustomerManagementWindow.xaml   # Quản lý khách hàng
@@ -106,7 +110,7 @@ WpfApp1/
 ├── ReportsWindow.xaml              # Báo cáo và thống kê
 ├── UserManagementWindow.xaml       # Quản lý người dùng (Admin)
 ├── SettingsWindow.xaml             # Cài đặt hệ thống
-├── DatabaseHelper.cs               # Xử lý database
+├── DatabaseHelper.cs               # Xử lý database với các phương thức phân tích dữ liệu
 └── SettingsManager.cs              # Quản lý cài đặt
 ```
 
@@ -115,8 +119,6 @@ WpfApp1/
 ### Đăng nhập
 - Username: admin
 - Password: admin (Admin)
-- Username: manager  
-- Password: manager (Manager)
 - Username: cashier
 - Password: cashier (Cashier)
 
@@ -127,16 +129,48 @@ WpfApp1/
 4. Tính thuế và giảm giá
 5. Lưu hóa đơn
 
-### Xem báo cáo
-1. Chọn khoảng thời gian
-2. Lọc theo khách hàng (tùy chọn)
-3. Xem biểu đồ doanh thu
-4. Xuất dữ liệu CSV
+### Sử dụng Dashboard phân tích dữ liệu
+1. Đăng nhập với quyền Admin
+2. Vào Dashboard và click **"📊 Biểu Đồ và Phân Tích"**
+3. Chọn loại phân tích từ menu bên trái:
+   - **📈 Doanh Thu Theo Tháng**: Biểu đồ đường doanh thu 12 tháng gần nhất
+   - **📊 Sản Phẩm Bán Chạy**: Biểu đồ cột top 10 sản phẩm bán chạy
+   - **📉 Xu Hướng Khách Hàng**: Biểu đồ đường khách hàng mới theo tháng
+   - **🎯 Doanh Thu Theo Danh Mục**: Biểu đồ tròn phân bổ doanh thu
+   - **📅 Doanh Thu Theo Ngày**: Biểu đồ đường doanh thu 30 ngày gần nhất
+   - **💰 Thống Kê Tổng Quan**: Dashboard KPI tổng hợp
+4. Xem biểu đồ tương ứng hiển thị ở bên phải với dữ liệu thực từ database
+
+## Tính năng nổi bật
+
+### 🆕 Dashboard phân tích dữ liệu tương tác
+- **Giao diện 2 cột**: Menu lựa chọn bên trái, khu vực hiển thị biểu đồ bên phải
+- **Dữ liệu thực**: Tất cả biểu đồ sử dụng dữ liệu thực từ database
+- **Xử lý lỗi thông minh**: Hiển thị thông báo phù hợp khi không có dữ liệu
+- **Cập nhật real-time**: Dữ liệu được lấy mới mỗi lần mở biểu đồ
+
+## Troubleshooting
+
+### Lỗi thường gặp
+
+#### 1. Lỗi kết nối database
+- **Triệu chứng**: Ứng dụng không thể kết nối MySQL
+- **Giải pháp**: Kiểm tra cài đặt kết nối trong Settings, đảm bảo MySQL đang chạy
+
+#### 2. Biểu đồ không hiển thị dữ liệu
+- **Triệu chứng**: Biểu đồ hiển thị "Chưa có dữ liệu"
+- **Giải pháp**: Tạo một số hóa đơn bán hàng để có dữ liệu hiển thị
+
+#### 3. Ứng dụng crash khi mở biểu đồ
+- **Triệu chứng**: Ứng dụng đóng đột ngột
+- **Giải pháp**: Kiểm tra log lỗi, đảm bảo database có dữ liệu hợp lệ
+
+### Hỗ trợ kỹ thuật
+- Kiểm tra file log trong thư mục Debug
+- Đảm bảo .NET 8.0 Runtime được cài đặt
+- Kiểm tra quyền truy cập database
 
 ## Đóng góp
 
 Mọi đóng góp đều được chào đón! Vui lòng tạo issue hoặc pull request.
 
-## License
-
-MIT License
