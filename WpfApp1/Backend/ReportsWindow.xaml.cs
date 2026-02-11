@@ -59,7 +59,7 @@ namespace WpfApp1
                 CustomerName = i.CustomerName,
                 Subtotal = i.Subtotal,
                 TaxAmount = i.TaxAmount,
-                Discount = i.Discount,
+                DiscountAmount = i.Discount,
                 Total = i.Total,
                 Paid = i.Paid
             });
@@ -278,8 +278,8 @@ namespace WpfApp1
                     break;
                 case "discount":
                     sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending
-                        ? items => items.OrderBy(i => i.Discount)
-                        : items => items.OrderByDescending(i => i.Discount);
+                        ? items => items.OrderBy(i => i.DiscountAmount)
+                        : items => items.OrderByDescending(i => i.DiscountAmount);
                     break;
                 case "total":
                     sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending
@@ -324,7 +324,7 @@ namespace WpfApp1
                 }
                 sb.AppendLine($"Tạm tính: {detail.Header.Subtotal:F2}");
                 sb.AppendLine($"Thuế: {detail.Header.TaxAmount:F2}");
-                sb.AppendLine($"Giảm giá: {detail.Header.Discount:F2}");
+                sb.AppendLine($"Giảm giá: {detail.Header.DiscountAmount:F2}");
                 sb.AppendLine($"Tổng cộng: {detail.Header.Total:F2}");
                 sb.AppendLine($"Đã trả: {detail.Header.Paid:F2}");
                 MessageBox.Show(sb.ToString(), $"Hóa đơn #{detail.Header.Id}", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -379,7 +379,7 @@ namespace WpfApp1
         public string CustomerName { get; set; } = string.Empty;
         public decimal Subtotal { get; set; }
         public decimal TaxAmount { get; set; }
-        public decimal Discount { get; set; }
+        public decimal DiscountAmount { get; set; }
         public decimal Total { get; set; }
         public decimal Paid { get; set; }
     }

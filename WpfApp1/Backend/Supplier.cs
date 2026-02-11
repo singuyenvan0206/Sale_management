@@ -8,6 +8,10 @@ namespace WpfApp1
         public string Phone { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
-        public string Note { get; set; } = string.Empty;
+        public string TaxCode { get; set; } = string.Empty;
+        public string Website { get; set; } = string.Empty;
+        public string Notes { get; set; } = string.Empty;
+        public bool IsActive { get; set; } = true;
+        public DateTime CreatedDate { get; set; } = DateTime.Now;
     }
 }

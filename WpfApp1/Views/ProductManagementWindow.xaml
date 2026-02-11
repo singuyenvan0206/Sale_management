@@ -65,7 +65,7 @@
                             <RowDefinition Height="Auto"/> <!-- Name -->
                             <RowDefinition Height="Auto"/> <!-- Code & Category -->
                             <RowDefinition Height="Auto"/> <!-- Price & Stock -->
-                            <RowDefinition Height="Auto"/> <!-- Unit & Supplier -->
+                            <RowDefinition Height="Auto"/> <!-- Supplier -->
                             <RowDefinition Height="Auto"/> <!-- Import Info -->
                             <RowDefinition Height="Auto"/> <!-- Promo Info -->
                             <RowDefinition Height="Auto"/> <!-- Description -->
@@ -122,22 +122,11 @@
                             </StackPanel>
                         </Grid>
 
-                        <!-- Unit & Supplier -->
-                        <Grid Grid.Row="5" Margin="0,0,0,15">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="10"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Đơn Vị Tính" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                                <TextBox x:Name="UnitTextBox"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="Nhà Cung Cấp" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                                <ComboBox x:Name="SupplierComboBox" DisplayMemberPath="Name" SelectedValuePath="Id"/>
-                            </StackPanel>
-                        </Grid>
+                        <!-- Supplier -->
+                        <StackPanel Grid.Row="5" Margin="0,0,0,15">
+                            <TextBlock Text="Nhà Cung Cấp" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                            <ComboBox x:Name="SupplierComboBox" DisplayMemberPath="Name" SelectedValuePath="Id"/>
+                        </StackPanel>
                         
                         <!-- Import Info Section -->
                         <Border Grid.Row="6" BorderBrush="#EEEEEE" BorderThickness="1" Padding="10" Margin="0,0,0,15" Background="#FAFAFA" CornerRadius="4">
@@ -349,7 +338,7 @@
                                         </Style>
                                     </DataGridTextColumn.ElementStyle>
                                 </DataGridTextColumn>
-                                <DataGridTextColumn Header="🏪 Nhà Cung Cấp" Binding="{Binding PurchaseUnit}" SortMemberPath="PurchaseUnit" Width="auto"/>
+                                <DataGridTextColumn Header="🏪 Nhà Cung Cấp" Binding="{Binding SupplierName}" SortMemberPath="SupplierName" Width="auto"/>
                                 <DataGridTextColumn Header="📝 Mô Tả" Binding="{Binding Description}" SortMemberPath="Description" Width="auto"/>
                             </DataGrid.Columns>
                             </DataGrid>

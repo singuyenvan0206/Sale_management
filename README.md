@@ -38,8 +38,25 @@ Update-Package -reinstall
 3) Cấu hình cơ sở dữ liệu (nếu áp dụng)
 - Mặc định dự án bao gồm thư viện cho SQLite và MySQL (`System.Data.SQLite`, `SQLitePCLRaw`, `MySql.Data`).
 - Kiểm tra hoặc chỉnh chuỗi kết nối, cơ chế khởi tạo DB tại `WpfApp1/Backend/DatabaseHelper.cs`.
-- Nếu dùng SQLite: đảm bảo file DB (nếu có) nằm tại vị trí đã cấu hình; nếu không, ứng dụng có thể tự tạo khi chạy lần đầu.
-- Nếu dùng MySQL: đảm bảo server hoạt động và user có quyền truy cập theo chuỗi kết nối.
+
+**Tùy chọn 1: Sử dụng phpMyAdmin (Khuyến nghị cho người mới)**
+- Cài đặt XAMPP, WAMP, hoặc MAMP
+- Tạo database qua phpMyAdmin interface hoặc import file `database_schema.sql`
+- Cấu hình kết nối trong ứng dụng (Settings → Database Settings):
+  - Server: `localhost`
+  - Port: `3306`
+  - Database: `main`
+  - User ID: `root`
+  - Password: (để trống nếu dùng XAMPP mặc định)
+- **Xem hướng dẫn chi tiết tại: [PHPMYADMIN_SETUP.md](PHPMYADMIN_SETUP.md)**
+
+**Tùy chọn 2: MySQL trực tiếp**
+- Đảm bảo MySQL server hoạt động và user có quyền truy cập theo chuỗi kết nối
+- Ứng dụng sẽ tự động tạo các bảng cần thiết khi chạy lần đầu
+
+**Tùy chọn 3: SQLite (Không khuyến nghị)**
+- Đảm bảo file DB (nếu có) nằm tại vị trí đã cấu hình
+- Ứng dụng có thể tự tạo khi chạy lần đầu
 
 4) Chạy Debug
 - Chọn cấu hình `Debug` và `WpfApp1` làm startup project.
@@ -73,7 +90,10 @@ Update-Package -reinstall
 - Khi thay đổi mô hình dữ liệu, xem lại các phương thức trong `DatabaseHelper` để đảm bảo đồng bộ tạo bảng/migration tối thiểu.
 
 ### Tài liệu liên quan
-- Sơ đồ lớp: xem `Class_Diagram.md`.
+- Sơ đồ lớp: xem `Class_Diagram.md`
+- Hướng dẫn kết nối phpMyAdmin: xem `PHPMYADMIN_SETUP.md`
+- Database schema: xem `database_schema.sql`
+- Sample data: xem `sample_data.sql`
 
 ### Giấy phép
 Đính kèm giấy phép của bạn tại đây (MIT/GPL/Commercial…).

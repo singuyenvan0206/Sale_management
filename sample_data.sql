@@ -1,277 +1,284 @@
--- Sample Database Data for Fashion Store
--- This script inserts sample categories and products for testing
+-- ============================================================================
+-- FASHION STORE - SAMPLE DATA (FIXED VERSION)
+-- ============================================================================
+-- Version: 2.1
+-- Date: 2026-02-07
+-- Description: Sample data for testing and demonstration
+-- Note: Import this AFTER importing database_schema.sql
+-- This version includes all error prevention and explicit IDs
+-- ============================================================================
 
--- Clear existing data (optional - comment out if you want to keep existing data)
--- DELETE FROM InvoiceItems;
--- DELETE FROM Invoices;
--- DELETE FROM Products;
--- DELETE FROM Categories;
+USE main;
 
--- Insert Categories with different tax rates
-INSERT INTO Categories (Name, TaxPercent) VALUES
-('Áo Thun', 10.00),
-('Áo Sơ Mi', 10.00),
-('Quần Jean', 10.00),
-('Quần Short', 10.00),
-('Váy', 10.00),
-('Đầm', 10.00),
-('Áo Khoác', 10.00),
-('Giày Thể Thao', 8.00),
-('Giày Cao Gót', 8.00),
-('Sandal', 8.00),
-('Boots', 8.00),
-('Túi Xách', 5.00),
-('Ví', 5.00),
-('Thắt Lưng', 5.00),
-('Mũ', 5.00),
-('Kính Mát', 5.00),
-('Áo Lót', 0.00),
-('Quần Lót', 0.00),
-('Tất', 0.00),
-('Vòng Tay', 0.00),
-('Nhẫn', 0.00),
-('Dây Chuyền', 0.00)
-ON DUPLICATE KEY UPDATE TaxPercent = VALUES(TaxPercent);
+-- ============================================================================
+-- SAFETY CHECKS AND CLEANUP
+-- ============================================================================
 
--- Get Category IDs (assuming they are inserted in order)
-SET @cat_ao_thun = (SELECT Id FROM Categories WHERE Name = 'Áo Thun' LIMIT 1);
-SET @cat_ao_so_mi = (SELECT Id FROM Categories WHERE Name = 'Áo Sơ Mi' LIMIT 1);
-SET @cat_quan_jean = (SELECT Id FROM Categories WHERE Name = 'Quần Jean' LIMIT 1);
-SET @cat_quan_short = (SELECT Id FROM Categories WHERE Name = 'Quần Short' LIMIT 1);
-SET @cat_vay = (SELECT Id FROM Categories WHERE Name = 'Váy' LIMIT 1);
-SET @cat_dam = (SELECT Id FROM Categories WHERE Name = 'Đầm' LIMIT 1);
-SET @cat_ao_khoac = (SELECT Id FROM Categories WHERE Name = 'Áo Khoác' LIMIT 1);
-SET @cat_giay_the_thao = (SELECT Id FROM Categories WHERE Name = 'Giày Thể Thao' LIMIT 1);
-SET @cat_giay_cao_got = (SELECT Id FROM Categories WHERE Name = 'Giày Cao Gót' LIMIT 1);
-SET @cat_sandal = (SELECT Id FROM Categories WHERE Name = 'Sandal' LIMIT 1);
-SET @cat_boots = (SELECT Id FROM Categories WHERE Name = 'Boots' LIMIT 1);
-SET @cat_tui_xach = (SELECT Id FROM Categories WHERE Name = 'Túi Xách' LIMIT 1);
-SET @cat_vi = (SELECT Id FROM Categories WHERE Name = 'Ví' LIMIT 1);
-SET @cat_that_lung = (SELECT Id FROM Categories WHERE Name = 'Thắt Lưng' LIMIT 1);
-SET @cat_mu = (SELECT Id FROM Categories WHERE Name = 'Mũ' LIMIT 1);
-SET @cat_kinh_mat = (SELECT Id FROM Categories WHERE Name = 'Kính Mát' LIMIT 1);
-SET @cat_ao_lot = (SELECT Id FROM Categories WHERE Name = 'Áo Lót' LIMIT 1);
-SET @cat_quan_lot = (SELECT Id FROM Categories WHERE Name = 'Quần Lót' LIMIT 1);
-SET @cat_tat = (SELECT Id FROM Categories WHERE Name = 'Tất' LIMIT 1);
-SET @cat_vong_tay = (SELECT Id FROM Categories WHERE Name = 'Vòng Tay' LIMIT 1);
-SET @cat_nhan = (SELECT Id FROM Categories WHERE Name = 'Nhẫn' LIMIT 1);
-SET @cat_day_chuyen = (SELECT Id FROM Categories WHERE Name = 'Dây Chuyền' LIMIT 1);
+-- Disable foreign key checks temporarily for easier insertion
+SET FOREIGN_KEY_CHECKS = 0;
 
--- Insert Products - Áo Thun
-INSERT INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description) VALUES
-('Áo Thun Cổ Tròn Basic', 'AT001', @cat_ao_thun, 150000, 80000, 'Cái', 50, 50, 'Áo thun cổ tròn chất liệu cotton 100%, thoáng mát'),
-('Áo Thun Cổ Tròn In Hình', 'AT002', @cat_ao_thun, 180000, 100000, 'Cái', 30, 30, 'Áo thun cổ tròn có in hình độc đáo'),
-('Áo Thun Tay Dài', 'AT003', @cat_ao_thun, 200000, 120000, 'Cái', 25, 25, 'Áo thun tay dài mùa đông'),
-('Áo Thun Polo', 'AT004', @cat_ao_thun, 250000, 150000, 'Cái', 40, 40, 'Áo polo cổ bẻ, lịch sự'),
-('Áo Thun Oversize', 'AT005', @cat_ao_thun, 220000, 130000, 'Cái', 35, 35, 'Áo thun form rộng, trẻ trung')
-ON DUPLICATE KEY UPDATE Name = VALUES(Name);
+-- Clear existing sample data (optional - uncomment if needed)
+-- DELETE FROM CustomerVoucherUsage WHERE Id > 0;
+-- DELETE FROM StockMovements WHERE Id > 0;
+-- DELETE FROM InvoiceItems WHERE Id > 0;
+-- DELETE FROM Invoices WHERE Id > 0;
+-- DELETE FROM Vouchers WHERE Id > 0;
+-- DELETE FROM Products WHERE Id > 0;
+-- DELETE FROM Customers WHERE Id > 1; -- Keep walk-in customer
+-- DELETE FROM Suppliers WHERE Id > 0;
+-- DELETE FROM Categories WHERE Id > 0;
+-- DELETE FROM Accounts WHERE Id > 1; -- Keep admin
 
--- Sample promotions (per product)
--- 10% off for 30 days
-UPDATE Products
-SET PromoDiscountPercent = 10.00,
-    PromoStartDate = NOW(),
-    PromoEndDate = DATE_ADD(NOW(), INTERVAL 30 DAY)
-WHERE Code IN ('AT001','ASM001','QJ001','GTT001','TX001');
+-- ============================================================================
+-- 1. ACCOUNTS (Employees & Users)
+-- ============================================================================
+-- Note: Password 'admin' will be hashed by application on first run
+INSERT IGNORE INTO Accounts (Id, Username, EmployeeName, Password, Role, IsActive, CreatedDate) VALUES
+(1, 'admin', 'Nguyễn Văn Admin', 'admin', 'Admin', TRUE, '2024-01-01 08:00:00'),
+(2, 'manager1', 'Trần Thị Lan', 'manager123', 'Manager', TRUE, '2024-01-15 09:00:00'),
+(3, 'cashier1', 'Lê Văn Hùng', 'cashier123', 'Cashier', TRUE, '2024-02-01 08:30:00'),
+(4, 'cashier2', 'Phạm Thị Mai', 'cashier123', 'Cashier', TRUE, '2024-02-01 08:30:00'),
+(5, 'cashier3', 'Hoàng Văn Nam', 'cashier123', 'Cashier', TRUE, '2024-03-01 08:30:00');
 
--- Flash sale 20% off for 7 days
-UPDATE Products
-SET PromoDiscountPercent = 20.00,
-    PromoStartDate = NOW(),
-    PromoEndDate = DATE_ADD(NOW(), INTERVAL 7 DAY)
-WHERE Code IN ('D001','AK003','GCG002');
+-- ============================================================================
+-- 2. CATEGORIES (Product Categories)
+-- ============================================================================
+INSERT IGNORE INTO Categories (Id, Name, TaxPercent, Description, IsActive) VALUES
+(1, 'Áo Thun', 10.00, 'Áo thun nam nữ các loại', TRUE),
+(2, 'Áo Sơ Mi', 10.00, 'Áo sơ mi công sở, casual', TRUE),
+(3, 'Quần Jean', 10.00, 'Quần jean nam nữ', TRUE),
+(4, 'Quần Tây', 10.00, 'Quần tây công sở', TRUE),
+(5, 'Váy', 10.00, 'Váy công sở, dạ hội', TRUE),
+(6, 'Áo Khoác', 10.00, 'Áo khoác mùa đông, jacket', TRUE),
+(7, 'Phụ Kiện', 8.00, 'Túi xách, ví, thắt lưng', TRUE),
+(8, 'Giày Dép', 10.00, 'Giày thể thao, giày cao gót', TRUE),
+(9, 'Đồ Thể Thao', 10.00, 'Quần áo thể thao', TRUE),
+(10, 'Đồ Ngủ', 8.00, 'Đồ ngủ, đồ mặc nhà', TRUE);
 
--- Insert Products - Áo Sơ Mi
-INSERT INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description) VALUES
-('Áo Sơ Mi Trắng Cổ Điển', 'ASM001', @cat_ao_so_mi, 350000, 200000, 'Cái', 20, 20, 'Áo sơ mi trắng cổ điển, văn phòng'),
-('Áo Sơ Mi Kẻ Sọc', 'ASM002', @cat_ao_so_mi, 380000, 220000, 'Cái', 18, 18, 'Áo sơ mi kẻ sọc thanh lịch'),
-('Áo Sơ Mi Tay Ngắn', 'ASM003', @cat_ao_so_mi, 320000, 180000, 'Cái', 25, 25, 'Áo sơ mi tay ngắn mùa hè'),
-('Áo Sơ Mi Màu Xanh', 'ASM004', @cat_ao_so_mi, 360000, 210000, 'Cái', 22, 22, 'Áo sơ mi màu xanh dương'),
-('Áo Sơ Mi Form Rộng', 'ASM005', @cat_ao_so_mi, 400000, 240000, 'Cái', 15, 15, 'Áo sơ mi form rộng, unisex')
-ON DUPLICATE KEY UPDATE Name = VALUES(Name);
+-- ============================================================================
+-- 3. SUPPLIERS (Vendors)
+-- ============================================================================
+INSERT IGNORE INTO Suppliers (Id, Name, ContactName, Phone, Email, Address, TaxCode, IsActive) VALUES
+(1, 'Công ty TNHH Thời Trang Việt', 'Nguyễn Văn A', '0901234567', 'contact@thoitrangviet.vn', '123 Nguyễn Huệ, Q.1, TP.HCM', '0123456789', TRUE),
+(2, 'Nhà máy May Hà Nội', 'Trần Thị B', '0912345678', 'sales@mayhanoi.vn', '456 Láng Hạ, Đống Đa, Hà Nội', '0987654321', TRUE),
+(3, 'Công ty CP Dệt May Việt Tiến', 'Lê Văn C', '0923456789', 'info@viettien.com', '789 Lê Lợi, Q.1, TP.HCM', '0111222333', TRUE),
+(4, 'Xưởng May Gia Đình', 'Phạm Thị D', '0934567890', 'giadinh@gmail.com', '321 Trần Hưng Đạo, Q.5, TP.HCM', '0444555666', TRUE),
+(5, 'Nhập khẩu Hàn Quốc Fashion', 'Kim Min Soo', '0945678901', 'korea@fashion.kr', '555 Nguyễn Trãi, Q.1, TP.HCM', '0777888999', TRUE);
 
--- Insert Products - Quần Jean
-INSERT INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description) VALUES
-('Quần Jean Xanh Đậm', 'QJ001', @cat_quan_jean, 650000, 400000, 'Cái', 30, 30, 'Quần jean xanh đậm, form slim'),
-('Quần Jean Xanh Nhạt', 'QJ002', @cat_quan_jean, 680000, 420000, 'Cái', 28, 28, 'Quần jean xanh nhạt, rách gối'),
-('Quần Jean Đen', 'QJ003', @cat_quan_jean, 700000, 430000, 'Cái', 25, 25, 'Quần jean đen, form skinny'),
-('Quần Jean Ống Rộng', 'QJ004', @cat_quan_jean, 720000, 450000, 'Cái', 20, 20, 'Quần jean ống rộng, phong cách streetwear'),
-('Quần Jean Cạp Cao', 'QJ005', @cat_quan_jean, 750000, 470000, 'Cái', 22, 22, 'Quần jean cạp cao, tôn dáng')
-ON DUPLICATE KEY UPDATE Name = VALUES(Name);
+-- ============================================================================
+-- 4. PRODUCTS (Inventory)
+-- ============================================================================
+INSERT IGNORE INTO Products (Id, Name, Code, CategoryId, SupplierId, SalePrice, PurchasePrice, PurchaseUnit, StockQuantity, ImportQuantity, MinStockLevel, PromoDiscountPercent, Description, IsActive) VALUES
+-- Áo Thun (CategoryId: 1)
+(1, 'Áo Thun Nam Basic Trắng', 'AT001', 1, 1, 150000, 80000, 'VND', 50, 100, 10, 0, 'Áo thun nam cotton 100%, form regular', TRUE),
+(2, 'Áo Thun Nam Basic Đen', 'AT002', 1, 1, 150000, 80000, 'VND', 45, 100, 10, 0, 'Áo thun nam cotton 100%, form regular', TRUE),
+(3, 'Áo Thun Nữ Oversize Trắng', 'AT003', 1, 1, 180000, 95000, 'VND', 30, 50, 10, 10, 'Áo thun nữ form rộng, chất liệu cotton', TRUE),
+(4, 'Áo Thun Polo Nam', 'AT004', 1, 2, 250000, 130000, 'VND', 25, 50, 10, 0, 'Áo polo nam cao cấp, nhiều màu', TRUE),
+(5, 'Áo Thun Graphic Unisex', 'AT005', 1, 1, 200000, 100000, 'VND', 40, 80, 10, 15, 'Áo thun in hình nghệ thuật', TRUE),
 
--- Insert Products - Quần Short
-INSERT INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description) VALUES
-('Quần Short Kaki', 'QS001', @cat_quan_short, 250000, 150000, 'Cái', 40, 40, 'Quần short kaki, mùa hè'),
-('Quần Short Thể Thao', 'QS002', @cat_quan_short, 200000, 120000, 'Cái', 50, 50, 'Quần short thể thao, co giãn'),
-('Quần Short Denim', 'QS003', @cat_quan_short, 280000, 170000, 'Cái', 35, 35, 'Quần short denim, trẻ trung'),
-('Quần Short Cargo', 'QS004', @cat_quan_short, 300000, 180000, 'Cái', 30, 30, 'Quần short cargo, nhiều túi'),
-('Quần Short Lưng Thun', 'QS005', @cat_quan_short, 220000, 130000, 'Cái', 45, 45, 'Quần short lưng thun, thoải mái')
-ON DUPLICATE KEY UPDATE Name = VALUES(Name);
+-- Áo Sơ Mi (CategoryId: 2)
+(6, 'Áo Sơ Mi Nam Trắng Công Sở', 'SM001', 2, 2, 350000, 180000, 'VND', 35, 70, 10, 0, 'Áo sơ mi nam công sở, chất liệu kate', TRUE),
+(7, 'Áo Sơ Mi Nam Xanh Navy', 'SM002', 2, 2, 350000, 180000, 'VND', 30, 70, 10, 0, 'Áo sơ mi nam công sở, chống nhăn', TRUE),
+(8, 'Áo Sơ Mi Nữ Trắng', 'SM003', 2, 3, 320000, 160000, 'VND', 28, 60, 10, 0, 'Áo sơ mi nữ công sở, form ôm', TRUE),
+(9, 'Áo Sơ Mi Kẻ Sọc Nam', 'SM004', 2, 2, 380000, 190000, 'VND', 20, 40, 10, 10, 'Áo sơ mi kẻ sọc, phong cách Hàn Quốc', TRUE),
 
--- Insert Products - Váy
-INSERT INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description) VALUES
-('Váy Chữ A', 'V001', @cat_vay, 450000, 280000, 'Cái', 25, 25, 'Váy chữ A, dài đến gối'),
-('Váy Body', 'V002', @cat_vay, 500000, 300000, 'Cái', 20, 20, 'Váy body, ôm sát'),
-('Váy Xòe', 'V003', @cat_vay, 550000, 330000, 'Cái', 18, 18, 'Váy xòe, dài đến mắt cá'),
-('Váy Ngắn', 'V004', @cat_vay, 400000, 250000, 'Cái', 30, 30, 'Váy ngắn, trẻ trung'),
-('Váy Maxi', 'V005', @cat_vay, 600000, 360000, 'Cái', 15, 15, 'Váy maxi, dài đến chân')
-ON DUPLICATE KEY UPDATE Name = VALUES(Name);
+-- Quần Jean (CategoryId: 3)
+(10, 'Quần Jean Nam Slim Fit Đen', 'QJ001', 3, 3, 450000, 220000, 'VND', 40, 80, 15, 0, 'Quần jean nam ôm vừa, màu đen', TRUE),
+(11, 'Quần Jean Nam Straight Xanh', 'QJ002', 3, 3, 450000, 220000, 'VND', 38, 80, 15, 0, 'Quần jean nam form suông, màu xanh', TRUE),
+(12, 'Quần Jean Nữ Skinny', 'QJ003', 3, 3, 420000, 210000, 'VND', 35, 70, 15, 15, 'Quần jean nữ ôm, co giãn tốt', TRUE),
+(13, 'Quần Jean Baggy Unisex', 'QJ004', 3, 4, 480000, 240000, 'VND', 25, 50, 10, 20, 'Quần jean baggy phong cách streetwear', TRUE),
 
--- Insert Products - Đầm
-INSERT INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description) VALUES
-('Đầm Dự Tiệc', 'D001', @cat_dam, 1200000, 700000, 'Cái', 10, 10, 'Đầm dự tiệc, sang trọng'),
-('Đầm Công Sở', 'D002', @cat_dam, 800000, 480000, 'Cái', 15, 15, 'Đầm công sở, thanh lịch'),
-('Đầm Mùa Hè', 'D003', @cat_dam, 650000, 390000, 'Cái', 20, 20, 'Đầm mùa hè, thoáng mát'),
-('Đầm Tay Dài', 'D004', @cat_dam, 900000, 540000, 'Cái', 12, 12, 'Đầm tay dài, mùa đông'),
-('Đầm Hai Dây', 'D005', @cat_dam, 550000, 330000, 'Cái', 25, 25, 'Đầm hai dây, trẻ trung')
-ON DUPLICATE KEY UPDATE Name = VALUES(Name);
+-- Quần Tây (CategoryId: 4)
+(14, 'Quần Tây Nam Đen Công Sở', 'QT001', 4, 2, 380000, 190000, 'VND', 30, 60, 10, 0, 'Quần tây nam công sở, chất liệu kate', TRUE),
+(15, 'Quần Tây Nam Xám', 'QT002', 4, 2, 380000, 190000, 'VND', 28, 60, 10, 0, 'Quần tây nam màu xám, form slim', TRUE),
+(16, 'Quần Tây Nữ Đen', 'QT003', 4, 3, 350000, 175000, 'VND', 25, 50, 10, 0, 'Quần tây nữ công sở, ống đứng', TRUE),
 
--- Insert Products - Áo Khoác
-INSERT INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description) VALUES
-('Áo Khoác Kaki', 'AK001', @cat_ao_khoac, 850000, 500000, 'Cái', 20, 20, 'Áo khoác kaki, mùa thu'),
-('Áo Khoác Dù', 'AK002', @cat_ao_khoac, 450000, 270000, 'Cái', 30, 30, 'Áo khoác dù, chống nước'),
-('Áo Khoác Bomber', 'AK003', @cat_ao_khoac, 950000, 570000, 'Cái', 18, 18, 'Áo khoác bomber, phong cách'),
-('Áo Khoác Len', 'AK004', @cat_ao_khoac, 1100000, 660000, 'Cái', 15, 15, 'Áo khoác len, mùa đông'),
-('Áo Khoác Hoodie', 'AK005', @cat_ao_khoac, 750000, 450000, 'Cái', 25, 25, 'Áo khoác hoodie, thể thao')
-ON DUPLICATE KEY UPDATE Name = VALUES(Name);
+-- Váy (CategoryId: 5)
+(17, 'Váy Công Sở Đen', 'V001', 5, 3, 320000, 160000, 'VND', 20, 40, 8, 0, 'Váy công sở dáng chữ A', TRUE),
+(18, 'Váy Maxi Hoa', 'V002', 5, 4, 450000, 225000, 'VND', 15, 30, 5, 10, 'Váy maxi họa tiết hoa, dáng dài', TRUE),
+(19, 'Váy Dạ Hội Đỏ', 'V003', 5, 5, 850000, 425000, 'VND', 10, 20, 3, 0, 'Váy dạ hội cao cấp, nhập khẩu Hàn Quốc', TRUE),
 
--- Insert Products - Giày Thể Thao
-INSERT INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description) VALUES
-('Giày Thể Thao Chạy Bộ', 'GTT001', @cat_giay_the_thao, 1200000, 720000, 'Đôi', 20, 20, 'Giày thể thao chạy bộ, đế mềm'),
-('Giày Thể Thao Đá Bóng', 'GTT002', @cat_giay_the_thao, 1500000, 900000, 'Đôi', 15, 15, 'Giày đá bóng, chuyên dụng'),
-('Giày Thể Thao Đi Bộ', 'GTT003', @cat_giay_the_thao, 1000000, 600000, 'Đôi', 25, 25, 'Giày đi bộ, thoải mái'),
-('Giày Thể Thao Thời Trang', 'GTT004', @cat_giay_the_thao, 1800000, 1080000, 'Đôi', 12, 12, 'Giày thể thao thời trang, phong cách'),
-('Giày Thể Thao Cao Cổ', 'GTT005', @cat_giay_the_thao, 1400000, 840000, 'Đôi', 18, 18, 'Giày thể thao cao cổ, bảo vệ mắt cá')
-ON DUPLICATE KEY UPDATE Name = VALUES(Name);
+-- Áo Khoác (CategoryId: 6)
+(20, 'Áo Khoác Jean Nam', 'AK001', 6, 3, 550000, 275000, 'VND', 22, 44, 8, 0, 'Áo khoác jean nam, phong cách basic', TRUE),
+(21, 'Áo Khoác Hoodie Unisex', 'AK002', 6, 4, 380000, 190000, 'VND', 35, 70, 10, 15, 'Áo hoodie nỉ bông, nhiều màu', TRUE),
+(22, 'Áo Khoác Dạ Nữ', 'AK003', 6, 5, 950000, 475000, 'VND', 12, 24, 5, 0, 'Áo khoác dạ nữ cao cấp, mùa đông', TRUE),
 
--- Insert Products - Giày Cao Gót
-INSERT INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description) VALUES
-('Giày Cao Gót 7cm', 'GCG001', @cat_giay_cao_got, 800000, 480000, 'Đôi', 20, 20, 'Giày cao gót 7cm, cổ điển'),
-('Giày Cao Gót 10cm', 'GCG002', @cat_giay_cao_got, 950000, 570000, 'Đôi', 15, 15, 'Giày cao gót 10cm, sang trọng'),
-('Giày Cao Gót Mũi Nhọn', 'GCG003', @cat_giay_cao_got, 1100000, 660000, 'Đôi', 12, 12, 'Giày cao gót mũi nhọn, thanh lịch'),
-('Giày Cao Gót Mũi Tròn', 'GCG004', @cat_giay_cao_got, 750000, 450000, 'Đôi', 25, 25, 'Giày cao gót mũi tròn, thoải mái'),
-('Giày Cao Gót Đế Thấp', 'GCG005', @cat_giay_cao_got, 650000, 390000, 'Đôi', 30, 30, 'Giày cao gót đế thấp, dễ đi')
-ON DUPLICATE KEY UPDATE Name = VALUES(Name);
+-- Phụ Kiện (CategoryId: 7)
+(23, 'Túi Xách Nữ Da', 'TX001', 7, 5, 650000, 325000, 'VND', 18, 36, 5, 0, 'Túi xách nữ da PU cao cấp', TRUE),
+(24, 'Ví Nam Da Bò', 'VI001', 7, 5, 280000, 140000, 'VND', 25, 50, 8, 0, 'Ví nam da bò thật, nhiều ngăn', TRUE),
+(25, 'Thắt Lưng Nam Da', 'TL001', 7, 2, 220000, 110000, 'VND', 30, 60, 10, 0, 'Thắt lưng nam da, khóa tự động', TRUE),
+(26, 'Mũ Lưỡi Trai Unisex', 'MU001', 7, 4, 120000, 60000, 'VND', 40, 80, 15, 10, 'Mũ lưỡi trai thêu logo', TRUE),
 
--- Insert Products - Sandal
-INSERT INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description) VALUES
-('Sandal Quai Ngang', 'SD001', @cat_sandal, 350000, 210000, 'Đôi', 40, 40, 'Sandal quai ngang, mùa hè'),
-('Sandal Quai Chéo', 'SD002', @cat_sandal, 400000, 240000, 'Đôi', 35, 35, 'Sandal quai chéo, thời trang'),
-('Sandal Đế Bệt', 'SD003', @cat_sandal, 300000, 180000, 'Đôi', 45, 45, 'Sandal đế bệt, thoải mái'),
-('Sandal Có Gót', 'SD004', @cat_sandal, 450000, 270000, 'Đôi', 30, 30, 'Sandal có gót nhỏ, tôn dáng'),
-('Sandal Thể Thao', 'SD005', @cat_sandal, 500000, 300000, 'Đôi', 25, 25, 'Sandal thể thao, đi biển')
-ON DUPLICATE KEY UPDATE Name = VALUES(Name);
+-- Giày Dép (CategoryId: 8)
+(27, 'Giày Thể Thao Nam', 'GT001', 8, 5, 750000, 375000, 'VND', 20, 40, 8, 0, 'Giày thể thao nam, đế êm', TRUE),
+(28, 'Giày Cao Gót Nữ 7cm', 'GC001', 8, 5, 580000, 290000, 'VND', 15, 30, 5, 10, 'Giày cao gót nữ, da bóng', TRUE),
+(29, 'Dép Sandal Nam', 'DS001', 8, 4, 180000, 90000, 'VND', 35, 70, 10, 0, 'Dép sandal nam, đế cao su', TRUE),
 
--- Insert Products - Boots
-INSERT INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description) VALUES
-('Boots Cổ Cao', 'BT001', @cat_boots, 1500000, 900000, 'Đôi', 15, 15, 'Boots cổ cao, mùa đông'),
-('Boots Cổ Thấp', 'BT002', @cat_boots, 1200000, 720000, 'Đôi', 20, 20, 'Boots cổ thấp, linh hoạt'),
-('Boots Da', 'BT003', @cat_boots, 1800000, 1080000, 'Đôi', 12, 12, 'Boots da thật, cao cấp'),
-('Boots Thể Thao', 'BT004', @cat_boots, 1300000, 780000, 'Đôi', 18, 18, 'Boots thể thao, năng động'),
-('Boots Mũi Nhọn', 'BT005', @cat_boots, 1600000, 960000, 'Đôi', 10, 10, 'Boots mũi nhọn, thời trang')
-ON DUPLICATE KEY UPDATE Name = VALUES(Name);
+-- Đồ Thể Thao (CategoryId: 9)
+(30, 'Bộ Đồ Thể Thao Nam', 'TT001', 9, 4, 420000, 210000, 'VND', 25, 50, 10, 15, 'Bộ đồ thể thao nam, thấm hút mồ hôi', TRUE),
+(31, 'Quần Short Thể Thao', 'TT002', 9, 4, 180000, 90000, 'VND', 40, 80, 15, 0, 'Quần short thể thao, nhiều màu', TRUE),
 
--- Insert Products - Túi Xách
-INSERT INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description) VALUES
-('Túi Xách Tay', 'TX001', @cat_tui_xach, 800000, 480000, 'Cái', 20, 20, 'Túi xách tay, công sở'),
-('Túi Xách Đeo Vai', 'TX002', @cat_tui_xach, 650000, 390000, 'Cái', 25, 25, 'Túi xách đeo vai, tiện lợi'),
-('Túi Xách Da', 'TX003', @cat_tui_xach, 1200000, 720000, 'Cái', 15, 15, 'Túi xách da thật, sang trọng'),
-('Túi Xách Tote', 'TX004', @cat_tui_xach, 550000, 330000, 'Cái', 30, 30, 'Túi tote, rộng rãi'),
-('Túi Xách Mini', 'TX005', @cat_tui_xach, 450000, 270000, 'Cái', 35, 35, 'Túi xách mini, xinh xắn')
-ON DUPLICATE KEY UPDATE Name = VALUES(Name);
+-- Đồ Ngủ (CategoryId: 10)
+(32, 'Bộ Đồ Ngủ Nữ Cotton', 'DN001', 10, 4, 250000, 125000, 'VND', 30, 60, 10, 0, 'Bộ đồ ngủ nữ cotton mềm mại', TRUE),
+(33, 'Áo Ngủ Nam', 'DN002', 10, 4, 150000, 75000, 'VND', 25, 50, 10, 0, 'Áo ngủ nam thoáng mát', TRUE);
 
--- Insert Products - Ví
-INSERT INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description) VALUES
-('Ví Da Nam', 'V001', @cat_vi, 350000, 210000, 'Cái', 40, 40, 'Ví da nam, nhiều ngăn'),
-('Ví Da Nữ', 'V002', @cat_vi, 400000, 240000, 'Cái', 35, 35, 'Ví da nữ, xinh xắn'),
-('Ví Dài', 'V003', @cat_vi, 300000, 180000, 'Cái', 45, 45, 'Ví dài, đựng tiền'),
-('Ví Ngắn', 'V004', @cat_vi, 280000, 168000, 'Cái', 50, 50, 'Ví ngắn, gọn nhẹ'),
-('Ví Có Khóa', 'V005', @cat_vi, 450000, 270000, 'Cái', 30, 30, 'Ví có khóa, an toàn')
-ON DUPLICATE KEY UPDATE Name = VALUES(Name);
+-- ============================================================================
+-- 5. CUSTOMERS (Customer Database)
+-- ============================================================================
+INSERT IGNORE INTO Customers (Id, Name, Phone, Email, Address, CustomerType, Points, TotalSpent, DateOfBirth, Gender, IsActive) VALUES
+(1, 'Khách lẻ', '0000000000', NULL, NULL, 'Regular', 0, 0, NULL, NULL, TRUE),
+(2, 'Nguyễn Văn An', '0901111111', 'nguyenvanan@gmail.com', '123 Lê Lợi, Q.1, TP.HCM', 'Gold', 6500, 13000000, '1990-05-15', 'Male', TRUE),
+(3, 'Trần Thị Bình', '0902222222', 'tranbinhtt@gmail.com', '456 Nguyễn Huệ, Q.1, TP.HCM', 'Platinum', 12000, 24000000, '1985-08-20', 'Female', TRUE),
+(4, 'Lê Hoàng Cường', '0903333333', 'cuonglh@yahoo.com', '789 Hai Bà Trưng, Q.3, TP.HCM', 'Silver', 3200, 6400000, '1992-03-10', 'Male', TRUE),
+(5, 'Phạm Thị Dung', '0904444444', 'dungpham@outlook.com', '321 Võ Văn Tần, Q.3, TP.HCM', 'Bronze', 800, 1600000, '1995-11-25', 'Female', TRUE),
+(6, 'Hoàng Văn Em', '0905555555', 'emhoang@gmail.com', '555 Cách Mạng Tháng 8, Q.10, TP.HCM', 'Regular', 250, 500000, '2000-01-30', 'Male', TRUE),
+(7, 'Võ Thị Phương', '0906666666', 'phuongvo@gmail.com', '666 Lý Thường Kiệt, Q.10, TP.HCM', 'Gold', 7800, 15600000, '1988-07-12', 'Female', TRUE),
+(8, 'Đặng Văn Giang', '0907777777', 'giangdv@gmail.com', '777 Điện Biên Phủ, Q.Bình Thạnh, TP.HCM', 'Silver', 2500, 5000000, '1993-09-18', 'Male', TRUE),
+(9, 'Bùi Thị Hà', '0908888888', 'habt@gmail.com', '888 Xô Viết Nghệ Tĩnh, Q.Bình Thạnh, TP.HCM', 'Bronze', 600, 1200000, '1997-12-05', 'Female', TRUE),
+(10, 'Ngô Văn Ích', '0909999999', 'ichngo@gmail.com', '999 Phan Văn Trị, Q.Gò Vấp, TP.HCM', 'Regular', 150, 300000, '1999-04-22', 'Male', TRUE);
 
--- Insert Products - Thắt Lưng
-INSERT INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description) VALUES
-('Thắt Lưng Da Nam', 'TL001', @cat_that_lung, 250000, 150000, 'Cái', 50, 50, 'Thắt lưng da nam, cổ điển'),
-('Thắt Lưng Da Nữ', 'TL002', @cat_that_lung, 200000, 120000, 'Cái', 45, 45, 'Thắt lưng da nữ, thanh lịch'),
-('Thắt Lưng Vải', 'TL003', @cat_that_lung, 150000, 90000, 'Cái', 60, 60, 'Thắt lưng vải, thể thao'),
-('Thắt Lưng Kim Loại', 'TL004', @cat_that_lung, 300000, 180000, 'Cái', 35, 35, 'Thắt lưng kim loại, thời trang'),
-('Thắt Lưng Rộng', 'TL005', @cat_that_lung, 220000, 132000, 'Cái', 40, 40, 'Thắt lưng rộng, phong cách')
-ON DUPLICATE KEY UPDATE Name = VALUES(Name);
+-- ============================================================================
+-- 6. VOUCHERS (Discount Codes)
+-- ============================================================================
+INSERT IGNORE INTO Vouchers (Id, Code, Name, DiscountType, DiscountValue, MaxDiscountAmount, MinInvoiceAmount, StartDate, EndDate, UsageLimit, UsageLimitPerCustomer, UsedCount, IsActive, CreatedBy) VALUES
+(1, 'WELCOME10', 'Giảm 10% cho khách hàng mới', 'Percentage', 10.00, 100000, 0, '2024-01-01 00:00:00', '2024-12-31 23:59:59', 0, 1, 45, TRUE, 1),
+(2, 'SUMMER50K', 'Giảm 50K cho đơn từ 500K', 'FixedAmount', 50000, NULL, 500000, '2024-06-01 00:00:00', '2024-08-31 23:59:59', 100, 2, 67, TRUE, 1),
+(3, 'VIP20', 'Giảm 20% cho khách VIP', 'Percentage', 20.00, 200000, 1000000, '2024-01-01 00:00:00', '2024-12-31 23:59:59', 0, 5, 23, TRUE, 1),
+(4, 'FLASH100K', 'Flash Sale giảm 100K', 'FixedAmount', 100000, NULL, 1000000, '2024-07-01 00:00:00', '2024-07-31 23:59:59', 50, 1, 48, TRUE, 2),
+(5, 'NEWYEAR15', 'Tết giảm 15%', 'Percentage', 15.00, 150000, 500000, '2024-01-20 00:00:00', '2024-02-15 23:59:59', 200, 3, 156, TRUE, 1),
+(6, 'FREESHIP', 'Miễn phí vận chuyển', 'FixedAmount', 30000, NULL, 200000, '2024-01-01 00:00:00', '2024-12-31 23:59:59', 0, 10, 234, TRUE, 1);
 
--- Insert Products - Mũ
-INSERT INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description) VALUES
-('Mũ Lưỡi Trai', 'M001', @cat_mu, 180000, 108000, 'Cái', 50, 50, 'Mũ lưỡi trai, thể thao'),
-('Mũ Bucket', 'M002', @cat_mu, 200000, 120000, 'Cái', 40, 40, 'Mũ bucket, thời trang'),
-('Mũ Phớt', 'M003', @cat_mu, 250000, 150000, 'Cái', 30, 30, 'Mũ phớt, cổ điển'),
-('Mũ Snapback', 'M004', @cat_mu, 220000, 132000, 'Cái', 35, 35, 'Mũ snapback, trẻ trung'),
-('Mũ Rộng Vành', 'M005', @cat_mu, 300000, 180000, 'Cái', 25, 25, 'Mũ rộng vành, chống nắng')
-ON DUPLICATE KEY UPDATE Name = VALUES(Name);
+-- ============================================================================
+-- 7. INVOICES (Sample Transactions)
+-- ============================================================================
+INSERT IGNORE INTO Invoices (Id, InvoiceNumber, CustomerId, EmployeeId, VoucherId, Subtotal, TaxPercent, TaxAmount, DiscountAmount, VoucherDiscount, TierDiscount, Total, Paid, PaymentMethod, PaymentStatus, ChangeAmount, Status, CreatedDate, CompletedDate) VALUES
+(1, 'INV-2024-0001', 1, 3, NULL, 300000, 10.00, 30000, 0, 0, 0, 330000, 500000, 'Cash', 'Paid', 170000, 'Completed', '2024-01-15 10:30:00', '2024-01-15 10:35:00'),
+(2, 'INV-2024-0002', 2, 3, 3, 1500000, 10.00, 150000, 200000, 200000, 0, 1450000, 1450000, 'Card', 'Paid', 0, 'Completed', '2024-01-20 14:20:00', '2024-01-20 14:25:00'),
+(3, 'INV-2024-0003', 3, 4, 5, 2000000, 10.00, 200000, 150000, 150000, 0, 2050000, 2050000, 'Transfer', 'Paid', 0, 'Completed', '2024-02-01 11:15:00', '2024-02-01 11:20:00'),
+(4, 'INV-2024-0004', 5, 3, 1, 200000, 10.00, 20000, 20000, 20000, 0, 200000, 200000, 'Cash', 'Paid', 0, 'Completed', '2024-02-05 09:45:00', '2024-02-05 09:50:00'),
+(5, 'INV-2024-0005', 6, 4, NULL, 850000, 10.00, 85000, 0, 0, 0, 935000, 1000000, 'QR', 'Paid', 65000, 'Completed', '2024-02-10 16:30:00', '2024-02-10 16:35:00'),
+(6, 'INV-2024-0006', 4, 3, 2, 650000, 10.00, 65000, 50000, 50000, 0, 665000, 700000, 'Cash', 'Paid', 35000, 'Completed', '2024-02-14 13:20:00', '2024-02-14 13:25:00'),
+(7, 'INV-2024-0007', 7, 5, NULL, 450000, 10.00, 45000, 0, 0, 0, 495000, 500000, 'Card', 'Paid', 5000, 'Completed', '2024-02-20 10:00:00', '2024-02-20 10:05:00'),
+(8, 'INV-2024-0008', 8, 3, 4, 1200000, 10.00, 120000, 100000, 100000, 0, 1220000, 1220000, 'Transfer', 'Paid', 0, 'Completed', '2024-03-01 15:45:00', '2024-03-01 15:50:00');
 
--- Insert Products - Kính Mát
-INSERT INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description) VALUES
-('Kính Mát Aviator', 'KM001', @cat_kinh_mat, 500000, 300000, 'Cái', 30, 30, 'Kính mát aviator, cổ điển'),
-('Kính Mát Wayfarer', 'KM002', @cat_kinh_mat, 450000, 270000, 'Cái', 35, 35, 'Kính mát wayfarer, thời trang'),
-('Kính Mát Tròn', 'KM003', @cat_kinh_mat, 400000, 240000, 'Cái', 40, 40, 'Kính mát tròn, phong cách'),
-('Kính Mát Thể Thao', 'KM004', @cat_kinh_mat, 600000, 360000, 'Cái', 25, 25, 'Kính mát thể thao, chống UV'),
-('Kính Mát Trẻ Em', 'KM005', @cat_kinh_mat, 300000, 180000, 'Cái', 45, 45, 'Kính mát trẻ em, an toàn')
-ON DUPLICATE KEY UPDATE Name = VALUES(Name);
+-- ============================================================================
+-- 8. INVOICE ITEMS (Transaction Details)
+-- ============================================================================
+INSERT IGNORE INTO InvoiceItems (InvoiceId, ProductId, EmployeeId, ProductName, ProductCode, UnitPrice, Quantity, DiscountPercent, DiscountAmount, LineTotal) VALUES
+-- Invoice 1 items
+(1, 1, 3, 'Áo Thun Nam Basic Trắng', 'AT001', 150000, 2, 0, 0, 300000),
 
--- Insert Products - Áo Lót
-INSERT INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description) VALUES
-('Áo Lót Có Gọng', 'AL001', @cat_ao_lot, 250000, 150000, 'Cái', 60, 60, 'Áo lót có gọng, nâng đỡ'),
-('Áo Lót Không Gọng', 'AL002', @cat_ao_lot, 200000, 120000, 'Cái', 70, 70, 'Áo lót không gọng, thoải mái'),
-('Áo Lót Thể Thao', 'AL003', @cat_ao_lot, 300000, 180000, 'Cái', 50, 50, 'Áo lót thể thao, co giãn'),
-('Áo Lót Push-up', 'AL004', @cat_ao_lot, 350000, 210000, 'Cái', 40, 40, 'Áo lót push-up, tôn dáng'),
-('Áo Lót Không Dây', 'AL005', @cat_ao_lot, 280000, 168000, 'Cái', 55, 55, 'Áo lót không dây, tiện lợi')
-ON DUPLICATE KEY UPDATE Name = VALUES(Name);
+-- Invoice 2 items (VIP customer)
+(2, 6, 3, 'Áo Sơ Mi Nam Trắng Công Sở', 'SM001', 350000, 2, 0, 0, 700000),
+(2, 10, 3, 'Quần Jean Nam Slim Fit Đen', 'QJ001', 450000, 1, 0, 0, 450000),
+(2, 14, 3, 'Quần Tây Nam Đen Công Sở', 'QT001', 380000, 1, 0, 0, 380000),
 
--- Insert Products - Quần Lót
-INSERT INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description) VALUES
-('Quần Lót Cotton', 'QL001', @cat_quan_lot, 80000, 48000, 'Cái', 100, 100, 'Quần lót cotton, thoáng mát'),
-('Quần Lót Lace', 'QL002', @cat_quan_lot, 120000, 72000, 'Cái', 80, 80, 'Quần lót lace, quyến rũ'),
-('Quần Lót Thể Thao', 'QL003', @cat_quan_lot, 150000, 90000, 'Cái', 70, 70, 'Quần lót thể thao, khô ráo'),
-('Quần Lót Seamless', 'QL004', @cat_quan_lot, 100000, 60000, 'Cái', 90, 90, 'Quần lót seamless, không đường may'),
-('Quần Lót Boxer', 'QL005', @cat_quan_lot, 110000, 66000, 'Cái', 85, 85, 'Quần lót boxer, rộng rãi')
-ON DUPLICATE KEY UPDATE Name = VALUES(Name);
+-- Invoice 3 items (Platinum)
+(3, 19, 4, 'Váy Dạ Hội Đỏ', 'V003', 850000, 1, 0, 0, 850000),
+(3, 23, 4, 'Túi Xách Nữ Da', 'TX001', 650000, 1, 0, 0, 650000),
+(3, 28, 4, 'Giày Cao Gót Nữ 7cm', 'GC001', 580000, 1, 10, 58000, 522000),
 
--- Insert Products - Tất
-INSERT INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description) VALUES
-('Tất Ngắn', 'T001', @cat_tat, 30000, 18000, 'Đôi', 200, 200, 'Tất ngắn, thể thao'),
-('Tất Dài', 'T002', @cat_tat, 40000, 24000, 'Đôi', 150, 150, 'Tất dài, mùa đông'),
-('Tất Cổ Ngắn', 'T003', @cat_tat, 25000, 15000, 'Đôi', 250, 250, 'Tất cổ ngắn, mùa hè'),
-('Tất Có Họa Tiết', 'T004', @cat_tat, 50000, 30000, 'Đôi', 120, 120, 'Tất có họa tiết, thời trang'),
-('Tất Vớ', 'T005', @cat_tat, 35000, 21000, 'Đôi', 180, 180, 'Tất vớ, ấm áp')
-ON DUPLICATE KEY UPDATE Name = VALUES(Name);
+-- Invoice 4 items
+(4, 3, 3, 'Áo Thun Nữ Oversize Trắng', 'AT003', 180000, 1, 10, 18000, 162000),
 
--- Insert Products - Vòng Tay
-INSERT INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description) VALUES
-('Vòng Tay Bạc', 'VT001', @cat_vong_tay, 500000, 300000, 'Cái', 30, 30, 'Vòng tay bạc, tinh xảo'),
-('Vòng Tay Vàng', 'VT002', @cat_vong_tay, 2000000, 1200000, 'Cái', 10, 10, 'Vòng tay vàng, cao cấp'),
-('Vòng Tay Đồng', 'VT003', @cat_vong_tay, 300000, 180000, 'Cái', 40, 40, 'Vòng tay đồng, phong cách'),
-('Vòng Tay Da', 'VT004', @cat_vong_tay, 250000, 150000, 'Cái', 50, 50, 'Vòng tay da, nam tính'),
-('Vòng Tay Charm', 'VT005', @cat_vong_tay, 400000, 240000, 'Cái', 25, 25, 'Vòng tay charm, cá tính')
-ON DUPLICATE KEY UPDATE Name = VALUES(Name);
+-- Invoice 5 items
+(5, 20, 4, 'Áo Khoác Jean Nam', 'AK001', 550000, 1, 0, 0, 550000),
+(5, 24, 4, 'Ví Nam Da Bò', 'VI001', 280000, 1, 0, 0, 280000),
 
--- Insert Products - Nhẫn
-INSERT INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description) VALUES
-('Nhẫn Cưới Vàng', 'N001', @cat_nhan, 5000000, 3000000, 'Cái', 5, 5, 'Nhẫn cưới vàng, cao cấp'),
-('Nhẫn Bạc', 'N002', @cat_nhan, 600000, 360000, 'Cái', 20, 20, 'Nhẫn bạc, tinh xảo'),
-('Nhẫn Đồng', 'N003', @cat_nhan, 350000, 210000, 'Cái', 35, 35, 'Nhẫn đồng, phong cách'),
-('Nhẫn Có Đá', 'N004', @cat_nhan, 1200000, 720000, 'Cái', 15, 15, 'Nhẫn có đá, sang trọng'),
-('Nhẫn Trơn', 'N005', @cat_nhan, 400000, 240000, 'Cái', 30, 30, 'Nhẫn trơn, đơn giản')
-ON DUPLICATE KEY UPDATE Name = VALUES(Name);
+-- Invoice 6 items
+(6, 11, 3, 'Quần Jean Nam Straight Xanh', 'QJ002', 450000, 1, 0, 0, 450000),
+(6, 5, 3, 'Áo Thun Graphic Unisex', 'AT005', 200000, 1, 15, 30000, 170000),
 
--- Insert Products - Dây Chuyền
-INSERT INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description) VALUES
-('Dây Chuyền Bạc', 'DC001', @cat_day_chuyen, 800000, 480000, 'Cái', 25, 25, 'Dây chuyền bạc, thanh lịch'),
-('Dây Chuyền Vàng', 'DC002', @cat_day_chuyen, 3000000, 1800000, 'Cái', 8, 8, 'Dây chuyền vàng, cao cấp'),
-('Dây Chuyền Có Mặt Dây', 'DC003', @cat_day_chuyen, 1200000, 720000, 'Cái', 15, 15, 'Dây chuyền có mặt dây, sang trọng'),
-('Dây Chuyền Đồng', 'DC004', @cat_day_chuyen, 500000, 300000, 'Cái', 30, 30, 'Dây chuyền đồng, phong cách'),
-('Dây Chuyền Ngắn', 'DC005', @cat_day_chuyen, 600000, 360000, 'Cái', 20, 20, 'Dây chuyền ngắn, cổ điển')
-ON DUPLICATE KEY UPDATE Name = VALUES(Name);
+-- Invoice 7 items
+(7, 21, 5, 'Áo Khoác Hoodie Unisex', 'AK002', 380000, 1, 15, 57000, 323000),
+(7, 26, 5, 'Mũ Lưỡi Trai Unisex', 'MU001', 120000, 1, 10, 12000, 108000),
 
--- Summary
-SELECT 'Sample data inserted successfully!' AS Message;
-SELECT COUNT(*) AS TotalCategories FROM Categories;
-SELECT COUNT(*) AS TotalProducts FROM Products;
+-- Invoice 8 items
+(8, 13, 3, 'Quần Jean Baggy Unisex', 'QJ004', 480000, 2, 20, 192000, 768000),
+(8, 30, 3, 'Bộ Đồ Thể Thao Nam', 'TT001', 420000, 1, 15, 63000, 357000);
 
+-- ============================================================================
+-- 9. STOCK MOVEMENTS (Inventory History) - Optional
+-- ============================================================================
+INSERT IGNORE INTO StockMovements (ProductId, MovementType, Quantity, PreviousStock, NewStock, ReferenceType, ReferenceId, Notes, EmployeeId, CreatedDate) VALUES
+-- Initial imports
+(1, 'Import', 100, 0, 100, 'PurchaseOrder', 1, 'Nhập hàng đầu tiên', 1, '2024-01-01 08:00:00'),
+(2, 'Import', 100, 0, 100, 'PurchaseOrder', 1, 'Nhập hàng đầu tiên', 1, '2024-01-01 08:00:00'),
+(3, 'Import', 50, 0, 50, 'PurchaseOrder', 2, 'Nhập hàng đầu tiên', 1, '2024-01-01 08:00:00'),
+
+-- Sales from invoices
+(1, 'Sale', -2, 100, 98, 'Invoice', 1, 'Bán qua hóa đơn INV-2024-0001', 3, '2024-01-15 10:30:00'),
+(6, 'Sale', -2, 70, 68, 'Invoice', 2, 'Bán qua hóa đơn INV-2024-0002', 3, '2024-01-20 14:20:00'),
+(10, 'Sale', -1, 80, 79, 'Invoice', 2, 'Bán qua hóa đơn INV-2024-0002', 3, '2024-01-20 14:20:00'),
+
+-- Stock adjustments
+(1, 'Adjustment', -2, 98, 96, NULL, NULL, 'Điều chỉnh do kiểm kê', 2, '2024-02-01 09:00:00'),
+(5, 'Return', 1, 40, 41, 'Invoice', 4, 'Khách trả hàng', 3, '2024-02-06 10:00:00');
+
+-- ============================================================================
+-- 10. CUSTOMER VOUCHER USAGE (Tracking) - Optional
+-- ============================================================================
+INSERT IGNORE INTO CustomerVoucherUsage (CustomerId, VoucherId, InvoiceId, DiscountAmount, UsedDate) VALUES
+(2, 3, 2, 200000, '2024-01-20 14:20:00'),
+(3, 5, 3, 150000, '2024-02-01 11:15:00'),
+(5, 1, 4, 20000, '2024-02-05 09:45:00'),
+(4, 2, 6, 50000, '2024-02-14 13:20:00'),
+(8, 4, 8, 100000, '2024-03-01 15:45:00');
+
+-- Re-enable foreign key checks
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- ============================================================================
+-- VERIFICATION QUERIES
+-- ============================================================================
+
+-- Check total records
+SELECT 'Accounts' as TableName, COUNT(*) as RecordCount FROM Accounts
+UNION ALL
+SELECT 'Categories', COUNT(*) FROM Categories
+UNION ALL
+SELECT 'Suppliers', COUNT(*) FROM Suppliers
+UNION ALL
+SELECT 'Products', COUNT(*) FROM Products
+UNION ALL
+SELECT 'Customers', COUNT(*) FROM Customers
+UNION ALL
+SELECT 'Vouchers', COUNT(*) FROM Vouchers
+UNION ALL
+SELECT 'Invoices', COUNT(*) FROM Invoices
+UNION ALL
+SELECT 'InvoiceItems', COUNT(*) FROM InvoiceItems
+UNION ALL
+SELECT 'StockMovements', COUNT(*) FROM StockMovements
+UNION ALL
+SELECT 'CustomerVoucherUsage', COUNT(*) FROM CustomerVoucherUsage;
+
+-- ============================================================================
+-- SUMMARY
+-- ============================================================================
+/*
+Sample Data Summary:
+- 5 Accounts (1 Admin, 1 Manager, 3 Cashiers)
+- 10 Categories (Various product types)
+- 5 Suppliers (Vietnamese and Korean suppliers)
+- 33 Products (Clothing, accessories, shoes)
+- 10 Customers (Including walk-in customer)
+- 6 Vouchers (Various discount types)
+- 8 Invoices (Sample transactions)
+- 17 Invoice Items (Transaction details)
+- 8 Stock Movements (Inventory tracking)
+- 5 Customer Voucher Usage records
+
+Total Sample Revenue: ~8,365,000 VND
+Average Invoice Value: ~1,045,625 VND
+
+IMPORT INSTRUCTIONS:
+1. First import database_schema.sql
+2. Then import this file (sample_data.sql)
+3. Run the verification query above to confirm all data was inserted
+4. Login to the application with username: admin, password: admin
+*/
+
+-- ============================================================================
+-- END OF SAMPLE DATA
+-- ============================================================================

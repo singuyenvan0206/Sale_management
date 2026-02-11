@@ -116,7 +116,7 @@ namespace WpfApp1
                 PromoStartDate = PromoStartDatePicker?.SelectedDate,
                 PromoEndDate = PromoEndDatePicker?.SelectedDate,
                 PurchasePrice = decimal.TryParse(ImportPriceTextBox.Text, out var pp) ? pp : 0,
-                PurchaseUnit = UnitTextBox.Text.Trim(),
+                PurchaseUnit = "VND",
                 ImportQuantity = int.TryParse(ImportQuantityTextBox.Text, out var iq) ? iq : 0,
                 StockQuantity = int.Parse(StockQuantityTextBox.Text),
                 Description = DescriptionTextBox.Text.Trim(),
@@ -159,7 +159,7 @@ namespace WpfApp1
                 PromoStartDate = PromoStartDatePicker?.SelectedDate,
                 PromoEndDate = PromoEndDatePicker?.SelectedDate,
                 PurchasePrice = decimal.TryParse(ImportPriceTextBox.Text, out var pp) ? pp : 0,
-                PurchaseUnit = UnitTextBox.Text.Trim(),
+                PurchaseUnit = "VND",
                 ImportQuantity = int.TryParse(ImportQuantityTextBox.Text, out var iq) ? iq : 0,
                 StockQuantity = int.Parse(StockQuantityTextBox.Text),
                 Description = DescriptionTextBox.Text.Trim(),
@@ -309,7 +309,7 @@ namespace WpfApp1
             StockQuantityTextBox.Clear();
             ImportPriceTextBox.Clear();
             ImportQuantityTextBox.Clear();
-            UnitTextBox.Clear();
+            // Unit removed - using VND as default
             DescriptionTextBox.Clear();
             SupplierComboBox.SelectedIndex = -1;
             _selectedProduct = null;
@@ -368,7 +368,7 @@ namespace WpfApp1
                 StockQuantityTextBox.Text = _selectedProduct.StockQuantity.ToString();
                 ImportPriceTextBox.Text = _selectedProduct.PurchasePrice.ToString("F2");
                 ImportQuantityTextBox.Text = _selectedProduct.ImportQuantity.ToString();
-                UnitTextBox.Text = _selectedProduct.PurchaseUnit ?? "";
+                // Unit removed - using VND as default
                 DescriptionTextBox.Text = _selectedProduct.Description ?? "";
                 SupplierComboBox.SelectedValue = _selectedProduct.SupplierId;
             }

@@ -146,7 +146,7 @@ namespace WpfApp1
                 var taxPercent = header.Subtotal == 0 ? 0m : (header.TaxAmount / header.Subtotal * 100m);
                 SetText("TaxRateText", taxPercent.ToString("F2") + "%");
                 SetText("SalesTaxText", header.TaxAmount.ToString("C"));
-                SetText("OtherText", header.Discount.ToString("C"));
+                SetText("OtherText", header.DiscountAmount.ToString("C"));
                 SetText("TotalText", header.Total.ToString("C"));
                 SetText("PaidText", header.Paid.ToString("C"));
 

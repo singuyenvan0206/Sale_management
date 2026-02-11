@@ -51,7 +51,7 @@ namespace WpfApp1
                 PromoStartDate DATETIME NULL,
                 PromoEndDate DATETIME NULL,
                 PurchasePrice DECIMAL(10,2) DEFAULT 0,
-                PurchaseUnit VARCHAR(50) DEFAULT 'Cái',
+                PurchaseUnit VARCHAR(50) DEFAULT 'VND',
                 ImportQuantity INT DEFAULT 0,
                 StockQuantity INT NOT NULL DEFAULT 0,
                 Description TEXT,
@@ -145,8 +145,10 @@ namespace WpfApp1
             using var vouchCmd = new MySqlCommand(vouchersCmd, connection);
             vouchCmd.ExecuteNonQuery();
 
+            // Run all database migrations to update schema
             UpdateProductsTable(connection);
             FixExistingProductData(connection);
+            DatabaseMigration.RunAllMigrations(connection);
 
             string checkAdminCmd = "SELECT COUNT(*) FROM Accounts WHERE Username='admin';";
             using var checkCmd = new MySqlCommand(checkAdminCmd, connection);
@@ -442,7 +444,7 @@ namespace WpfApp1
 
                 if (purchaseUnitExists == null)
                 {
-                    string addPurchaseUnitCmd = "ALTER TABLE Products ADD COLUMN PurchaseUnit VARCHAR(50) DEFAULT 'Cái' AFTER PurchasePrice;";
+                    string addPurchaseUnitCmd = "ALTER TABLE Products ADD COLUMN PurchaseUnit VARCHAR(50) DEFAULT 'VND' AFTER PurchasePrice;";
                     using var addPurchaseUnit = new MySqlCommand(addPurchaseUnitCmd, connection);
                     addPurchaseUnit.ExecuteNonQuery();
                 }
@@ -701,7 +703,6 @@ namespace WpfApp1
             cmd.Parameters.AddWithValue("@purchaseUnit", purchaseUnit);
             cmd.Parameters.AddWithValue("@importQuantity", importQuantity);
             cmd.Parameters.AddWithValue("@stockQuantity", stockQuantity);
-            cmd.Parameters.AddWithValue("@stockQuantity", stockQuantity);
             cmd.Parameters.AddWithValue("@description", description);
             cmd.Parameters.AddWithValue("@supplierId", supplierId);
             try
@@ -790,7 +791,6 @@ namespace WpfApp1
             cmd.Parameters.AddWithValue("@purchasePrice", purchasePrice);
             cmd.Parameters.AddWithValue("@purchaseUnit", purchaseUnit);
             cmd.Parameters.AddWithValue("@importQuantity", importQuantity);
-            cmd.Parameters.AddWithValue("@stockQuantity", stockQuantity);
             cmd.Parameters.AddWithValue("@stockQuantity", stockQuantity);
             cmd.Parameters.AddWithValue("@description", description);
             cmd.Parameters.AddWithValue("@supplierId", supplierId);
@@ -1433,7 +1433,7 @@ namespace WpfApp1
             using var connection = new MySqlConnection(ConnectionString);
             connection.Open();
             var sb = new System.Text.StringBuilder();
-            sb.Append(@"SELECT i.Id, i.CreatedDate, c.Name, i.Subtotal, i.TaxAmount, i.Discount, i.Total, i.Paid
+            sb.Append(@"SELECT i.Id, i.CreatedDate, c.Name, i.Subtotal, i.TaxAmount, i.DiscountAmount, i.Total, i.Paid
                        FROM Invoices i
                        LEFT JOIN Customers c ON c.Id = i.CustomerId
                        WHERE 1=1");
@@ -1472,7 +1472,7 @@ namespace WpfApp1
             using var connection = new MySqlConnection(ConnectionString);
             connection.Open();
 
-            string headerSql = @"SELECT i.Id, i.CreatedDate, c.Name, i.Subtotal, i.TaxPercent, i.TaxAmount, i.Discount, i.Total, i.Paid,
+            string headerSql = @"SELECT i.Id, i.CreatedDate, c.Name, i.Subtotal, i.TaxPercent, i.TaxAmount, i.DiscountAmount, i.Total, i.Paid,
                                         IFNULL(c.Phone, ''), IFNULL(c.Email, ''), IFNULL(c.Address, ''), i.EmployeeId
                                  FROM Invoices i
                                  LEFT JOIN Customers c ON c.Id = i.CustomerId
@@ -1491,7 +1491,7 @@ namespace WpfApp1
                     Subtotal = hr.GetDecimal(3),
                     TaxPercent = hr.GetDecimal(4),
                     TaxAmount = hr.GetDecimal(5),
-                    Discount = hr.GetDecimal(6),
+                    DiscountAmount = hr.GetDecimal(6),
                     Total = hr.GetDecimal(7),
                     Paid = hr.GetDecimal(8),
                     CustomerPhone = hr.IsDBNull(9) ? string.Empty : hr.GetString(9),
@@ -1543,7 +1543,7 @@ namespace WpfApp1
             public decimal Subtotal { get; set; }
             public decimal TaxPercent { get; set; }
             public decimal TaxAmount { get; set; }
-            public decimal Discount { get; set; }
+            public decimal DiscountAmount { get; set; }
             public decimal Total { get; set; }
             public decimal Paid { get; set; }
             public string CustomerPhone { get; set; } = string.Empty;
@@ -2283,7 +2283,7 @@ namespace WpfApp1
         {
             string sql = @"SELECT i.Id, i.CreatedDate, c.Name,
                                   IFNULL(c.Phone, ''), IFNULL(c.Email, ''), IFNULL(c.Address, ''),
-                                  i.Subtotal, i.TaxPercent, i.TaxAmount, i.Discount, i.Total, i.Paid, i.EmployeeId
+                                  i.Subtotal, i.TaxPercent, i.TaxAmount, i.DiscountAmount, i.Total, i.Paid, i.EmployeeId
                            FROM Invoices i
                            LEFT JOIN Customers c ON c.Id = i.CustomerId
                            WHERE i.Id = @id";
@@ -2396,7 +2396,7 @@ namespace WpfApp1
                                 Subtotal = decimal.Parse(fields[6]),
                                 TaxPercent = decimal.Parse(fields[7]),
                                 TaxAmount = decimal.Parse(fields[8]),
-                                Discount = decimal.Parse(fields[9]),
+                                DiscountAmount = decimal.Parse(fields[9]),
                                 Total = decimal.Parse(fields[10]),
                                 Paid = decimal.Parse(fields[11]),
                                 EmployeeId = int.TryParse(fields[12], out int empId) ? empId : employeeId
@@ -2507,7 +2507,7 @@ namespace WpfApp1
                     header.Subtotal,
                     header.TaxPercent,
                     header.TaxAmount,
-                    header.Discount,
+                    header.DiscountAmount,
                     header.Total,
                     header.Paid,
                     items,

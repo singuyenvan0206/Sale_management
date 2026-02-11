@@ -53,7 +53,7 @@ namespace WpfApp1
                 Phone = PhoneTextBox.Text.Trim(),
                 Email = EmailTextBox.Text.Trim(),
                 Address = AddressTextBox.Text.Trim(),
-                Note = NoteTextBox.Text.Trim()
+
             };
 
             if (DatabaseHelper.AddSupplier(supplier))
@@ -83,7 +83,7 @@ namespace WpfApp1
             selectedSupplier.Phone = PhoneTextBox.Text.Trim();
             selectedSupplier.Email = EmailTextBox.Text.Trim();
             selectedSupplier.Address = AddressTextBox.Text.Trim();
-            selectedSupplier.Note = NoteTextBox.Text.Trim();
+
 
             if (DatabaseHelper.UpdateSupplier(selectedSupplier))
             {
@@ -157,7 +157,7 @@ namespace WpfApp1
                 PhoneTextBox.Text = selectedSupplier.Phone;
                 EmailTextBox.Text = selectedSupplier.Email;
                 AddressTextBox.Text = selectedSupplier.Address;
-                NoteTextBox.Text = selectedSupplier.Note;
+
             }
         }
         // Pagination Event Handlers
