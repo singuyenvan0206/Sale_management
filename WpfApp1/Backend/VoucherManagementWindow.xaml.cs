@@ -9,6 +9,13 @@ namespace WpfApp1
     public partial class VoucherManagementWindow : Window
     {
         private PaginationHelper<Voucher> _paginationHelper = new();
+        private Voucher? _selectedVoucher;
+        
+        // Filter state
+        private string _selectedActiveFilter = "All";
+        private string _selectedDiscountTypeFilter = "All";
+        private string _selectedValidityFilter = "All";
+        private string _selectedUsageFilter = "All";
 
         public VoucherManagementWindow()
         {
@@ -24,6 +31,7 @@ namespace WpfApp1
         {
             var vouchers = DatabaseHelper.GetAllVouchers();
             _paginationHelper.SetData(vouchers);
+            ApplyFilters();
         }
 
         private void RefreshVoucherList()
@@ -209,6 +217,91 @@ namespace WpfApp1
                 scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta);
                 e.Handled = true;
             }
+        }
+        
+        private void ApplyFilters()
+        {
+            _paginationHelper.SetFilter(v =>
+            {
+                // Active status filter
+                bool matchesActive = _selectedActiveFilter switch
+                {
+                    "Active" => v.IsActive,
+                    "Inactive" => !v.IsActive,
+                    _ => true // "All"
+                };
+                
+                // Discount type filter
+                bool matchesDiscountType = _selectedDiscountTypeFilter switch
+                {
+                    "VND" => v.DiscountType == "VND",
+                    "Percent" => v.DiscountType == "%",
+                    _ => true // "All"
+                };
+                
+                // Validity filter
+                DateTime now = DateTime.Now;
+                bool matchesValidity = _selectedValidityFilter switch
+                {
+                    "ValidNow" => v.StartDate <= now && v.EndDate >= now,
+                    "Expired" => v.EndDate < now,
+                    "Upcoming" => v.StartDate > now,
+                    _ => true // "All"
+                };
+                
+                // Usage filter
+                bool matchesUsage = _selectedUsageFilter switch
+                {
+                    "Available" => v.UsedCount < v.UsageLimit,
+                    "FullyUsed" => v.UsedCount >= v.UsageLimit,
+                    _ => true // "All"
+                };
+                
+                // Combine all filters with AND logic
+                return matchesActive && matchesDiscountType && matchesValidity && matchesUsage;
+            });
+        }
+        
+        private void VoucherFilterChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Update filter state based on which ComboBox changed
+            if (sender == FilterActiveComboBox && FilterActiveComboBox.SelectedItem is ComboBoxItem activeItem)
+            {
+                _selectedActiveFilter = activeItem.Tag?.ToString() ?? "All";
+            }
+            else if (sender == FilterDiscountTypeComboBox && FilterDiscountTypeComboBox.SelectedItem is ComboBoxItem typeItem)
+            {
+                _selectedDiscountTypeFilter = typeItem.Tag?.ToString() ?? "All";
+            }
+            else if (sender == FilterValidityComboBox && FilterValidityComboBox.SelectedItem is ComboBoxItem validityItem)
+            {
+                _selectedValidityFilter = validityItem.Tag?.ToString() ?? "All";
+            }
+            else if (sender == FilterUsageComboBox && FilterUsageComboBox.SelectedItem is ComboBoxItem usageItem)
+            {
+                _selectedUsageFilter = usageItem.Tag?.ToString() ?? "All";
+            }
+            
+            // Apply filters
+            ApplyFilters();
+        }
+        
+        private void ResetVoucherFiltersButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Reset all filter ComboBoxes to default
+            FilterActiveComboBox.SelectedIndex = 0;
+            FilterDiscountTypeComboBox.SelectedIndex = 0;
+            FilterValidityComboBox.SelectedIndex = 0;
+            FilterUsageComboBox.SelectedIndex = 0;
+            
+            // Reset filter state
+            _selectedActiveFilter = "All";
+            _selectedDiscountTypeFilter = "All";
+            _selectedValidityFilter = "All";
+            _selectedUsageFilter = "All";
+            
+            // Reapply filters (which will show all vouchers)
+            ApplyFilters();
         }
 
         // Pagination Event Handlers

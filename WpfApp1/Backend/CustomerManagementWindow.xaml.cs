@@ -9,6 +9,11 @@ namespace WpfApp1
         private List<CustomerViewModel> _customers = new();
         private CustomerViewModel? _selectedCustomer;
         private PaginationHelper<CustomerViewModel> _paginationHelper = new();
+        
+        // Filter state
+        private string _selectedTierFilter = "All";
+        private string _selectedPointsFilter = "All";
+        private string _selectedActivityFilter = "All";
 
         public CustomerManagementWindow()
         {
@@ -18,7 +23,8 @@ namespace WpfApp1
             LoadCustomers();
             
             // Enable sorting for DataGrid
-            CustomerDataGrid.Sorting += CustomerDataGrid_Sorting;
+            if (CustomerDataGrid != null)
+                CustomerDataGrid.Sorting += CustomerDataGrid_Sorting;
             
             // Apply role-based permissions
             ApplyRolePermissions();
@@ -145,7 +151,8 @@ namespace WpfApp1
         private void UpdateDisplayAndPagination()
         {
             // Update DataGrid with current page items
-            CustomerDataGrid.ItemsSource = _paginationHelper.GetCurrentPageItems();
+            if (CustomerDataGrid != null)
+                CustomerDataGrid.ItemsSource = _paginationHelper.GetCurrentPageItems();
             
             // Update pagination info
             if (CustomerPageInfoTextBlock != null)
@@ -349,7 +356,8 @@ namespace WpfApp1
             TierComboBox.SelectedIndex = 0;
             PointsTextBox.Text = "0";
             _selectedCustomer = null;
-            CustomerDataGrid.SelectedItem = null;
+            if (CustomerDataGrid != null)
+                CustomerDataGrid.SelectedItem = null;
             CustomerNameTextBox.Focus();
         }
 
@@ -461,23 +469,48 @@ namespace WpfApp1
 
         private void FilterCustomers()
         {
-            string searchTerm = SearchTextBox.Text.ToLower();
-            if (string.IsNullOrWhiteSpace(searchTerm))
+            // Add null check for SearchTextBox during initialization
+            string searchTerm = SearchTextBox?.Text?.ToLower() ?? string.Empty;
+            
+            _paginationHelper.SetFilter(c =>
             {
-                _paginationHelper.SetFilter(null!);
-            }
-            else
-            {
-                _paginationHelper.SetFilter(c =>
+                // Search filter
+                bool matchesSearch = string.IsNullOrWhiteSpace(searchTerm) ||
                     c.Name.ToLower().Contains(searchTerm) ||
                     c.Phone.ToLower().Contains(searchTerm) ||
                     c.Email.ToLower().Contains(searchTerm) ||
                     c.CustomerType.ToLower().Contains(searchTerm) ||
                     c.Address.ToLower().Contains(searchTerm) ||
                     (c.Tier ?? string.Empty).ToLower().Contains(searchTerm) ||
-                    c.Points.ToString().Contains(searchTerm)
-                );
-            }
+                    c.Points.ToString().Contains(searchTerm);
+                
+                // Tier filter
+                bool matchesTier = _selectedTierFilter == "All" || 
+                    string.Equals(c.Tier, _selectedTierFilter, StringComparison.OrdinalIgnoreCase);
+                
+                // Points filter
+                bool matchesPoints = _selectedPointsFilter switch
+                {
+                    "Under100" => c.Points < 100,
+                    "100To500" => c.Points >= 100 && c.Points < 500,
+                    "500To1000" => c.Points >= 500 && c.Points < 1000,
+                    "Over1000" => c.Points >= 1000,
+                    _ => true // "All"
+                };
+                
+                // Activity filter - check if customer has any invoices
+                bool matchesActivity = _selectedActivityFilter switch
+                {
+                    "HasPurchases" => DatabaseHelper.GetCustomerPurchaseHistory(c.Id).Any(),
+                    "NoPurchases" => !DatabaseHelper.GetCustomerPurchaseHistory(c.Id).Any(),
+                    _ => true // "All"
+                };
+                
+                // Combine all filters with AND logic
+                return matchesSearch && matchesTier && matchesPoints && matchesActivity;
+            });
+            UpdateDisplayAndPagination();
+            UpdateStatusText();
         }
         
         private void UpdateLoyaltyButton_Click(object sender, RoutedEventArgs e)
@@ -501,6 +534,45 @@ namespace WpfApp1
             {
                 MessageBox.Show("Cập nhật thất bại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+        
+        private void CustomerFilterChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Update filter state based on which ComboBox changed
+            if (sender == FilterTierComboBox && FilterTierComboBox.SelectedItem is ComboBoxItem tierItem)
+            {
+                _selectedTierFilter = tierItem.Tag?.ToString() ?? "All";
+            }
+            else if (sender == FilterPointsComboBox && FilterPointsComboBox.SelectedItem is ComboBoxItem pointsItem)
+            {
+                _selectedPointsFilter = pointsItem.Tag?.ToString() ?? "All";
+            }
+            else if (sender == FilterActivityComboBox && FilterActivityComboBox.SelectedItem is ComboBoxItem activityItem)
+            {
+                _selectedActivityFilter = activityItem.Tag?.ToString() ?? "All";
+            }
+            
+            // Apply filters
+            FilterCustomers();
+        }
+        
+        private void ResetCustomerFiltersButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Reset all filter ComboBoxes to default
+            FilterTierComboBox.SelectedIndex = 0;
+            FilterPointsComboBox.SelectedIndex = 0;
+            FilterActivityComboBox.SelectedIndex = 0;
+            
+            // Reset filter state
+            _selectedTierFilter = "All";
+            _selectedPointsFilter = "All";
+            _selectedActivityFilter = "All";
+            
+            // Clear search box
+            SearchTextBox.Clear();
+            
+            // Reapply filters (which will show all customers)
+            FilterCustomers();
         }
 
 

@@ -224,6 +224,8 @@
                     <Grid Margin="0,0,0,15">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         
                         <TextBlock Grid.Row="0" 
@@ -233,7 +235,116 @@
                                    Foreground="#1CB5E0"
                                    Margin="0,0,0,10"/>
                         
-                        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <!-- Filter Panel -->
+                        <Border Grid.Row="1" Background="#F8F9FA" Padding="12" Margin="0,0,0,10" CornerRadius="8">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                
+                                <TextBlock Grid.Row="0" Text="🔍 Lọc theo:" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="#555"/>
+                                
+                                <Grid Grid.Row="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Category Filter -->
+                                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                        <TextBlock Text="Danh Mục" FontSize="11" Foreground="#666" Margin="0,0,0,3"/>
+                                        <ComboBox x:Name="FilterCategoryComboBox" 
+                                                  Height="32" 
+                                                  SelectionChanged="FilterChanged"
+                                                  DisplayMemberPath="Name"
+                                                  SelectedValuePath="Id">
+                                            <ComboBox.ItemContainerStyle>
+                                                <Style TargetType="ComboBoxItem">
+                                                    <Setter Property="Padding" Value="8,4"/>
+                                                </Style>
+                                            </ComboBox.ItemContainerStyle>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <!-- Supplier Filter -->
+                                    <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                                        <TextBlock Text="Nhà Cung Cấp" FontSize="11" Foreground="#666" Margin="0,0,0,3"/>
+                                        <ComboBox x:Name="FilterSupplierComboBox" 
+                                                  Height="32" 
+                                                  SelectionChanged="FilterChanged"
+                                                  DisplayMemberPath="Name"
+                                                  SelectedValuePath="Id">
+                                            <ComboBox.ItemContainerStyle>
+                                                <Style TargetType="ComboBoxItem">
+                                                    <Setter Property="Padding" Value="8,4"/>
+                                                </Style>
+                                            </ComboBox.ItemContainerStyle>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <!-- Stock Status Filter -->
+                                    <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                                        <TextBlock Text="Tồn Kho" FontSize="11" Foreground="#666" Margin="0,0,0,3"/>
+                                        <ComboBox x:Name="FilterStockComboBox" 
+                                                  Height="32" 
+                                                  SelectedIndex="0"
+                                                  SelectionChanged="FilterChanged">
+                                            <ComboBoxItem Content="Tất cả" Tag="All"/>
+                                            <ComboBoxItem Content="Hết hàng (0)" Tag="OutOfStock"/>
+                                            <ComboBoxItem Content="Sắp hết (&lt;10)" Tag="LowStock"/>
+                                            <ComboBoxItem Content="Còn hàng (≥10)" Tag="InStock"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <!-- Promotion Filter -->
+                                    <StackPanel Grid.Column="3" Margin="0,0,8,0">
+                                        <TextBlock Text="Khuyến Mãi" FontSize="11" Foreground="#666" Margin="0,0,0,3"/>
+                                        <ComboBox x:Name="FilterPromoComboBox" 
+                                                  Height="32" 
+                                                  SelectedIndex="0"
+                                                  SelectionChanged="FilterChanged">
+                                            <ComboBoxItem Content="Tất cả" Tag="All"/>
+                                            <ComboBoxItem Content="Có KM" Tag="HasPromo"/>
+                                            <ComboBoxItem Content="Không KM" Tag="NoPromo"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <!-- Price Range Filter -->
+                                    <StackPanel Grid.Column="4" Margin="0,0,8,0">
+                                        <TextBlock Text="Khoảng Giá" FontSize="11" Foreground="#666" Margin="0,0,0,3"/>
+                                        <ComboBox x:Name="FilterPriceComboBox" 
+                                                  Height="32" 
+                                                  SelectedIndex="0"
+                                                  SelectionChanged="FilterChanged">
+                                            <ComboBoxItem Content="Tất cả" Tag="All"/>
+                                            <ComboBoxItem Content="&lt; 100k" Tag="Under100k"/>
+                                            <ComboBoxItem Content="100k - 500k" Tag="100kTo500k"/>
+                                            <ComboBoxItem Content="500k - 1M" Tag="500kTo1M"/>
+                                            <ComboBoxItem Content="&gt; 1M" Tag="Over1M"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <!-- Reset Button -->
+                                    <Button Grid.Column="5" 
+                                            Content="🔄 Reset" 
+                                            Height="32" 
+                                            Width="80"
+                                            Background="#9E9E9E" 
+                                            Foreground="White"
+                                            Click="ResetFiltersButton_Click"
+                                            VerticalAlignment="Bottom"
+                                            FontSize="12"
+                                            Padding="8,4"/>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                        
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
                             <TextBox x:Name="SearchTextBox" 
                                      Width="250" 
                                      Height="32"

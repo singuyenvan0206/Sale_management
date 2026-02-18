@@ -142,19 +142,96 @@
                             
                             <!-- Search Section -->
                             <Grid Grid.Row="0" Margin="0,0,0,15">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
                                 
-                                <TextBlock Grid.Column="0" 
+                                <TextBlock Grid.Row="0" 
                                            Text="🔍 Tìm Kiếm Khách Hàng" 
                                            FontSize="16" 
                                            FontWeight="Bold" 
                                            Foreground="#1CB5E0"
-                                           VerticalAlignment="Center"/>
+                                           Margin="0,0,0,10"/>
                                 
-                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <!-- Filter Panel -->
+                                <Border Grid.Row="1" Background="#F8F9FA" Padding="12" Margin="0,0,0,10" CornerRadius="8">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        
+                                        <TextBlock Grid.Row="0" Text="🔍 Lọc theo:" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="#555"/>
+                                        
+                                        <Grid Grid.Row="1">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            
+                                            <!-- Tier Filter -->
+                                            <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                                <TextBlock Text="Hạng Thành Viên" FontSize="11" Foreground="#666" Margin="0,0,0,3"/>
+                                                <ComboBox x:Name="FilterTierComboBox" 
+                                                          Height="32" 
+                                                          SelectedIndex="0"
+                                                          SelectionChanged="CustomerFilterChanged">
+                                                    <ComboBoxItem Content="Tất cả" Tag="All"/>
+                                                    <ComboBoxItem Content="Regular" Tag="Regular"/>
+                                                    <ComboBoxItem Content="Silver" Tag="Silver"/>
+                                                    <ComboBoxItem Content="Gold" Tag="Gold"/>
+                                                    <ComboBoxItem Content="Platinum" Tag="Platinum"/>
+                                                </ComboBox>
+                                            </StackPanel>
+                                            
+                                            <!-- Points Filter -->
+                                            <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                                                <TextBlock Text="Điểm Tích Lũy" FontSize="11" Foreground="#666" Margin="0,0,0,3"/>
+                                                <ComboBox x:Name="FilterPointsComboBox" 
+                                                          Height="32" 
+                                                          SelectedIndex="0"
+                                                          SelectionChanged="CustomerFilterChanged">
+                                                    <ComboBoxItem Content="Tất cả" Tag="All"/>
+                                                    <ComboBoxItem Content="&lt; 100 điểm" Tag="Under100"/>
+                                                    <ComboBoxItem Content="100 - 500 điểm" Tag="100To500"/>
+                                                    <ComboBoxItem Content="500 - 1000 điểm" Tag="500To1000"/>
+                                                    <ComboBoxItem Content="&gt; 1000 điểm" Tag="Over1000"/>
+                                                </ComboBox>
+                                            </StackPanel>
+                                            
+                                            <!-- Activity Filter -->
+                                            <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                                                <TextBlock Text="Trạng Thái" FontSize="11" Foreground="#666" Margin="0,0,0,3"/>
+                                                <ComboBox x:Name="FilterActivityComboBox" 
+                                                          Height="32" 
+                                                          SelectedIndex="0"
+                                                          SelectionChanged="CustomerFilterChanged">
+                                                    <ComboBoxItem Content="Tất cả" Tag="All"/>
+                                                    <ComboBoxItem Content="Có giao dịch" Tag="HasPurchases"/>
+                                                    <ComboBoxItem Content="Chưa mua hàng" Tag="NoPurchases"/>
+                                                </ComboBox>
+                                            </StackPanel>
+                                            
+                                            <!-- Reset Button -->
+                                            <Button Grid.Column="3" 
+                                                    Content="🔄 Reset" 
+                                                    Height="32" 
+                                                    Width="80"
+                                                    Background="#9E9E9E" 
+                                                    Foreground="White"
+                                                    Click="ResetCustomerFiltersButton_Click"
+                                                    VerticalAlignment="Bottom"
+                                                    FontSize="12"
+                                                    Padding="8,4"/>
+                                        </Grid>
+                                    </Grid>
+                                </Border>
+                                
+                                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
                                     <TextBox x:Name="SearchTextBox" 
                                              Width="250" 
                                              Margin="0,0,10,0"

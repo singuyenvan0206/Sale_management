@@ -10,6 +10,13 @@ namespace WpfApp1
         private List<Supplier> _suppliers = new();
         private ProductViewModel? _selectedProduct;
         private PaginationHelper<ProductViewModel> _paginationHelper = new();
+        
+        // Filter state
+        private int? _selectedCategoryId = null;
+        private int? _selectedSupplierId = null;
+        private string _selectedStockFilter = "All";
+        private string _selectedPromoFilter = "All";
+        private string _selectedPriceFilter = "All";
 
         public ProductManagementWindow()
         {
@@ -25,6 +32,7 @@ namespace WpfApp1
             LoadCategories();
             LoadSuppliers();
             LoadProducts();
+            PopulateFilterComboBoxes();
         }
 
         private void LoadSuppliers()
@@ -386,20 +394,57 @@ namespace WpfApp1
 
         private void FilterProducts()
         {
-            string searchTerm = SearchTextBox.Text.ToLower();
-            if (string.IsNullOrWhiteSpace(searchTerm))
+            string searchTerm = SearchTextBox?.Text?.ToLower() ?? string.Empty;
+            
+            _paginationHelper.SetFilter(p =>
             {
-                _paginationHelper.SetFilter(null!);
-            }
-            else
-            {
-                _paginationHelper.SetFilter(p =>
+                // Search filter
+                bool matchesSearch = string.IsNullOrWhiteSpace(searchTerm) ||
                     p.Name.ToLower().Contains(searchTerm) ||
                     p.Code.ToLower().Contains(searchTerm) ||
                     p.CategoryName.ToLower().Contains(searchTerm) ||
-                    p.Description.ToLower().Contains(searchTerm)
-                );
-            }
+                    p.Description.ToLower().Contains(searchTerm);
+                
+                // Category filter
+                bool matchesCategory = !_selectedCategoryId.HasValue || p.CategoryId == _selectedCategoryId.Value;
+                
+                // Supplier filter
+                bool matchesSupplier = !_selectedSupplierId.HasValue || p.SupplierId == _selectedSupplierId.Value;
+                
+                // Stock filter
+                bool matchesStock = _selectedStockFilter switch
+                {
+                    "OutOfStock" => p.StockQuantity == 0,
+                    "LowStock" => p.StockQuantity > 0 && p.StockQuantity < 10,
+                    "InStock" => p.StockQuantity >= 10,
+                    _ => true // "All"
+                };
+                
+                // Promotion filter
+                bool matchesPromo = _selectedPromoFilter switch
+                {
+                    "HasPromo" => p.PromoDiscountPercent > 0 && 
+                                  (!p.PromoStartDate.HasValue || p.PromoStartDate.Value <= DateTime.Now) &&
+                                  (!p.PromoEndDate.HasValue || p.PromoEndDate.Value >= DateTime.Now),
+                    "NoPromo" => p.PromoDiscountPercent == 0 || 
+                                 (p.PromoStartDate.HasValue && p.PromoStartDate.Value > DateTime.Now) ||
+                                 (p.PromoEndDate.HasValue && p.PromoEndDate.Value < DateTime.Now),
+                    _ => true // "All"
+                };
+                
+                // Price filter
+                bool matchesPrice = _selectedPriceFilter switch
+                {
+                    "Under100k" => p.SalePrice < 100000,
+                    "100kTo500k" => p.SalePrice >= 100000 && p.SalePrice < 500000,
+                    "500kTo1M" => p.SalePrice >= 500000 && p.SalePrice < 1000000,
+                    "Over1M" => p.SalePrice >= 1000000,
+                    _ => true // "All"
+                };
+                
+                // Combine all filters with AND logic
+                return matchesSearch && matchesCategory && matchesSupplier && matchesStock && matchesPromo && matchesPrice;
+            });
         }
 
         // Pagination event handlers
@@ -514,6 +559,77 @@ namespace WpfApp1
                 }
             }
         }
+        
+        private void PopulateFilterComboBoxes()
+        {
+            // Populate Category Filter
+            var allCategoriesItem = new CategoryViewModel { Id = 0, Name = "Tất cả danh mục" };
+            var categoryList = new List<CategoryViewModel> { allCategoriesItem };
+            categoryList.AddRange(_categories);
+            FilterCategoryComboBox.ItemsSource = categoryList;
+            FilterCategoryComboBox.SelectedIndex = 0;
+            
+            // Populate Supplier Filter
+            var allSuppliersItem = new Supplier { Id = 0, Name = "Tất cả nhà cung cấp" };
+            var supplierList = new List<Supplier> { allSuppliersItem };
+            supplierList.AddRange(_suppliers);
+            FilterSupplierComboBox.ItemsSource = supplierList;
+            FilterSupplierComboBox.SelectedIndex = 0;
+        }
+        
+        private void FilterChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Update filter state based on which ComboBox changed
+            if (sender == FilterCategoryComboBox && FilterCategoryComboBox.SelectedValue != null)
+            {
+                int categoryId = (int)FilterCategoryComboBox.SelectedValue;
+                _selectedCategoryId = categoryId == 0 ? null : categoryId;
+            }
+            else if (sender == FilterSupplierComboBox && FilterSupplierComboBox.SelectedValue != null)
+            {
+                int supplierId = (int)FilterSupplierComboBox.SelectedValue;
+                _selectedSupplierId = supplierId == 0 ? null : supplierId;
+            }
+            else if (sender == FilterStockComboBox && FilterStockComboBox.SelectedItem is ComboBoxItem stockItem)
+            {
+                _selectedStockFilter = stockItem.Tag?.ToString() ?? "All";
+            }
+            else if (sender == FilterPromoComboBox && FilterPromoComboBox.SelectedItem is ComboBoxItem promoItem)
+            {
+                _selectedPromoFilter = promoItem.Tag?.ToString() ?? "All";
+            }
+            else if (sender == FilterPriceComboBox && FilterPriceComboBox.SelectedItem is ComboBoxItem priceItem)
+            {
+                _selectedPriceFilter = priceItem.Tag?.ToString() ?? "All";
+            }
+            
+            // Apply filters
+            FilterProducts();
+        }
+        
+        private void ResetFiltersButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Reset all filter ComboBoxes to default
+            FilterCategoryComboBox.SelectedIndex = 0;
+            FilterSupplierComboBox.SelectedIndex = 0;
+            FilterStockComboBox.SelectedIndex = 0;
+            FilterPromoComboBox.SelectedIndex = 0;
+            FilterPriceComboBox.SelectedIndex = 0;
+            
+            // Reset filter state
+            _selectedCategoryId = null;
+            _selectedSupplierId = null;
+            _selectedStockFilter = "All";
+            _selectedPromoFilter = "All";
+            _selectedPriceFilter = "All";
+            
+            // Clear search box
+            SearchTextBox.Clear();
+            
+            // Reapply filters (which will show all products)
+            FilterProducts();
+        }
+        
         private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
         {
             var scrollViewer = sender as ScrollViewer;
