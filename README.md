@@ -89,6 +89,7 @@ Update-Package -reinstall
 - Nếu gặp lỗi thiếu native SQLite, đảm bảo `SQLitePCLRaw.provider.e_sqlite3` được copy cùng output hoặc cài đặt runtime phù hợp.
 - Khi thay đổi mô hình dữ liệu, xem lại các phương thức trong `DatabaseHelper` để đảm bảo đồng bộ tạo bảng/migration tối thiểu.
 
+<<<<<<< HEAD
 ### Tài liệu liên quan
 - Sơ đồ lớp: xem `Class_Diagram.md`
 - Hướng dẫn kết nối phpMyAdmin: xem `PHPMYADMIN_SETUP.md`
@@ -97,5 +98,10 @@ Update-Package -reinstall
 
 ### Giấy phép
 Đính kèm giấy phép của bạn tại đây (MIT/GPL/Commercial…).
+=======
+
+
+
+>>>>>>> f565ded9ee5fcca30336cd6df41b6a5e93bd0ddc
 
 
