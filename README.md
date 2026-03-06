@@ -91,17 +91,10 @@ Update-Package -reinstall
 
 <<<<<<< HEAD
 ### Tài liệu liên quan
-- Sơ đồ lớp: xem `Class_Diagram.md`
 - Hướng dẫn kết nối phpMyAdmin: xem `PHPMYADMIN_SETUP.md`
 - Database schema: xem `database_schema.sql`
 - Sample data: xem `sample_data.sql`
 
-### Giấy phép
-Đính kèm giấy phép của bạn tại đây (MIT/GPL/Commercial…).
-=======
 
-
-
->>>>>>> f565ded9ee5fcca30336cd6df41b6a5e93bd0ddc
 
 
