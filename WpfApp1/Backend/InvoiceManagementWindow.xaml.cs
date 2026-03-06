@@ -240,7 +240,8 @@ namespace WpfApp1
 
             var selectedProduct = (ProductListItem)ProductComboBox.SelectedItem;
             var quantity = int.Parse(QuantityTextBox.Text);
-            var unitPrice = GetUnitPrice(selectedProduct);
+            var unitPrice = GetUnitPrice(selectedProduct, UnitPriceTextBox.Text);
+
 
             AddOrUpdateInvoiceItem(selectedProduct, quantity, unitPrice);
             ClearProductEntry();
@@ -292,10 +293,10 @@ namespace WpfApp1
             return true;
         }
 
-        private decimal GetUnitPrice(ProductListItem product)
+        internal static decimal GetUnitPrice(ProductListItem product, string manualPriceText = "")
         {
-            if (!string.IsNullOrWhiteSpace(UnitPriceTextBox.Text) &&
-                decimal.TryParse(UnitPriceTextBox.Text, out decimal manualPrice) &&
+            if (!string.IsNullOrWhiteSpace(manualPriceText) &&
+                decimal.TryParse(manualPriceText, out decimal manualPrice) &&
                 manualPrice >= 0)
             {
                 return manualPrice;
@@ -304,14 +305,16 @@ namespace WpfApp1
             return ApplyPercentDiscount(product.UnitPrice, promoPercent);
         }
 
-        private static decimal ApplyPercentDiscount(decimal price, decimal percent)
+        internal static decimal ApplyPercentDiscount(decimal price, decimal percent)
+
         {
             if (percent <= 0) return price;
             if (percent >= 100) return 0m;
             return Math.Round(price * (1 - (percent / 100m)), 2);
         }
 
-        private static decimal GetActivePromoPercent(ProductListItem product)
+        internal static decimal GetActivePromoPercent(ProductListItem product)
+
         {
             if (product.PromoDiscountPercent <= 0) return 0m;
             var now = DateTime.Now;
@@ -445,18 +448,29 @@ namespace WpfApp1
                 // Auto-apply best voucher based on new subtotal
                 ApplyBestVoucher(subtotal);
 
-                // Thuế theo danh mục: tính tổng thuế từ từng dòng
-                var taxAmount = _invoiceItems.Sum(item => item.LineTotal * (item.CategoryTaxPercent / 100m));
-                
                 // Recalculate discount based on (potentially updated) UI
-                var discount = CalculateDiscount(subtotal);
-                var tierDiscount = CalculateTierDiscount(subtotal);
+                var discountMode = (DiscountModeComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "VND";
+                var discountVal = decimal.TryParse(DiscountValueTextBox.Text, out var dv) ? dv : 0m;
+                var discount = CalculateDiscount(subtotal, discountMode, discountVal);
+                
+                var (tier, _) = GetSelectedCustomerLoyalty();
+                var tierDiscountPercent = TierSettingsManager.GetTierDiscount(tier);
+                var tierDiscount = CalculateTierDiscount(subtotal, tierDiscountPercent);
 
                 var totalDiscount = discount + tierDiscount;
+
+
+                // Thuế theo danh mục: tính tổng thuế từ từng dòng
+                // Thuế được tính trên giá trị sau giảm giá (tỉ lệ giảm giá chia đều cho các mục)
+                decimal discountRatio = subtotal > 0 ? totalDiscount / subtotal : 0;
+                var taxAmount = _invoiceItems.Sum(item => 
+                    (item.LineTotal * (1 - discountRatio)) * (item.CategoryTaxPercent / 100m));
+                
                 var total = Math.Max(0, subtotal + taxAmount - totalDiscount);
 
                 UpdateTotalsDisplay(taxAmount, totalDiscount, total);
                 UpdateQRCode(total);
+
             }
             catch
             {
@@ -466,21 +480,14 @@ namespace WpfApp1
 
         private void ApplyBestVoucher(decimal subtotal)
         {
-            try
-            {
-                if (VoucherComboBox == null) return;
-                
+                if (_selectedCustomerId == null) return;
+
                 var vouchers = VoucherComboBox.ItemsSource as List<Voucher>;
                 if (vouchers == null || vouchers.Count == 0) return;
-
-                var now = DateTime.Now;
-
+                
                 var bestVoucher = vouchers
-                    .Where(v => 
-                                subtotal >= v.MinInvoiceAmount &&
-                                (v.StartDate == null || now >= v.StartDate) &&
-                                (v.EndDate == null || now <= v.EndDate) &&
-                                (v.UsageLimit == 0 || v.UsedCount < v.UsageLimit))
+
+                    .Where(v => v.IsValid(subtotal, DatabaseHelper.GetVoucherUsageCountForCustomer(v.Id, _selectedCustomerId.Value)))
                     .OrderByDescending(v => CalculateVoucherValue(subtotal, v))
                     .FirstOrDefault();
 
@@ -488,8 +495,7 @@ namespace WpfApp1
                 {
                      VoucherComboBox.SelectedItem = bestVoucher;
                 }
-            }
-            catch { }
+
         }
 
         private void VoucherComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -504,9 +510,14 @@ namespace WpfApp1
                     foreach (ComboBoxItem item in DiscountModeComboBox.Items)
                     {
                         var content = item.Content?.ToString()?.Trim();
-                        var type = voucher.DiscountType?.Trim();
+                        var type = voucher.DiscountType;
                         
-                        if (string.Equals(content, type, StringComparison.OrdinalIgnoreCase))
+                        // Standardize string comparison
+                        bool isMatch = string.Equals(content, type, StringComparison.OrdinalIgnoreCase) ||
+                                      (content == "%" && type == Voucher.TypePercentage) ||
+                                      (content == "VND" && type == Voucher.TypeFixedAmount);
+                        
+                        if (isMatch)
                         {
                             DiscountModeComboBox.SelectedItem = item;
                             break;
@@ -514,6 +525,7 @@ namespace WpfApp1
                     }
                     DiscountValueTextBox.Text = voucher.DiscountValue.ToString("G29");
                 }
+
                 else
                 {
                      // User cleared voucher or auto-cleared -> Reset discount?
@@ -528,14 +540,18 @@ namespace WpfApp1
             }
         }
 
-        private decimal CalculateVoucherValue(decimal subtotal, Voucher voucher)
+        internal static decimal CalculateVoucherValue(decimal subtotal, Voucher voucher)
+
         {
-            if (voucher.DiscountType == "%")
+            if (voucher.DiscountType == Voucher.TypePercentage || voucher.DiscountType == "%")
             {
-                return subtotal * (voucher.DiscountValue / 100m);
+                var value = subtotal * (voucher.DiscountValue / 100m);
+                if (voucher.MaxDiscountAmount > 0) value = Math.Min(value, voucher.MaxDiscountAmount);
+                return value;
             }
             return voucher.DiscountValue;
         }
+
 
         private void UpdateSubtotalDisplay(decimal subtotal)
         {
@@ -543,9 +559,12 @@ namespace WpfApp1
 
             if (TierDiscountInlineText != null)
             {
-                var tierDiscount = CalculateTierDiscount(subtotal);
+                var (tier, _) = GetSelectedCustomerLoyalty();
+                var tierDiscountPercent = TierSettingsManager.GetTierDiscount(tier);
+                var tierDiscount = CalculateTierDiscount(subtotal, tierDiscountPercent);
                 TierDiscountInlineText.Text = $"(+ Ưu đãi hạng: {tierDiscount:F2})";
             }
+
         }
 
         private decimal GetTaxPercent()
@@ -553,22 +572,16 @@ namespace WpfApp1
             return decimal.TryParse(TaxPercentTextBox?.Text, out var tax) ? tax : 0m;
         }
 
-        private decimal CalculateDiscount(decimal subtotal)
+        internal static decimal CalculateDiscount(decimal subtotal, string mode, decimal discountValue)
         {
-            if (DiscountModeComboBox == null || DiscountValueTextBox == null) return 0m;
-
-            var mode = (DiscountModeComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "VND";
-            var discountValue = decimal.TryParse(DiscountValueTextBox.Text, out var value) ? value : 0m;
-
             return mode == "%" ? Math.Round(subtotal * (discountValue / 100m), 2) : discountValue;
         }
 
-        private decimal CalculateTierDiscount(decimal subtotal)
+        internal static decimal CalculateTierDiscount(decimal subtotal, decimal tierDiscountPercent)
         {
-            var (tier, _) = GetSelectedCustomerLoyalty();
-            var tierDiscountPercent = TierSettingsManager.GetTierDiscount(tier);
             return Math.Round(subtotal * (tierDiscountPercent / 100m), 2);
         }
+
 
         private void UpdateTotalsDisplay(decimal taxAmount, decimal discount, decimal total)
         {
@@ -897,10 +910,17 @@ namespace WpfApp1
 
         private decimal CalculateTotalDiscount(decimal subtotal)
         {
-            var manualDiscount = CalculateDiscount(subtotal);
-            var tierDiscount = CalculateTierDiscount(subtotal);
+            var discountMode = (DiscountModeComboBox?.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "VND";
+            var discountVal = decimal.TryParse(DiscountValueTextBox?.Text, out var dv) ? dv : 0m;
+            var manualDiscount = CalculateDiscount(subtotal, discountMode, discountVal);
+            
+            var (tier, _) = GetSelectedCustomerLoyalty();
+            var tierDiscountPercent = TierSettingsManager.GetTierDiscount(tier);
+            var tierDiscount = CalculateTierDiscount(subtotal, tierDiscountPercent);
+            
             return manualDiscount + tierDiscount;
         }
+
 
         private void ProcessSuccessfulSave(int customerId)
         {

@@ -1293,6 +1293,17 @@ namespace WpfApp1
 
                 foreach (var (productId, quantity, unitPrice) in items)
                 {
+                    // Check stock AND decrement in one atomic operation
+                    string updateStock = "UPDATE Products SET StockQuantity = StockQuantity - @qty WHERE Id=@pid AND StockQuantity >= @qty;";
+                    using var stockCmd = new MySqlCommand(updateStock, connection, tx);
+                    stockCmd.Parameters.AddWithValue("@qty", quantity);
+                    stockCmd.Parameters.AddWithValue("@pid", productId);
+                    
+                    if (stockCmd.ExecuteNonQuery() == 0)
+                    {
+                        throw new Exception($"Product ID {productId} is out of stock or insufficient quantity.");
+                    }
+
                     decimal lineTotal = unitPrice * quantity;
                     string insertItem = @"INSERT INTO InvoiceItems (InvoiceId, ProductId, EmployeeId, UnitPrice, Quantity, LineTotal)
                                            VALUES (@InvoiceId, @ProductId, @EmployeeId, @UnitPrice, @Quantity, @LineTotal);";
@@ -1304,23 +1315,40 @@ namespace WpfApp1
                     itemCmd.Parameters.AddWithValue("@Quantity", quantity);
                     itemCmd.Parameters.AddWithValue("@LineTotal", lineTotal);
                     itemCmd.ExecuteNonQuery();
-
-                    string updateStock = "UPDATE Products SET StockQuantity = GREATEST(0, StockQuantity - @qty) WHERE Id=@pid;";
-                    using var stockCmd = new MySqlCommand(updateStock, connection, tx);
-                    stockCmd.Parameters.AddWithValue("@qty", quantity);
-                    stockCmd.Parameters.AddWithValue("@pid", productId);
-                    stockCmd.ExecuteNonQuery();
                 }
 
                 if (voucherId.HasValue)
                 {
-                    string updateVoucher = "UPDATE Vouchers SET UsedCount = UsedCount + 1 WHERE Id = @vid";
-                    using var vCmd = new MySqlCommand(updateVoucher, connection, tx);
-                    vCmd.Parameters.AddWithValue("@vid", voucherId.Value);
-                    vCmd.ExecuteNonQuery();
+                    // Validate voucher still has usage left within the transaction
+                    string checkVoucher = "SELECT UsageLimit, UsedCount FROM Vouchers WHERE Id = @vid FOR UPDATE";
+                    using var checkVCmd = new MySqlCommand(checkVoucher, connection, tx);
+                    checkVCmd.Parameters.AddWithValue("@vid", voucherId.Value);
+                    using var vReader = checkVCmd.ExecuteReader();
+                    if (vReader.Read())
+                    {
+                        int limit = vReader.GetInt32(0);
+                        int used = vReader.GetInt32(1);
+                        vReader.Close();
+
+                        if (limit > 0 && used >= limit)
+                        {
+                            throw new Exception("Voucher usage limit reached.");
+                        }
+
+                        string updateVoucher = "UPDATE Vouchers SET UsedCount = UsedCount + 1 WHERE Id = @vid";
+                        using var vCmd = new MySqlCommand(updateVoucher, connection, tx);
+                        vCmd.Parameters.AddWithValue("@vid", voucherId.Value);
+                        vCmd.ExecuteNonQuery();
+                    }
+                    else
+                    {
+                        vReader.Close();
+                        throw new Exception("Voucher not found.");
+                    }
                 }
 
                 tx.Commit();
+
                 LastSavedInvoiceId = actualInvoiceId;
                 return true;
             }
@@ -2752,6 +2780,18 @@ namespace WpfApp1
                 };
             }
             return null;
+        }
+
+        public static int GetVoucherUsageCountForCustomer(int voucherId, int customerId)
+        {
+            if (voucherId <= 0 || customerId <= 0) return 0;
+            using var connection = new MySqlConnection(ConnectionString);
+            connection.Open();
+            string sql = "SELECT COUNT(*) FROM Invoices WHERE VoucherId = @vid AND CustomerId = @cid AND Status != 'Cancelled'";
+            using var cmd = new MySqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@vid", voucherId);
+            cmd.Parameters.AddWithValue("@cid", customerId);
+            return Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
         }
 
         public static void UpdateVoucherUsage(int voucherId)

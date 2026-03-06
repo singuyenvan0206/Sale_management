@@ -62,13 +62,14 @@ namespace WpfApp1
             var voucher = new Voucher
             {
                 Code = CodeTextBox.Text.Trim().ToUpper(),
-                DiscountType = (DiscountTypeComboBox.SelectedIndex == 1) ? "%" : "VND",
+                DiscountType = (DiscountTypeComboBox.SelectedIndex == 1) ? Voucher.TypePercentage : Voucher.TypeFixedAmount,
                 DiscountValue = decimal.Parse(DiscountValueTextBox.Text),
                 MinInvoiceAmount = decimal.Parse(MinInvoiceTextBox.Text),
                 StartDate = StartDatePicker.SelectedDate ?? DateTime.Today,
                 EndDate = EndDatePicker.SelectedDate ?? DateTime.Today,
                 UsageLimit = int.Parse(UsageLimitTextBox.Text),
                 IsActive = IsActiveCheckBox.IsChecked ?? true
+
             };
 
             if (DatabaseHelper.AddVoucher(voucher))
@@ -94,13 +95,14 @@ namespace WpfApp1
             if (!ValidateInput()) return;
 
             selected.Code = CodeTextBox.Text.Trim().ToUpper();
-            selected.DiscountType = (DiscountTypeComboBox.SelectedIndex == 1) ? "%" : "VND";
+            selected.DiscountType = (DiscountTypeComboBox.SelectedIndex == 1) ? Voucher.TypePercentage : Voucher.TypeFixedAmount;
             selected.DiscountValue = decimal.Parse(DiscountValueTextBox.Text);
             selected.MinInvoiceAmount = decimal.Parse(MinInvoiceTextBox.Text);
             selected.StartDate = StartDatePicker.SelectedDate ?? DateTime.Today;
             selected.EndDate = EndDatePicker.SelectedDate ?? DateTime.Today;
             selected.UsageLimit = int.Parse(UsageLimitTextBox.Text);
             selected.IsActive = IsActiveCheckBox.IsChecked ?? true;
+
 
             if (DatabaseHelper.UpdateVoucher(selected))
             {
@@ -170,6 +172,13 @@ namespace WpfApp1
                 DiscountValueTextBox.Focus();
                 return false;
             }
+            if (DiscountTypeComboBox.SelectedIndex == 1 && val > 100)
+            {
+                MessageBox.Show("Phần trăm giảm giá không được vượt quá 100%.", "Lỗi nhập liệu", MessageBoxButton.OK, MessageBoxImage.Warning);
+                DiscountValueTextBox.Focus();
+                return false;
+            }
+
             if (!decimal.TryParse(MinInvoiceTextBox.Text, out var min) || min < 0)
             {
                 MessageBox.Show("Hóa đơn tối thiểu không hợp lệ.", "Lỗi nhập liệu", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -200,8 +209,9 @@ namespace WpfApp1
             if (VouchersListBox.SelectedItem is Voucher selected)
             {
                 CodeTextBox.Text = selected.Code;
-                DiscountTypeComboBox.SelectedIndex = selected.DiscountType == "%" ? 1 : 0;
-                DiscountValueTextBox.Text = selected.DiscountValue.ToString("F0"); // Assuming integer based inputs mostly
+                DiscountTypeComboBox.SelectedIndex = (selected.DiscountType == Voucher.TypePercentage || selected.DiscountType == "%") ? 1 : 0;
+                DiscountValueTextBox.Text = selected.DiscountValue.ToString("F0"); 
+
                 MinInvoiceTextBox.Text = selected.MinInvoiceAmount.ToString("F0");
                 StartDatePicker.SelectedDate = selected.StartDate;
                 EndDatePicker.SelectedDate = selected.EndDate;
