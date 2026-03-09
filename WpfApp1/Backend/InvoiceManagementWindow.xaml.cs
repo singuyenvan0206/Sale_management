@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Text.RegularExpressions;
 
@@ -109,6 +110,11 @@ namespace WpfApp1
                 }
 
                 CustomerSuggestionsListBox.ItemsSource = _filteredCustomerItems;
+                
+                // Force popup to refresh its position relative to the screen
+                CustomerSuggestionsPopup.PlacementTarget = null;
+                CustomerSuggestionsPopup.PlacementTarget = CustomerSearchTextBox;
+                CustomerSuggestionsPopup.IsOpen = false;
                 CustomerSuggestionsPopup.IsOpen = _filteredCustomerItems.Count > 0;
             }
             catch { }
@@ -156,6 +162,95 @@ namespace WpfApp1
                 CustomerSuggestionsPopup.IsOpen = false;
                 CustomerSearchTextBox.Focus();
                 e.Handled = true;
+            }
+        }
+
+        private void CustomerSuggestionsListBox_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            if (sender is DependencyObject obj)
+            {
+                var scrollViewer = GetScrollViewer(obj);
+                if (scrollViewer != null)
+                {
+                    scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta);
+                    e.Handled = true;
+                }
+            }
+        }
+
+        private void ListBox_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            if (sender is DependencyObject obj)
+            {
+                var scrollViewer = GetScrollViewer(obj);
+                if (scrollViewer != null)
+                {
+                    scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta);
+                    e.Handled = true;
+                }
+            }
+        }
+
+        private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            if (sender is ScrollViewer scrollViewer)
+            {
+                scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta);
+                e.Handled = true;
+            }
+        }
+
+        private ScrollViewer? GetScrollViewer(DependencyObject obj)
+        {
+            if (obj is ScrollViewer sv) return sv;
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
+            {
+                var child = VisualTreeHelper.GetChild(obj, i);
+                var result = GetScrollViewer(child);
+                if (result != null) return result;
+            }
+            return null;
+        }
+
+        private void Grid_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            // If customer suggestions are open, redirect scroll to the list box 
+            // even if the mouse is outside it (but inside the window)
+            if (CustomerSuggestionsPopup != null && CustomerSuggestionsPopup.IsOpen)
+            {
+                var scrollViewer = GetScrollViewer(CustomerSuggestionsListBox);
+                if (scrollViewer != null)
+                {
+                    scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - (e.Delta / 2.0)); // Smoother redirect
+                }
+                e.Handled = true;
+                return;
+            }
+
+            // If any ComboBox is open, or it's a specific area, we want to stay "still"
+            // specifically if we are in this window, we don't want the Dashboard (parent) to scroll
+            if (ProductComboBox != null && ProductComboBox.IsDropDownOpen)
+            {
+                e.Handled = true;
+                return;
+            }
+            
+            if (VoucherComboBox != null && VoucherComboBox.IsDropDownOpen)
+            {
+                e.Handled = true;
+                return;
+            }
+            
+            if (PaymentMethodComboBox != null && PaymentMethodComboBox.IsDropDownOpen)
+            {
+                e.Handled = true;
+                return;
+            }
+
+            if (DiscountModeComboBox != null && DiscountModeComboBox.IsDropDownOpen)
+            {
+                e.Handled = true;
+                return;
             }
         }
 
@@ -251,7 +346,7 @@ namespace WpfApp1
 
         private bool ValidateProductSelection()
         {
-            if (ProductComboBox.SelectedItem is not ProductListItem selectedProduct)
+            if (ProductComboBox.SelectedItem is not ProductListItem)
             {
                 MessageBox.Show("Vui lòng chọn sản phẩm.", "Xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
@@ -459,6 +554,11 @@ namespace WpfApp1
 
                 var totalDiscount = discount + tierDiscount;
 
+                // Apply voucher cap if applicable
+                if (VoucherComboBox.SelectedItem is Voucher v && (v.DiscountType == Voucher.TypePercentage || v.DiscountType == "%") && v.MaxDiscountAmount > 0)
+                {
+                    totalDiscount = Math.Min(totalDiscount, v.MaxDiscountAmount + tierDiscount);
+                }
 
                 // Thuế theo danh mục: tính tổng thuế từ từng dòng
                 // Thuế được tính trên giá trị sau giảm giá (tỉ lệ giảm giá chia đều cho các mục)
@@ -555,14 +655,14 @@ namespace WpfApp1
 
         private void UpdateSubtotalDisplay(decimal subtotal)
         {
-            SubtotalTextBlock.Text = subtotal.ToString("F2");
+            SubtotalTextBlock.Text = subtotal.ToString("N0") + "₫";
 
             if (TierDiscountInlineText != null)
             {
                 var (tier, _) = GetSelectedCustomerLoyalty();
                 var tierDiscountPercent = TierSettingsManager.GetTierDiscount(tier);
                 var tierDiscount = CalculateTierDiscount(subtotal, tierDiscountPercent);
-                TierDiscountInlineText.Text = $"(+ Ưu đãi hạng: {tierDiscount:F2})";
+                TierDiscountInlineText.Text = $"(+ Ưu đãi hạng: {tierDiscount:N0}₫)";
             }
 
         }
@@ -585,12 +685,12 @@ namespace WpfApp1
 
         private void UpdateTotalsDisplay(decimal taxAmount, decimal discount, decimal total)
         {
-            TaxAmountTextBlock.Text = taxAmount.ToString("F2");
-            TotalTextBlock.Text = total.ToString("F2");
+            TaxAmountTextBlock.Text = taxAmount.ToString("N0") + "₫";
+            TotalTextBlock.Text = total.ToString("N0") + "₫";
 
             var paid = decimal.TryParse(PaidTextBox?.Text, out var p) ? p : 0m;
             var change = Math.Max(0, paid - total);
-            ChangeTextBlock.Text = change.ToString("F2");
+            ChangeTextBlock.Text = change.ToString("N0") + "₫";
         }
 
         private bool AreTotalsControlsReady()
@@ -599,6 +699,7 @@ namespace WpfApp1
                    TaxPercentTextBox != null &&
                    DiscountModeComboBox != null &&
                    DiscountValueTextBox != null &&
+                   VoucherComboBox != null &&
                    TaxAmountTextBlock != null &&
                    TotalTextBlock != null &&
                    PaidTextBox != null &&
@@ -631,8 +732,8 @@ namespace WpfApp1
                     return;
                 }
 
-                // Lấy giá trị Tổng cộng trực tiếp từ TotalTextBlock để đảm bảo chính xác
-                var totalAmount = decimal.TryParse(TotalTextBlock.Text, out var parsedTotal) ? parsedTotal : total;
+                // Sử dụng total được truyền vào
+                var totalAmount = total;
                 
                 if (totalAmount <= 0)
                 {
@@ -790,8 +891,7 @@ namespace WpfApp1
 
         private void PaymentMethodComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var total = _invoiceItems.Sum(item => item.LineTotal);
-            UpdateQRCode(total);
+            UpdateTotals();
         }
 
         private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -958,7 +1058,18 @@ namespace WpfApp1
             {
                 var subtotal = _invoiceItems.Sum(item => item.LineTotal);
                 var discount = CalculateTotalDiscount(subtotal);
-                var total = Math.Max(0, subtotal - discount);
+                
+                // Recalculate actual total with tax for points
+                var (tier, _) = GetSelectedCustomerLoyalty();
+                var tierDiscountPercent = TierSettingsManager.GetTierDiscount(tier);
+                var tierDiscount = CalculateTierDiscount(subtotal, tierDiscountPercent);
+                var totalDiscount = discount + tierDiscount;
+                
+                decimal discountRatio = subtotal > 0 ? totalDiscount / subtotal : 0;
+                var taxAmount = _invoiceItems.Sum(item => 
+                    (item.LineTotal * (1 - discountRatio)) * (item.CategoryTaxPercent / 100m));
+                    
+                var total = Math.Max(0, subtotal + taxAmount - totalDiscount);
 
                 var (_, currentPoints) = DatabaseHelper.GetCustomerLoyalty(customerId);
                 var earnedPoints = (int)Math.Floor((double)total / 100000);
@@ -1006,15 +1117,6 @@ namespace WpfApp1
             catch { return 1; }
         }
 
-        private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
-        {
-            var scrollViewer = sender as ScrollViewer;
-            if (scrollViewer != null)
-            {
-                scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta);
-                e.Handled = true;
-            }
-        }
 
         #endregion
     }

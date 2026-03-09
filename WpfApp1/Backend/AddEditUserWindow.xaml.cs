@@ -158,5 +158,12 @@ namespace WpfApp1
         {
             ErrorMessageText.Visibility = Visibility.Collapsed;
         }
+        private void Grid_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            if (RoleComboBox?.IsDropDownOpen == true)
+            {
+                e.Handled = true;
+            }
+        }
     }
 }

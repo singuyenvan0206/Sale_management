@@ -629,13 +629,17 @@ namespace WpfApp1
             // Reapply filters (which will show all products)
             FilterProducts();
         }
-        
-        private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+
+        private void Grid_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
         {
-            var scrollViewer = sender as ScrollViewer;
-            if (scrollViewer != null)
+            if (CategoryComboBox?.IsDropDownOpen == true ||
+                SupplierComboBox?.IsDropDownOpen == true ||
+                FilterCategoryComboBox?.IsDropDownOpen == true ||
+                FilterSupplierComboBox?.IsDropDownOpen == true ||
+                FilterStockComboBox?.IsDropDownOpen == true ||
+                FilterPromoComboBox?.IsDropDownOpen == true ||
+                FilterPriceComboBox?.IsDropDownOpen == true)
             {
-                scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta);
                 e.Handled = true;
             }
         }

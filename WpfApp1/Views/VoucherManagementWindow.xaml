@@ -40,7 +40,7 @@
         <local:BooleanToStatusTextConverter x:Key="BooleanToStatusTextConverter"/>
     </Window.Resources>
     
-    <Grid Background="#F5F5F5">
+    <Grid Background="#F5F5F5" PreviewMouseWheel="Grid_PreviewMouseWheel">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -60,7 +60,7 @@
 
             <!-- Input Form -->
             <Border Grid.Column="0" CornerRadius="12" Padding="20" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,20,0">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
                         <TextBlock Text="Mã Voucher *" FontWeight="Bold"/>
                         <TextBox x:Name="CodeTextBox" CharacterCasing="Upper"/>

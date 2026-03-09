@@ -418,15 +418,6 @@ namespace WpfApp1
             }
         }
 
-        private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
-        {
-            var scrollViewer = sender as ScrollViewer;
-            if (scrollViewer != null)
-            {
-                scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta);
-                e.Handled = true;
-            }
-        }
 
         private void NavList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {

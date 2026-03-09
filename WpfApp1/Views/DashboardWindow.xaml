@@ -52,7 +52,7 @@
                     <TextBlock x:Name="UserInfoTextBlock" 
                                Text="Welcome, Admin" 
                                FontSize="16" 
-                               Foreground="#E3F2FD" 
+                               Foreground="#B3E5FC" 
                                VerticalAlignment="Center"
                                Margin="20,0,0,0"/>
                 </StackPanel>
@@ -130,7 +130,7 @@
                     </Border>
                     
                     <!-- Navigation Menu -->
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                         <StackPanel Margin="0,20,0,0">
                             <ListBox x:Name="NavList" 
                                      SelectionChanged="NavList_SelectionChanged" 
@@ -202,7 +202,7 @@
 
             <!-- Right Content -->
             <Grid Grid.Column="1">
-                <ScrollViewer x:Name="DefaultContentScrollViewer" VerticalScrollBarVisibility="Auto" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
+                <ScrollViewer x:Name="DefaultContentScrollViewer" VerticalScrollBarVisibility="Auto">
                     <Grid Margin="30">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -287,7 +287,7 @@
                         </Grid>
                     </Grid>
                 </ScrollViewer>
-                <ScrollViewer Grid.Column="1" x:Name="MainContentScrollViewer" VerticalScrollBarVisibility="Auto" Visibility="Collapsed" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
+                <ScrollViewer x:Name="MainContentScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Visibility="Collapsed">
                     <ContentControl x:Name="MainContentHost"/>
                 </ScrollViewer>
             </Grid>

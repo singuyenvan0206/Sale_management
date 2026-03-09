@@ -20,7 +20,7 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="🖨️ Xem Trước In Hóa Đơn" FontSize="18" FontWeight="Bold" Foreground="White"/>
-                    <TextBlock Text=" - Kiểm tra trước khi in" FontSize="12" Foreground="#E3F2FD" Margin="8,0,0,0"/>
+                    <TextBlock Text=" - Kiểm tra trước khi in" FontSize="12" Foreground="#B3E5FC" Margin="8,0,0,0"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button x:Name="PrintButton" Content="🖨️ In Hóa Đơn" Width="120" Height="36" Background="#4CAF50" Foreground="White" FontWeight="SemiBold" Click="PrintButton_Click" Margin="0,0,8,0"/>
@@ -28,7 +28,7 @@
                 </StackPanel>
             </Grid>
         </Border>
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <Border Background="White" Padding="50" Margin="20">
                 <Grid x:Name="InvoicePreviewRoot" Width="800">
                     <Grid.RowDefinitions>
@@ -299,7 +299,7 @@
                             <TextBlock Text="🙏 CẢM ƠN QUÝ KHÁCH!" FontSize="20" FontWeight="Bold" 
                                        Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,12"/>
                             <TextBlock Text="💝 Hẹn gặp lại quý khách lần sau!" FontSize="14" 
-                                       Foreground="#E3F2FD" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                                       Foreground="#B3E5FC" HorizontalAlignment="Center" Margin="0,0,0,8"/>
                             <TextBlock Text="📞 Hotline: (028) 1234-5678 | 🌐 www.abc-company.com" FontSize="12" 
                                        Foreground="#BDC3C7" HorizontalAlignment="Center"/>
                         </StackPanel>

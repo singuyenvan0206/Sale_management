@@ -6,7 +6,7 @@
         Title="Báo Cáo và Thống Kê" Height="800" Width="1280"
         WindowStartupLocation="CenterScreen">
 
-    <Grid Background="#F5F5F5">
+    <Grid Background="#F5F5F5" PreviewMouseWheel="Grid_PreviewMouseWheel">
         <Grid.Resources>
             <Style x:Key="RightAlignedCell" TargetType="TextBlock">
                 <Setter Property="TextAlignment" Value="Right"/>
@@ -34,7 +34,7 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="📊 Báo Cáo và Thống Kê" FontSize="24" FontWeight="Bold" Foreground="White"/>
-                    <TextBlock Text=" - Phân tích doanh thu và hiệu suất" FontSize="14" Foreground="#E3F2FD" Margin="10,0,0,0"/>
+                    <TextBlock Text=" - Phân tích doanh thu và hiệu suất" FontSize="14" Foreground="#B3E5FC" Margin="10,0,0,0"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Content="🔄 Làm mới" Width="100" Height="32" Background="#FF9800" Foreground="White" 
@@ -130,7 +130,7 @@
                             </StackPanel>
                         </Grid>
                     </Border>
-                    <ScrollViewer Grid.Row="1" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel" 
+                    <ScrollViewer Grid.Row="1" 
                                   HorizontalScrollBarVisibility="Auto" 
                                   VerticalScrollBarVisibility="Auto">
                         <DataGrid x:Name="InvoicesDataGrid"
@@ -251,7 +251,7 @@
                 </StackPanel>
                 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Background="#E3F2FD" CornerRadius="6" Padding="8,4" Margin="0,0,8,0">
+                    <Border Background="#B3E5FC" CornerRadius="6" Padding="8,4" Margin="0,0,8,0">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="📋 Số lượng:" FontWeight="SemiBold" Margin="0,0,4,0"/>
                             <TextBlock x:Name="CountTextBlock" FontWeight="Bold" Foreground="#1976D2"/>

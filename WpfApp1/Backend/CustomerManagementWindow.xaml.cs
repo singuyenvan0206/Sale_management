@@ -597,15 +597,6 @@ namespace WpfApp1
             _paginationHelper.LastPage();
         }
 
-        private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
-        {
-            var scrollViewer = sender as ScrollViewer;
-            if (scrollViewer != null)
-            {
-                scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta);
-                e.Handled = true;
-            }
-        }
 
         private void CustomerCurrentPageTextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
@@ -626,24 +617,24 @@ namespace WpfApp1
                 }
             }
         }
-        
+
         private void CustomerDataGrid_Sorting(object sender, System.Windows.Controls.DataGridSortingEventArgs e)
         {
             e.Handled = true; // Prevent default sorting
-            
+
             var column = e.Column;
             var propertyName = column.SortMemberPath;
-            
+
             if (string.IsNullOrEmpty(propertyName)) return;
-            
+
             // Determine sort direction
-            var direction = column.SortDirection != System.ComponentModel.ListSortDirection.Ascending 
-                ? System.ComponentModel.ListSortDirection.Ascending 
+            var direction = column.SortDirection != System.ComponentModel.ListSortDirection.Ascending
+                ? System.ComponentModel.ListSortDirection.Ascending
                 : System.ComponentModel.ListSortDirection.Descending;
-            
+
             // Apply sort to all data through PaginationHelper
             Func<IEnumerable<CustomerViewModel>, IOrderedEnumerable<CustomerViewModel>>? sortFunc = null;
-            
+
             switch (propertyName.ToLower())
             {
                 case "id":
@@ -682,20 +673,30 @@ namespace WpfApp1
                         : items => items.OrderByDescending(c => c.Points);
                     break;
             }
-            
+
             if (sortFunc != null)
             {
                 _paginationHelper.SetSort(sortFunc);
-                
+
                 // Update column sort direction
                 column.SortDirection = direction;
-                
+
                 // Clear other columns' sort direction
                 foreach (var col in CustomerDataGrid.Columns)
                 {
                     if (col != column)
                         col.SortDirection = null;
                 }
+            }
+        }
+        private void Grid_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            if (TierComboBox?.IsDropDownOpen == true ||
+                FilterTierComboBox?.IsDropDownOpen == true ||
+                FilterPointsComboBox?.IsDropDownOpen == true ||
+                FilterActivityComboBox?.IsDropDownOpen == true)
+            {
+                e.Handled = true;
             }
         }
     }

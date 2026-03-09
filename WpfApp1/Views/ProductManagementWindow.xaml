@@ -41,7 +41,7 @@
         </Style>
     </Window.Resources>
     
-    <Grid Background="#F5F5F5">
+    <Grid Background="#F5F5F5" PreviewMouseWheel="Grid_PreviewMouseWheel">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -56,7 +56,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Border Grid.Column="0" Background="White" CornerRadius="10" Padding="20" Margin="0,0,10,0">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
                     <Grid>
                         <Grid.RowDefinitions>

@@ -22,7 +22,7 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="⚙️ Cài Đặt Báo Cáo" FontSize="24" FontWeight="Bold" Foreground="White"/>
-                    <TextBlock Text=" - Quản lý dữ liệu và cấu hình" FontSize="14" Foreground="#E3F2FD" Margin="10,0,0,0"/>
+                    <TextBlock Text=" - Quản lý dữ liệu và cấu hình" FontSize="14" Foreground="#B3E5FC" Margin="10,0,0,0"/>
                 </StackPanel>
             </Grid>
         </Border>

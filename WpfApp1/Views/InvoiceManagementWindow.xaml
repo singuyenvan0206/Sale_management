@@ -6,7 +6,7 @@
         Title="Quản Lý Hóa Đơn" Height="800" Width="1280"
         WindowStartupLocation="CenterScreen"
         KeyDown="Window_KeyDown">
-	<Grid Background="#F5F5F5">
+	<Grid Background="#F5F5F5" PreviewMouseWheel="Grid_PreviewMouseWheel">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="*"/>
@@ -22,7 +22,7 @@
 				</Grid.ColumnDefinitions>
 				<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
 					<TextBlock Text="🧾 Quản Lý Hóa Đơn" FontSize="26" FontWeight="Bold" Foreground="White"/>
-					<TextBlock Text=" - Tạo hóa đơn bán hàng" FontSize="14" Foreground="#E3F2FD" Margin="10,0,0,0"/>
+					<TextBlock Text=" - Tạo hóa đơn bán hàng" FontSize="14" Foreground="#B3E5FC" Margin="10,0,0,0"/>
                 </StackPanel>
 				<StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
 					<TextBlock Text="👤 Khách hàng:" Foreground="White" VerticalAlignment="Center" FontWeight="SemiBold"/>
@@ -38,19 +38,21 @@
 						       PlacementTarget="{Binding ElementName=CustomerSearchTextBox}"
 						       Placement="Bottom"
 						       StaysOpen="False"
-						       AllowsTransparency="True">
+						       AllowsTransparency="False"
+						       PopupAnimation="Fade">
 							<Border Background="White" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="6" Padding="4">
 								<ListBox x:Name="CustomerSuggestionsListBox"
 								         Width="{Binding ElementName=CustomerSearchTextBox, Path=ActualWidth}"
 								         MaxHeight="240"
 								         MouseLeftButtonUp="CustomerSuggestionsListBox_MouseLeftButtonUp"
-								         KeyDown="CustomerSuggestionsListBox_KeyDown">
+								         KeyDown="CustomerSuggestionsListBox_KeyDown"
+								         PreviewMouseWheel="CustomerSuggestionsListBox_PreviewMouseWheel">
 									<ListBox.ItemTemplate>
 										<DataTemplate>
 											<StackPanel Orientation="Horizontal">
 												<TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
 												<TextBlock Text="  •  " Foreground="#999"/>
-												<TextBlock Text="{Binding Phone}" Foreground="#E3F2FD"/>
+												<TextBlock Text="{Binding Phone}" Foreground="#666666"/>
 											</StackPanel>
 										</DataTemplate>
 									</ListBox.ItemTemplate>
@@ -64,8 +66,8 @@
 						<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
 							<TextBlock Text="🏷️ " Foreground="White"/>
 							<TextBlock x:Name="LoyaltyTierTextBlock" Text="Regular" Foreground="White" FontWeight="Bold"/>
-							<TextBlock Text=" • " Foreground="#E3F2FD"/>
-							<TextBlock x:Name="LoyaltyPointsTextBlock" Text="0 điểm" Foreground="#E3F2FD"/>
+							<TextBlock Text=" • " Foreground="#B3E5FC"/>
+							<TextBlock x:Name="LoyaltyPointsTextBlock" Text="0 điểm" Foreground="#B3E5FC"/>
 						</StackPanel>
 					</Border>
 				</StackPanel>
@@ -148,53 +150,54 @@
 					          BorderThickness="0"
 					          GridLinesVisibility="Horizontal"
 					          HeadersVisibility="Column"
-					          MinHeight="400">
+					          MinHeight="400"
+					          PreviewMouseWheel="ListBox_PreviewMouseWheel">
 				<DataGrid.Resources>
 					<Style TargetType="TextBlock" x:Key="RightAlignedCell">
 						<Setter Property="TextAlignment" Value="Right"/>
 					</Style>
 				</DataGrid.Resources>
 				<DataGrid.Columns>
-					<DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" IsReadOnly="True"/>
-					<DataGridTextColumn Header="Sản phẩm" Binding="{Binding ProductName}" Width="*" IsReadOnly="True"/>
-					<DataGridTextColumn Header="Đơn giá" Binding="{Binding UnitPrice, StringFormat=N0}" Width="140" IsReadOnly="True">
-						<DataGridTextColumn.ElementStyle>
-							<Style TargetType="TextBlock">
-								<Setter Property="TextAlignment" Value="Right"/>
-							</Style>
-						</DataGridTextColumn.ElementStyle>
-					</DataGridTextColumn>
-					<DataGridTextColumn Header="KM%" Binding="{Binding PromoDiscountPercent, StringFormat=N2}" Width="80" IsReadOnly="True">
-						<DataGridTextColumn.ElementStyle>
-							<Style TargetType="TextBlock">
-								<Setter Property="TextAlignment" Value="Right"/>
-								<Setter Property="FontWeight" Value="Bold"/>
-								<Setter Property="Foreground" Value="#E91E63"/>
-							</Style>
-						</DataGridTextColumn.ElementStyle>
-					</DataGridTextColumn>
-					<DataGridTextColumn Header="SL" Binding="{Binding Quantity}" Width="80" IsReadOnly="True">
-						<DataGridTextColumn.ElementStyle>
-							<Style TargetType="TextBlock">
-								<Setter Property="TextAlignment" Value="Right"/>
-							</Style>
-						</DataGridTextColumn.ElementStyle>
-					</DataGridTextColumn>
-					<DataGridTextColumn Header="Thành tiền" Binding="{Binding LineTotal, StringFormat=N0}" Width="140" IsReadOnly="True">
-						<DataGridTextColumn.ElementStyle>
-							<Style TargetType="TextBlock">
-								<Setter Property="TextAlignment" Value="Right"/>
-							</Style>
-						</DataGridTextColumn.ElementStyle>
-					</DataGridTextColumn>
-					<DataGridTextColumn Header="Thuế (%)" Binding="{Binding CategoryTaxPercent, StringFormat=N2}" Width="80" IsReadOnly="True">
-						<DataGridTextColumn.ElementStyle>
-							<Style TargetType="TextBlock">
-								<Setter Property="TextAlignment" Value="Right"/>
-							</Style>
-						</DataGridTextColumn.ElementStyle>
-					</DataGridTextColumn>
-					<DataGridTemplateColumn Header="⚙️ Thao tác" Width="180">
+ 					<DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="40" MinWidth="30" IsReadOnly="True"/>
+ 					<DataGridTextColumn Header="Sản phẩm" Binding="{Binding ProductName}" Width="*" MinWidth="150" IsReadOnly="True"/>
+ 					<DataGridTextColumn Header="Giá bán" Binding="{Binding UnitPrice, StringFormat=N0}" Width="100" MinWidth="90" IsReadOnly="True">
+ 						<DataGridTextColumn.ElementStyle>
+ 							<Style TargetType="TextBlock">
+ 								<Setter Property="TextAlignment" Value="Right"/>
+ 							</Style>
+ 						</DataGridTextColumn.ElementStyle>
+ 					</DataGridTextColumn>
+ 					<DataGridTextColumn Header="KM%" Binding="{Binding PromoDiscountPercent, StringFormat=N2}" Width="65" MinWidth="60" IsReadOnly="True">
+ 						<DataGridTextColumn.ElementStyle>
+ 							<Style TargetType="TextBlock">
+ 								<Setter Property="TextAlignment" Value="Right"/>
+ 								<Setter Property="FontWeight" Value="Bold"/>
+ 								<Setter Property="Foreground" Value="#E91E63"/>
+ 							</Style>
+ 						</DataGridTextColumn.ElementStyle>
+ 					</DataGridTextColumn>
+ 					<DataGridTextColumn Header="SL" Binding="{Binding Quantity}" Width="50" MinWidth="45" IsReadOnly="True">
+ 						<DataGridTextColumn.ElementStyle>
+ 							<Style TargetType="TextBlock">
+ 								<Setter Property="TextAlignment" Value="Right"/>
+ 							</Style>
+ 						</DataGridTextColumn.ElementStyle>
+ 					</DataGridTextColumn>
+ 					<DataGridTextColumn Header="T.Tiền" Binding="{Binding LineTotal, StringFormat=N0}" Width="110" MinWidth="100" IsReadOnly="True">
+ 						<DataGridTextColumn.ElementStyle>
+ 							<Style TargetType="TextBlock">
+ 								<Setter Property="TextAlignment" Value="Right"/>
+ 							</Style>
+ 						</DataGridTextColumn.ElementStyle>
+ 					</DataGridTextColumn>
+ 					<DataGridTextColumn Header="Thuế" Binding="{Binding CategoryTaxPercent, StringFormat=N2}" Width="65" MinWidth="60" IsReadOnly="True">
+ 						<DataGridTextColumn.ElementStyle>
+ 							<Style TargetType="TextBlock">
+ 								<Setter Property="TextAlignment" Value="Right"/>
+ 							</Style>
+ 						</DataGridTextColumn.ElementStyle>
+ 					</DataGridTextColumn>
+ 					<DataGridTemplateColumn Header="⚙️" Width="130" MinWidth="110">
 						<DataGridTemplateColumn.CellTemplate>
 							<DataTemplate>
 								<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">

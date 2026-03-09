@@ -219,15 +219,6 @@ namespace WpfApp1
                 IsActiveCheckBox.IsChecked = selected.IsActive;
             }
         }
-        private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
-        {
-            var scrollViewer = sender as ScrollViewer;
-            if (scrollViewer != null)
-            {
-                scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta);
-                e.Handled = true;
-            }
-        }
         
         private void ApplyFilters()
         {
@@ -351,6 +342,18 @@ namespace WpfApp1
                 {
                     VoucherCurrentPageTextBox.Text = _paginationHelper.CurrentPage.ToString();
                 }
+            }
+        }
+
+        private void Grid_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            if (DiscountTypeComboBox?.IsDropDownOpen == true ||
+                FilterActiveComboBox?.IsDropDownOpen == true ||
+                FilterDiscountTypeComboBox?.IsDropDownOpen == true ||
+                FilterValidityComboBox?.IsDropDownOpen == true ||
+                FilterUsageComboBox?.IsDropDownOpen == true)
+            {
+                e.Handled = true;
             }
         }
     }

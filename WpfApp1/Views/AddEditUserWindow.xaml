@@ -10,7 +10,7 @@
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize">
 
-    <DockPanel Background="#F5F5F5" LastChildFill="True">
+    <DockPanel Background="#F5F5F5" LastChildFill="True" PreviewMouseWheel="Grid_PreviewMouseWheel">
         <!-- Header -->
         <Border Background="#E91E63" Padding="16" DockPanel.Dock="Top">
             <TextBlock x:Name="HeaderText" Text="➕ Thêm Người Dùng" 

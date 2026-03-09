@@ -6,7 +6,7 @@
         SizeToContent="WidthAndHeight" MinWidth="1000" MinHeight="600"
         WindowStartupLocation="CenterScreen">
     
-    <Grid Background="#F5F5F5">
+    <Grid Background="#F5F5F5" PreviewMouseWheel="Grid_PreviewMouseWheel">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>

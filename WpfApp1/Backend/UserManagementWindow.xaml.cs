@@ -198,6 +198,14 @@ namespace WpfApp1
                 MessageBox.Show($"Lỗi xóa tất cả người dùng: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        private void Grid_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            if (RoleFilterComboBox?.IsDropDownOpen == true)
+            {
+                e.Handled = true;
+            }
+        }
     }
 
     public class UserManagementItem

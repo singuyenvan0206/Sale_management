@@ -72,7 +72,7 @@
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
-                                <TextBlock Text="  •  " Foreground="#999" />
+                                <TextBlock Text="  •  " Foreground="#B3E5FC" />
                                 <TextBlock Text="Thuế: " Foreground="#555"/>
                                 <TextBlock Text="{Binding TaxPercent, StringFormat={}{0:F2}%}" Foreground="#555"/>
                             </StackPanel>
