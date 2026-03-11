@@ -48,7 +48,7 @@ Update-Package -reinstall
   - Database: `main`
   - User ID: `root`
   - Password: (để trống nếu dùng XAMPP mặc định)
-- **Xem hướng dẫn chi tiết tại: [PHPMYADMIN_SETUP.md](PHPMYADMIN_SETUP.md)**
+
 
 **Tùy chọn 2: MySQL trực tiếp**
 - Đảm bảo MySQL server hoạt động và user có quyền truy cập theo chuỗi kết nối
