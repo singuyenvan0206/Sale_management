@@ -1,7 +1,8 @@
 using System.Windows;
 
-namespace WpfApp1
+namespace FashionStore
 {
+    using FashionStore.Repositories;
     public partial class ChangePasswordWindow : Window
     {
         public ChangePasswordWindow()
@@ -61,7 +62,7 @@ namespace WpfApp1
             }
 
             // Attempt to change password
-            bool success = DatabaseHelper.ChangePassword(username, oldPassword, newPassword);
+            bool success = UserRepository.ChangePassword(username, oldPassword, newPassword);
             if (success)
             {
                 MessageBox.Show("✅ Mật khẩu đã được thay đổi thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);

@@ -2,8 +2,9 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace WpfApp1
+namespace FashionStore
 {
+    using FashionStore.Repositories;
     public partial class CustomerManagementWindow : Window
     {
         private List<CustomerViewModel> _customers = new();
@@ -38,7 +39,7 @@ namespace WpfApp1
                 return;
                 
             // Get user role from database
-            var userRole = DatabaseHelper.GetUserRole(currentUser);
+            var userRole = UserRepository.GetUserRole(currentUser);
             var role = ParseRole(userRole);
             
             // Hide tier settings button for non-admin/manager users
@@ -75,7 +76,7 @@ namespace WpfApp1
 
         private void LoadCustomers()
         {
-            var customers = DatabaseHelper.GetAllCustomers();
+            var customers = CustomerRepository.GetAllCustomers();
             _customers = customers.ConvertAll(c => new CustomerViewModel
             {
                 Id = c.Id,
@@ -84,8 +85,8 @@ namespace WpfApp1
                 Email = c.Email,
                 Address = c.Address,
                 CustomerType = c.CustomerType,
-                Tier = DatabaseHelper.GetCustomerLoyalty(c.Id).Tier,
-                Points = DatabaseHelper.GetCustomerLoyalty(c.Id).Points
+                Tier = CustomerRepository.GetCustomerLoyalty(c.Id).Tier,
+                Points = CustomerRepository.GetCustomerLoyalty(c.Id).Points
             });
             _paginationHelper.SetData(_customers);
             UpdateDisplayAndPagination();
@@ -100,7 +101,7 @@ namespace WpfApp1
             if (openFileDialog.ShowDialog() == true)
             {
                 string filePath = openFileDialog.FileName;
-                int importedCount = DatabaseHelper.ImportCustomersFromCsv(filePath);
+                int importedCount = CustomerRepository.ImportCustomersFromCsv(filePath);
                 if (importedCount >= 0)
                 {
                     LoadCustomers();
@@ -126,7 +127,7 @@ namespace WpfApp1
             if (saveFileDialog.ShowDialog() == true)
             {
                 string filePath = saveFileDialog.FileName;
-                bool success = DatabaseHelper.ExportCustomersToCsv(filePath);
+                bool success = CustomerRepository.ExportCustomersToCsv(filePath);
                 if (success)
                 {
                     MessageBox.Show("Đã xuất khách hàng thành công sang tệp CSV.", "Xuất thành công", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -188,27 +189,27 @@ namespace WpfApp1
                 Address = AddressTextBox.Text.Trim()
             };
 
-            if (DatabaseHelper.AddCustomer(customer.Name, customer.Phone, customer.Email, customer.CustomerType, customer.Address))
+            if (CustomerRepository.AddCustomer(customer.Name, customer.Phone, customer.Email, customer.CustomerType, customer.Address))
             {
                 try
                 {
-                    int id = DatabaseHelper.GetAllCustomers().Last().Id;
+                    int id = CustomerRepository.GetAllCustomers().Last().Id;
 
                     // Check if user has permission to set tier and points
                     var currentUser = Application.Current.Resources["CurrentUser"] as string;
-                    var userRole = DatabaseHelper.GetUserRole(currentUser ?? "");
+                    var userRole = UserRepository.GetUserRole(currentUser ?? "");
                     var role = ParseRole(userRole);
 
                     if (role.CanManageTierSettings())
                     {
                         var tier = (TierComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Regular";
                         int pts = 0; int.TryParse(PointsTextBox.Text, out pts);
-                        DatabaseHelper.UpdateCustomerLoyalty(id, pts, tier);
+                        CustomerRepository.UpdateCustomerLoyalty(id, pts, tier);
                     }
                     else
                     {
                         // For cashiers, always set to Regular with 0 points
-                        DatabaseHelper.UpdateCustomerLoyalty(id, 0, "Regular");
+                        CustomerRepository.UpdateCustomerLoyalty(id, 0, "Regular");
                     }
                 } catch {}
                 LoadCustomers();
@@ -244,20 +245,20 @@ namespace WpfApp1
                 Address = AddressTextBox.Text.Trim()
             };
 
-            if (DatabaseHelper.UpdateCustomer(customer.Id, customer.Name, customer.Phone, customer.Email, customer.CustomerType, customer.Address))
+            if (CustomerRepository.UpdateCustomer(customer.Id, customer.Name, customer.Phone, customer.Email, customer.CustomerType, customer.Address))
             {
                 // Update loyalty only if user has permission
                 try
                 {
                     var currentUser = Application.Current.Resources["CurrentUser"] as string;
-                    var userRole = DatabaseHelper.GetUserRole(currentUser ?? "");
+                    var userRole = UserRepository.GetUserRole(currentUser ?? "");
                     var role = ParseRole(userRole);
                     
                     if (role.CanManageTierSettings())
                     {
                         var tier = (TierComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? _selectedCustomer.Tier;
                         int pts = _selectedCustomer.Points; int.TryParse(PointsTextBox.Text, out pts);
-                        DatabaseHelper.UpdateCustomerLoyalty(customer.Id, pts, tier);
+                        CustomerRepository.UpdateCustomerLoyalty(customer.Id, pts, tier);
                     }
                     // If cashier, keep existing tier and points unchanged
                 } catch {}
@@ -293,7 +294,7 @@ namespace WpfApp1
 
             if (result == MessageBoxResult.Yes)
             {
-                if (DatabaseHelper.DeleteCustomer(customerId))
+                if (CustomerRepository.DeleteCustomer(customerId))
                 {
                     LoadCustomers();
                     ClearForm();
@@ -330,7 +331,7 @@ namespace WpfApp1
 
             if (result == MessageBoxResult.Yes)
             {
-                if (DatabaseHelper.DeleteAllCustomers())
+                if (CustomerRepository.DeleteAllCustomers())
                 {
                     LoadCustomers();
                     ClearForm();
@@ -418,7 +419,7 @@ namespace WpfApp1
                 // Set loyalty tier and points
                 try
                 {
-                    var (tier, pts) = DatabaseHelper.GetCustomerLoyalty(_selectedCustomer.Id);
+                    var (tier, pts) = CustomerRepository.GetCustomerLoyalty(_selectedCustomer.Id);
                     foreach (ComboBoxItem item in TierComboBox.Items)
                     {
                         if (string.Equals(item.Content?.ToString(), tier, System.StringComparison.OrdinalIgnoreCase))
@@ -440,7 +441,7 @@ namespace WpfApp1
         {
             try
             {
-                var history = DatabaseHelper.GetCustomerPurchaseHistory(customerId)
+                var history = CustomerRepository.GetCustomerPurchaseHistory(customerId)
                     .Select(h => new PurchaseHistoryItem
                     {
                         InvoiceId = h.InvoiceId,
@@ -501,8 +502,8 @@ namespace WpfApp1
                 // Activity filter - check if customer has any invoices
                 bool matchesActivity = _selectedActivityFilter switch
                 {
-                    "HasPurchases" => DatabaseHelper.GetCustomerPurchaseHistory(c.Id).Any(),
-                    "NoPurchases" => !DatabaseHelper.GetCustomerPurchaseHistory(c.Id).Any(),
+                    "HasPurchases" => CustomerRepository.GetCustomerPurchaseHistory(c.Id).Any(),
+                    "NoPurchases" => !CustomerRepository.GetCustomerPurchaseHistory(c.Id).Any(),
                     _ => true // "All"
                 };
                 
@@ -522,7 +523,7 @@ namespace WpfApp1
             }
             var tier = (TierComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? _selectedCustomer.Tier;
             int pts = _selectedCustomer.Points; int.TryParse(PointsTextBox.Text, out pts);
-            if (DatabaseHelper.UpdateCustomerLoyalty(_selectedCustomer.Id, pts, tier))
+            if (CustomerRepository.UpdateCustomerLoyalty(_selectedCustomer.Id, pts, tier))
             {
                 LoadCustomers();
                 MessageBox.Show("Đã cập nhật hạng/điểm.", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);

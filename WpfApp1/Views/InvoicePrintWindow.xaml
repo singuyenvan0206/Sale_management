@@ -1,7 +1,7 @@
-<Window x:Class="WpfApp1.InvoicePrintWindow"
+<Window x:Class="FashionStore.InvoicePrintWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:WpfApp1"
+        xmlns:local="clr-namespace:FashionStore"
         Title="Xem Trước In Hóa Đơn" Height="800" Width="1000"
         WindowStartupLocation="CenterScreen"
         Background="White">

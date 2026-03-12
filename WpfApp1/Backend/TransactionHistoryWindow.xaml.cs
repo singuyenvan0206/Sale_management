@@ -2,8 +2,9 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace WpfApp1
+namespace FashionStore
 {
+    using FashionStore.Repositories;
     public partial class TransactionHistoryWindow : Window
     {
         private List<InvoiceSummaryItem> _invoices = new();
@@ -18,7 +19,7 @@ namespace WpfApp1
         {
             try
             {
-                _invoices = DatabaseHelper.QueryInvoices(null, null, null, "")
+                _invoices = InvoiceRepository.QueryInvoices(null, null, null, "")
                     .Select(i => new InvoiceSummaryItem
                     {
                         InvoiceId = i.Id,
@@ -51,7 +52,7 @@ namespace WpfApp1
         {
             try
             {
-                var items = DatabaseHelper.GetInvoiceItemsDetailed(invoiceId)
+                var items = InvoiceRepository.GetInvoiceDetails(invoiceId).Items
                     .Select(x => new InvoiceItemDetail
                     {
                         ProductName = x.ProductName,
@@ -75,7 +76,7 @@ namespace WpfApp1
                 {
                     // Lấy EmployeeId của người đang đăng nhập (hoặc sử dụng ID mặc định)
                     string currentUser = Application.Current.Resources["CurrentUser"]?.ToString() ?? "admin";
-                    var employeeId = DatabaseHelper.GetEmployeeIdByUsername(currentUser);
+                    var employeeId = UserRepository.GetEmployeeIdByUsername(currentUser);
                     
                     // Sử dụng constructor từ database để đảm bảo dữ liệu chính xác
                     var printWindow = new InvoicePrintWindow(selectedInvoice.InvoiceId, employeeId);

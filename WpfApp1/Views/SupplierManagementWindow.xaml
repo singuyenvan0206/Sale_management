@@ -1,4 +1,4 @@
-<Window x:Class="WpfApp1.SupplierManagementWindow"
+<Window x:Class="FashionStore.SupplierManagementWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Quản Lý Nhà Cung Cấp" Height="700" Width="900"

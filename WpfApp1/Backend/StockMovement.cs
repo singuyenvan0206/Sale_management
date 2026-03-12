@@ -1,6 +1,6 @@
 using System;
 
-namespace WpfApp1
+namespace FashionStore
 {
     public class StockMovement
     {

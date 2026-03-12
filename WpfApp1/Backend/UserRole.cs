@@ -1,4 +1,4 @@
-namespace WpfApp1
+namespace FashionStore
 {
 
     public enum UserRole

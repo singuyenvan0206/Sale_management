@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text.Json;
 
-namespace WpfApp1
+namespace FashionStore
 {
     public class PaymentSettings
     {
@@ -17,7 +17,7 @@ namespace WpfApp1
     {
         private static readonly string SettingsPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "WpfApp1", "payment_settings.json");
+            "FashionStore", "payment_settings.json");
 
         public static PaymentSettings Load()
         {

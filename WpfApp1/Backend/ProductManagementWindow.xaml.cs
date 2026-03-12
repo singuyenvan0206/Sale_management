@@ -1,8 +1,9 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace WpfApp1
+namespace FashionStore
 {
+    using FashionStore.Repositories;
     public partial class ProductManagementWindow : Window
     {
         private List<ProductViewModel> _products = new();
@@ -37,20 +38,20 @@ namespace WpfApp1
 
         private void LoadSuppliers()
         {
-            _suppliers = DatabaseHelper.GetAllSuppliers();
+            _suppliers = SupplierRepository.GetAllSuppliers();
             SupplierComboBox.ItemsSource = _suppliers;
         }
 
         private void LoadCategories()
         {
-            var categories = DatabaseHelper.GetAllCategories();
+            var categories = CategoryRepository.GetAllCategories();
             _categories = categories.ConvertAll(c => new CategoryViewModel { Id = c.Id, Name = c.Name, TaxPercent = c.TaxPercent });
             CategoryComboBox.ItemsSource = _categories;
         }
 
         private void LoadProducts()
         {
-            var products = DatabaseHelper.GetAllProductsWithCategories();
+            var products = ProductRepository.GetAllProductsWithCategories();
             _products = products.ConvertAll(p => new ProductViewModel
             {
                 Id = p.Id,
@@ -131,7 +132,7 @@ namespace WpfApp1
                 SupplierId = SupplierComboBox.SelectedValue as int? ?? 0
             };
 
-            if (DatabaseHelper.AddProduct(product.Name, product.Code, product.CategoryId, product.SalePrice, product.PurchasePrice, product.PurchaseUnit, product.ImportQuantity, product.StockQuantity, product.Description, product.PromoDiscountPercent, product.PromoStartDate, product.PromoEndDate, product.SupplierId))
+            if (ProductRepository.AddProduct(product.Name, product.Code, product.CategoryId, product.SalePrice, product.PurchasePrice, product.PurchaseUnit, product.ImportQuantity, product.StockQuantity, product.Description, product.PromoDiscountPercent, product.PromoStartDate, product.PromoEndDate, product.SupplierId))
             {
                 LoadProducts();
                 ClearForm();
@@ -174,7 +175,7 @@ namespace WpfApp1
                 SupplierId = SupplierComboBox.SelectedValue as int? ?? 0
             };
 
-            if (DatabaseHelper.UpdateProduct(product.Id, product.Name, product.Code, product.CategoryId, product.SalePrice, product.PurchasePrice, product.PurchaseUnit, product.ImportQuantity, product.StockQuantity, product.Description, product.PromoDiscountPercent, product.PromoStartDate, product.PromoEndDate, product.SupplierId))
+            if (ProductRepository.UpdateProduct(product.Id, product.Name, product.Code, product.CategoryId, product.SalePrice, product.PurchasePrice, product.PurchaseUnit, product.ImportQuantity, product.StockQuantity, product.Description, product.PromoDiscountPercent, product.PromoStartDate, product.PromoEndDate, product.SupplierId))
             {
                 LoadProducts();
                 ClearForm();
@@ -208,7 +209,7 @@ namespace WpfApp1
 
             if (result == MessageBoxResult.Yes)
             {
-                if (DatabaseHelper.DeleteProduct(productId))
+                if (ProductRepository.DeleteProduct(productId))
                 {
                     LoadProducts();
                     ClearForm();
@@ -234,7 +235,7 @@ namespace WpfApp1
             if (openFileDialog.ShowDialog() == true)
             {
                 string filePath = openFileDialog.FileName;
-                int importedCount = DatabaseHelper.ImportProductsFromCsv(filePath);
+                int importedCount = ProductRepository.ImportProductsFromCsv(filePath);
                 if (importedCount >= 0)
                 {
                     LoadProducts();
@@ -261,7 +262,7 @@ namespace WpfApp1
             if (saveFileDialog.ShowDialog() == true)
             {
                 string filePath = saveFileDialog.FileName;
-                bool success = DatabaseHelper.ExportProductsToCsv(filePath);
+                bool success = ProductRepository.ExportProductsToCsv(filePath);
                 if (success)
                 {
                     MessageBox.Show("Đã xuất sản phẩm thành công sang tệp CSV.", "Xuất thành công", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -289,7 +290,7 @@ namespace WpfApp1
 
             if (result == MessageBoxResult.Yes)
             {
-                if (DatabaseHelper.DeleteAllProducts())
+                if (ProductRepository.DeleteAllProducts())
                 {
                     LoadProducts();
                     ClearForm();

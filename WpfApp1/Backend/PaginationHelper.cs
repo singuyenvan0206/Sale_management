@@ -1,5 +1,5 @@
 
-namespace WpfApp1
+namespace FashionStore
 {
     public class PaginationHelper<T>
     {

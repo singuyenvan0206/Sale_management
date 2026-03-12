@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("WpfApp1.Tests")]
+[assembly: InternalsVisibleTo("FashionStore.Tests")]
 
 
 [assembly: ThemeInfo(

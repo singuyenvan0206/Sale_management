@@ -1,7 +1,8 @@
 using System.Windows;
 
-namespace WpfApp1
+namespace FashionStore
 {
+    using FashionStore.Repositories;
     public partial class CategoryManagementWindow : Window
     {
         private List<(int Id, string Name, decimal TaxPercent)> _categories = new();
@@ -36,7 +37,7 @@ namespace WpfApp1
 
         private void LoadCategories()
         {
-            _categories = DatabaseHelper.GetAllCategories();
+            _categories = CategoryRepository.GetAllCategories();
             CategoryListBox.ItemsSource = null;
             CategoryListBox.ItemsSource = _categories.ConvertAll(c => new CategoryViewModel { Id = c.Id, Name = c.Name, TaxPercent = c.TaxPercent });
             UpdateStatusText();
@@ -70,7 +71,7 @@ namespace WpfApp1
                 return;
             }
             
-            if (DatabaseHelper.AddCategory(name, taxPercent))
+            if (CategoryRepository.AddCategory(name, taxPercent))
             {
                 LoadCategories();
                 CategoryNameTextBox.Text = "Tên Danh Mục";
@@ -113,7 +114,7 @@ namespace WpfApp1
                     return;
                 }
                 
-                if (DatabaseHelper.UpdateCategory(selected.Id, name, taxPercent))
+                if (CategoryRepository.UpdateCategory(selected.Id, name, taxPercent))
                 {
                     LoadCategories();
                     CategoryNameTextBox.Clear();
@@ -147,7 +148,7 @@ namespace WpfApp1
                 
                 if (result == MessageBoxResult.Yes)
                 {
-                    if (DatabaseHelper.DeleteCategory(selected.Id))
+                    if (CategoryRepository.DeleteCategory(selected.Id))
                     {
                         LoadCategories();
                         CategoryNameTextBox.Clear();
@@ -196,7 +197,7 @@ namespace WpfApp1
             
             if (result == MessageBoxResult.Yes)
             {
-                if (DatabaseHelper.DeleteAllCategories())
+                if (CategoryRepository.DeleteAllCategories())
                 {
                     LoadCategories();
                     CategoryNameTextBox.Clear();

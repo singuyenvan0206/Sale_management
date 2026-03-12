@@ -2,8 +2,9 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace WpfApp1
+namespace FashionStore
 {
+    using FashionStore.Repositories;
     public partial class UserManagementWindow : Window
     {
         private List<UserManagementItem> _allUsers = new();
@@ -21,13 +22,13 @@ namespace WpfApp1
             try
             {
                 // Use GetAllAccounts and map to UserManagementItem
-                var accounts = DatabaseHelper.GetAllAccounts();
+                var accounts = UserRepository.GetAllAccounts();
                 _allUsers = accounts.Select(a => new UserManagementItem
                 {
                     Id = a.Id,
                     Username = a.Username,
                     EmployeeName = a.EmployeeName, // Will be fixed when GetAllAccounts is updated
-                    Role = DatabaseHelper.GetUserRoleEnum(a.Username)
+                    Role = UserRepository.GetUserRoleEnum(a.Username)
                 }).ToList();
 
                 FilterUsers();
@@ -143,7 +144,7 @@ namespace WpfApp1
                     
                     if (result == MessageBoxResult.Yes)
                     {
-                        if (DatabaseHelper.DeleteAccount(user.Username))
+                        if (UserRepository.DeleteAccount(user.Username))
                         {
                             LoadUsers();
                             MessageBox.Show("Xóa người dùng thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -182,7 +183,7 @@ namespace WpfApp1
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    if (DatabaseHelper.DeleteAllAccountsExceptAdmin())
+                    if (UserRepository.DeleteAllAccountsExceptAdmin())
                     {
                         LoadUsers();
                         MessageBox.Show("Đã xóa tất cả người dùng (trừ admin) thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);

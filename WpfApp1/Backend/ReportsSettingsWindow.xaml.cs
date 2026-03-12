@@ -2,8 +2,9 @@
 using System.Windows;
 using MessageBox = System.Windows.MessageBox;
 
-namespace WpfApp1
+namespace FashionStore
 {
+    using FashionStore.Repositories;
     public partial class ReportsSettingsWindow : Window
     {
         public ReportsSettingsWindow()
@@ -17,8 +18,8 @@ namespace WpfApp1
             try
             {
                 // Get database statistics
-                int totalInvoices = DatabaseHelper.GetTotalInvoices();
-                decimal totalRevenue = DatabaseHelper.GetTotalRevenue();
+                int totalInvoices = InvoiceRepository.GetTotalInvoices();
+                decimal totalRevenue = InvoiceRepository.GetTotalRevenue();
                 
                 // Safely update UI elements
                 if (TotalInvoicesTextBlock != null)
@@ -27,7 +28,7 @@ namespace WpfApp1
                     TotalRevenueTextBlock.Text = totalRevenue.ToString("C0");
                 
                 // Calculate date range
-                var (oldestDate, newestDate) = DatabaseHelper.GetInvoiceDateRange();
+                var (oldestDate, newestDate) = InvoiceRepository.GetInvoiceDateRange();
                 if (DateRangeTextBlock != null)
                 {
                     if (oldestDate.HasValue && newestDate.HasValue)
@@ -60,9 +61,9 @@ namespace WpfApp1
             try
             {
                 // This is a simplified estimation
-                int totalInvoices = DatabaseHelper.GetTotalInvoices();
-                int totalProducts = DatabaseHelper.GetTotalProducts();
-                int totalCustomers = DatabaseHelper.GetTotalCustomers();
+                int totalInvoices = InvoiceRepository.GetTotalInvoices();
+                int totalProducts = ProductRepository.GetTotalProducts();
+                int totalCustomers = CustomerRepository.GetTotalCustomers();
                 
                 // Rough estimation: each invoice ~1KB, product ~0.5KB, customer ~0.3KB
                 long estimatedBytes = (totalInvoices * 1024) + (totalProducts * 512) + (totalCustomers * 300);
@@ -109,10 +110,10 @@ namespace WpfApp1
                     try
                     {
                         // Get count before deletion
-                        int deletedCount = DatabaseHelper.GetTotalInvoices();
+                        int deletedCount = InvoiceRepository.GetTotalInvoices();
                         
                         // Delete all invoices
-                        bool success = DatabaseHelper.DeleteAllInvoices();
+                        bool success = InvoiceRepository.DeleteAllInvoices();
                         
                         if (success)
                         {
@@ -161,7 +162,7 @@ namespace WpfApp1
             if (openFileDialog.ShowDialog() == true)
             {
                 string filePath = openFileDialog.FileName;
-                int importedCount = DatabaseHelper.ImportInvoicesFromCsv(filePath);
+                int importedCount = InvoiceRepository.ImportInvoicesFromCsv(filePath);
                 if (importedCount > 0)
                 {
                     LoadDatabaseStatistics(); // Refresh statistics
@@ -192,7 +193,7 @@ namespace WpfApp1
             if (saveFileDialog.ShowDialog() == true)
             {
                 string filePath = saveFileDialog.FileName;
-                bool success = DatabaseHelper.ExportInvoicesToCsv(filePath);
+                bool success = InvoiceRepository.ExportInvoicesToCsv(filePath);
                 if (success)
                 {
                     MessageBox.Show("Đã xuất hóa đơn thành công sang tệp CSV.", "Xuất thành công", MessageBoxButton.OK, MessageBoxImage.Information);

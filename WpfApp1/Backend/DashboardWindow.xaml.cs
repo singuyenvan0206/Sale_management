@@ -5,8 +5,9 @@ using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
 
-namespace WpfApp1
+namespace FashionStore
 {
+    using FashionStore.Repositories;
     public partial class DashboardWindow : Window
     {
         private string _currentUsername;
@@ -32,7 +33,7 @@ namespace WpfApp1
             Application.Current.Resources["CurrentUser"] = username;
             
             // Get employee name for display
-            string employeeName = DatabaseHelper.GetEmployeeName(username);
+            string employeeName = UserRepository.GetEmployeeName(username);
             UserInfoTextBlock.Text = $"Chào mừng, {employeeName} ({role})";
             LoadKpis();
 
@@ -118,11 +119,11 @@ namespace WpfApp1
                 var monthStart = System.DateTime.Today.AddDays(-30); // 30 ngày gần nhất
                 var monthEnd = todayEnd;
 
-                decimal revenueToday = DatabaseHelper.GetRevenueBetween(todayStart, todayEnd);
-                decimal revenue30 = DatabaseHelper.GetRevenueBetween(monthStart, monthEnd);
-                int invoicesToday = DatabaseHelper.GetInvoiceCountBetween(todayStart, todayEnd);
-                int totalCustomers = DatabaseHelper.GetTotalCustomers();
-                int totalProducts = DatabaseHelper.GetTotalProducts();
+                decimal revenueToday = InvoiceRepository.GetRevenueBetween(todayStart, todayEnd);
+                decimal revenue30 = InvoiceRepository.GetRevenueBetween(monthStart, monthEnd);
+                int invoicesToday = InvoiceRepository.GetInvoiceCountBetween(todayStart, todayEnd);
+                int totalCustomers = CustomerRepository.GetTotalCustomers();
+                int totalProducts = ProductRepository.GetTotalProducts();
 
                 RevenueTodayText.Text = $"{revenueToday:N0}₫";
                 Revenue30Text.Text = $"{revenue30:N0}₫";
@@ -139,7 +140,7 @@ namespace WpfApp1
         private void LoadHomeCharts(DateTime monthStart, DateTime monthEnd)
         {
             // Revenue last 30 days line
-            var revenuePoints = DatabaseHelper.GetRevenueByDay(monthStart, monthEnd);
+            var revenuePoints = InvoiceRepository.GetRevenueByDay(monthStart, monthEnd);
             var revenueModel = new PlotModel();
             revenueModel.Axes.Add(new DateTimeAxis { Position = AxisPosition.Bottom, StringFormat = "MM-dd", IsZoomEnabled = false, IsPanEnabled = false });
             revenueModel.Axes.Add(new LinearAxis { 
@@ -161,7 +162,7 @@ namespace WpfApp1
             // Revenue by category pie - lấy TOÀN BỘ database (không giới hạn thời gian)
             var categoryStartDate = System.DateTime.MinValue;
             var categoryEndDate = System.DateTime.MaxValue;
-            var byCat = DatabaseHelper.GetRevenueByCategory(categoryStartDate, categoryEndDate, 10000);
+            var byCat = InvoiceRepository.GetRevenueByCategory(categoryStartDate, categoryEndDate, 10000);
             var catModel = new PlotModel();
             var pie = new OxyPlot.Series.PieSeries { InsideLabelPosition = 0.7 };
             foreach (var (name, revenue) in byCat)
@@ -172,7 +173,7 @@ namespace WpfApp1
             if (HomeCategoryPie != null) HomeCategoryPie.Model = catModel;
 
             // Top 10 Customers (Bar Chart)
-            var topCustomers = DatabaseHelper.GetTopCustomers(10);
+            var topCustomers = CustomerRepository.GetTopCustomers(10);
             var customerModel = new PlotModel();
             customerModel.Axes.Add(new CategoryAxis 
             { 
@@ -203,7 +204,7 @@ namespace WpfApp1
             if (TopCustomersPlot != null) TopCustomersPlot.Model = customerModel;
 
             // Top 10 Selling Products (Bar Chart)
-            var topProducts = DatabaseHelper.GetTopProducts(10);
+            var topProducts = ProductRepository.GetTopProducts(10);
             var productsModel = new PlotModel();
             productsModel.Axes.Add(new CategoryAxis 
             { 
@@ -240,7 +241,7 @@ namespace WpfApp1
         {
             try
             {
-                var lowStock = DatabaseHelper.GetLowStockProducts(10);
+                var lowStock = ProductRepository.GetLowStockProducts(10);
                 var count = lowStock.Count;
                 
                 if (LowStockAlertCount != null)
@@ -327,7 +328,7 @@ namespace WpfApp1
             // Load data
             try
             {
-                var lowStock = DatabaseHelper.GetLowStockProducts(10);
+                var lowStock = ProductRepository.GetLowStockProducts(10);
                 var items = lowStock.Select((p, index) => new LowStockItem
                 {
                     Index = index + 1,

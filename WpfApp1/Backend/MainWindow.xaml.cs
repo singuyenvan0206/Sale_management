@@ -1,7 +1,8 @@
 using System.Windows;
 
-namespace WpfApp1
+namespace FashionStore
 {
+    using FashionStore.Repositories;
     public partial class MainWindow : Window
     {
         public MainWindow()
@@ -34,11 +35,11 @@ namespace WpfApp1
                 return;
             }
 
-            string role = DatabaseHelper.ValidateLogin(username, password);
+            string role = UserRepository.ValidateLogin(username, password);
             if (role == "true")
             {
                 // Get the actual role from database
-                var userRole = DatabaseHelper.GetUserRoleEnum(username);
+                var userRole = UserRepository.GetUserRoleEnum(username);
 
                 // Use a single DashboardWindow for all roles; features are hidden based on role inside the dashboard
                 Window dashboard = new DashboardWindow(username, userRole.ToString());

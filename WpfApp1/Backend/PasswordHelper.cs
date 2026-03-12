@@ -2,7 +2,7 @@ using System;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace WpfApp1
+namespace FashionStore
 {
     public static class PasswordHelper
     {

@@ -3,8 +3,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace WpfApp1
+namespace FashionStore
 {
+    using FashionStore.Repositories;
     public partial class InvoicePrintWindow : Window
     {
         private readonly List<InvoiceItemViewModel> _items;
@@ -17,7 +18,7 @@ namespace WpfApp1
         private readonly int _invoiceId;
         private readonly DateTime _invoiceDate;
         private readonly int _employeeId;
-        private DatabaseHelper.InvoiceHeader? _invoiceHeader;
+        private InvoiceRepository.InvoiceHeader? _invoiceHeader;
 
         public InvoicePrintWindow(List<InvoiceItemViewModel> items, CustomerListItem customer,
             decimal subtotal, decimal taxPercent, decimal taxAmount, decimal discount,
@@ -92,7 +93,7 @@ namespace WpfApp1
             try
             {
                 
-                var (header, items) = DatabaseHelper.GetInvoiceDetails(invoiceId);
+                var (header, items) = InvoiceRepository.GetInvoiceDetails(invoiceId);
                 _invoiceHeader = header; // Lưu header để sử dụng trong CreateInvoiceContent
                 
 
@@ -104,7 +105,7 @@ namespace WpfApp1
 
                 try
                 {
-                    var accounts = DatabaseHelper.GetAllAccounts();
+                    var accounts = UserRepository.GetAllAccounts();
                     // Sử dụng EmployeeId từ header thay vì từ tham số
                     var employee = accounts.FirstOrDefault(a => a.Id == header.EmployeeId);
                     SetText("EmployeeNameText", employee != default 
@@ -220,7 +221,7 @@ namespace WpfApp1
             // Thêm thông tin nhân viên
             try
             {
-                var accounts = DatabaseHelper.GetAllAccounts();
+                var accounts = UserRepository.GetAllAccounts();
                 // Sử dụng EmployeeId từ header nếu có, nếu không thì dùng _employeeId
                 int employeeIdToUse = _invoiceHeader?.EmployeeId ?? _employeeId;
                 var employee = accounts.FirstOrDefault(a => a.Id == employeeIdToUse);

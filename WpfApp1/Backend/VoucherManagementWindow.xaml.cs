@@ -4,8 +4,9 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 
-namespace WpfApp1
+namespace FashionStore
 {
+    using FashionStore.Repositories;
     public partial class VoucherManagementWindow : Window
     {
         private PaginationHelper<Voucher> _paginationHelper = new();
@@ -29,7 +30,7 @@ namespace WpfApp1
 
         private void LoadVouchers()
         {
-            var vouchers = DatabaseHelper.GetAllVouchers();
+            var vouchers = VoucherRepository.GetAllVouchers();
             _paginationHelper.SetData(vouchers);
             ApplyFilters();
         }
@@ -72,7 +73,7 @@ namespace WpfApp1
 
             };
 
-            if (DatabaseHelper.AddVoucher(voucher))
+            if (VoucherRepository.AddVoucher(voucher))
             {
                 MessageBox.Show("Thêm Voucher thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
                 LoadVouchers();
@@ -104,7 +105,7 @@ namespace WpfApp1
             selected.IsActive = IsActiveCheckBox.IsChecked ?? true;
 
 
-            if (DatabaseHelper.UpdateVoucher(selected))
+            if (VoucherRepository.UpdateVoucher(selected))
             {
                 MessageBox.Show("Cập nhật Voucher thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
                 LoadVouchers();
@@ -127,7 +128,7 @@ namespace WpfApp1
             var result = MessageBox.Show($"Bạn có chắc chắn muốn xóa '{selected.Code}'?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
-                if (DatabaseHelper.DeleteVoucher(selected.Id))
+                if (VoucherRepository.DeleteVoucher(selected.Id))
                 {
                     MessageBox.Show("Xóa Voucher thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
                     LoadVouchers();

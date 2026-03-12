@@ -1,8 +1,8 @@
-<Window x:Class="WpfApp1.CategoryManagementWindow"
+<Window x:Class="FashionStore.CategoryManagementWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:system="clr-namespace:System;assembly=mscorlib"
-        xmlns:local="clr-namespace:WpfApp1"
+        xmlns:local="clr-namespace:FashionStore"
         Title="Quản Lý Danh Mục" Height="600" Width="700"
         WindowStartupLocation="CenterScreen">
     <Window.Resources>

@@ -1,7 +1,8 @@
 using System.Windows;
 
-namespace WpfApp1
+namespace FashionStore
 {
+    using FashionStore.Repositories;
     public partial class PasswordMigrationWindow : Window
     {
         public PasswordMigrationWindow()
@@ -18,7 +19,7 @@ namespace WpfApp1
                 StatusText.Text = "Đang chạy migration... Vui lòng đợi.";
 
                 // Chạy migration
-                var (success, migratedCount, message) = DatabaseHelper.RunPasswordMigration();
+                var (success, migratedCount, message) = UserRepository.RunPasswordMigration();
 
                 if (success)
                 {

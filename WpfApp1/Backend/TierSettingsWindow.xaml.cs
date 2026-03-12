@@ -1,8 +1,9 @@
 
 using System.Windows;
 
-namespace WpfApp1
+namespace FashionStore
 {
+    using FashionStore.Repositories;
     public partial class TierSettingsWindow : Window
     {
         public TierSettingsWindow()

@@ -2,8 +2,9 @@
 using System.IO;
 using System.Text.Json;
 
-namespace WpfApp1
+namespace FashionStore
 {
+    using FashionStore.Repositories;
     public class TierSettings
     {
         // Regular Tier
@@ -77,7 +78,7 @@ namespace WpfApp1
     {
         private static readonly string SettingsPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "WpfApp1", "tier_settings.json");
+            "FashionStore", "tier_settings.json");
 
         public static TierSettings Load()
         {
@@ -130,18 +131,18 @@ namespace WpfApp1
         {
             try
             {
-                var customers = DatabaseHelper.GetAllCustomers();
+                var customers = CustomerRepository.GetAllCustomers();
                 int updatedCount = 0;
 
                 foreach (var customer in customers)
                 {
-                    var loyalty = DatabaseHelper.GetCustomerLoyalty(customer.Id);
+                    var loyalty = CustomerRepository.GetCustomerLoyalty(customer.Id);
                     var newTier = DetermineTierByPoints(loyalty.Points);
                     
                     // Only update if tier has changed
                     if (loyalty.Tier != newTier)
                     {
-                        if (DatabaseHelper.UpdateCustomerLoyalty(customer.Id, loyalty.Points, newTier))
+                        if (CustomerRepository.UpdateCustomerLoyalty(customer.Id, loyalty.Points, newTier))
                         {
                             updatedCount++;
                         }

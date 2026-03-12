@@ -3,8 +3,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace WpfApp1
+namespace FashionStore
 {
+    using FashionStore.Repositories;
     public partial class SettingsWindow : Window
     {
         public SettingsWindow()
@@ -24,7 +25,7 @@ namespace WpfApp1
                 return;
                 
             // Get user role from database
-            var userRole = DatabaseHelper.GetUserRole(currentUser);
+            var userRole = UserRepository.GetUserRole(currentUser);
             var role = ParseRole(userRole);
             
             // Hide tier settings button for non-admin/manager users

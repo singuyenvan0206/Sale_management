@@ -7,7 +7,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 
-namespace WpfApp1
+namespace FashionStore
 {
     public static class QRCodeHelper
     {

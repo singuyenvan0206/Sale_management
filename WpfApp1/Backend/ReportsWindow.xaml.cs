@@ -3,8 +3,9 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-namespace WpfApp1
+namespace FashionStore
 {
+    using FashionStore.Repositories;
     public partial class ReportsWindow : Window
     {
         private List<InvoiceListItem> _invoices = new();
@@ -31,13 +32,13 @@ namespace WpfApp1
         private void LoadFilters()
         {
             // Get oldest invoice date from database
-            var (oldestDate, newestDate) = DatabaseHelper.GetInvoiceDateRange();
+            var (oldestDate, newestDate) = InvoiceRepository.GetInvoiceDateRange();
             
             // Set default date range: from oldest invoice to today
             ToDatePicker.SelectedDate = DateTime.Today;
             FromDatePicker.SelectedDate = oldestDate ?? DateTime.Today.AddYears(-1); // Fallback to 1 year ago if no invoices
 
-            var customers = DatabaseHelper.GetAllCustomers();
+            var customers = CustomerRepository.GetAllCustomers();
             var list = new List<CustomerList> { new CustomerList { Id = 0, Name = "Tất cả khách hàng" } };
             list.AddRange(customers.ConvertAll(c => new CustomerList { Id = c.Id, Name = c.Name }));
             CustomerComboBox.ItemsSource = list;
@@ -51,7 +52,7 @@ namespace WpfApp1
             int? customerId = (CustomerComboBox.SelectedValue as int?) ?? 0;
             string search = (SearchTextBox.Text ?? string.Empty).Trim();
 
-            var data = DatabaseHelper.QueryInvoices(from, to, customerId == 0 ? null : customerId, search);
+            var data = InvoiceRepository.QueryInvoices(from, to, customerId == 0 ? null : customerId, search);
             _invoices = data.ConvertAll(i => new InvoiceListItem
             {
                 Id = i.Id,
@@ -100,17 +101,17 @@ namespace WpfApp1
             {
                 // Get today's data
                 var today = DateTime.Today;
-                var todayInvoices = DatabaseHelper.QueryInvoices(today, today, null, string.Empty);
+                var todayInvoices = InvoiceRepository.QueryInvoices(today, today, null, string.Empty);
                 var todayRevenue = todayInvoices.Sum(i => i.Total);
                 
                 // Get 30 days data  
                 var thirtyDaysAgo = today.AddDays(-30);
-                var monthInvoices = DatabaseHelper.QueryInvoices(thirtyDaysAgo, today, null, string.Empty);
+                var monthInvoices = InvoiceRepository.QueryInvoices(thirtyDaysAgo, today, null, string.Empty);
                 var monthRevenue = monthInvoices.Sum(i => i.Total);
                 
                 // Get total customers and products
-                var totalCustomers = DatabaseHelper.GetTotalCustomers();
-                var totalProducts = DatabaseHelper.GetTotalProducts();
+                var totalCustomers = CustomerRepository.GetTotalCustomers();
+                var totalProducts = ProductRepository.GetTotalProducts();
 
    
                     
@@ -313,7 +314,7 @@ namespace WpfApp1
         {
             if (sender is Button btn && btn.DataContext is InvoiceListItem row)
             {
-                var detail = DatabaseHelper.GetInvoiceDetails(row.Id);
+                var detail = InvoiceRepository.GetInvoiceDetails(row.Id);
                 var sb = new StringBuilder();
                 sb.AppendLine($"Hóa đơn #{detail.Header.Id} - {detail.Header.CreatedDate:yyyy-MM-dd HH:mm}");
                 sb.AppendLine($"Khách hàng: {detail.Header.CustomerName}");
@@ -338,7 +339,7 @@ namespace WpfApp1
                 var confirm = MessageBox.Show($"Xóa hóa đơn #{row.Id}?\nHành động này không thể hoàn tác.", "Xác nhận xóa", MessageBoxButton.YesNo, MessageBoxImage.Warning);
                 if (confirm == MessageBoxResult.Yes)
                 {
-                    if (DatabaseHelper.DeleteInvoice(row.Id))
+                    if (InvoiceRepository.DeleteInvoice(row.Id))
                     {
                         LoadInvoices();
                         MessageBox.Show($"Hóa đơn #{row.Id} đã được xóa.", "Đã xóa", MessageBoxButton.OK, MessageBoxImage.Information);

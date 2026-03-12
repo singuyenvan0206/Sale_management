@@ -2,8 +2,9 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace WpfApp1
+namespace FashionStore
 {
+    using FashionStore.Repositories;
     public partial class AddEditUserWindow : Window
     {
         private UserManagementItem _user;
@@ -118,12 +119,12 @@ namespace WpfApp1
                     string? newPassword = string.IsNullOrWhiteSpace(password) ? null : password;
                     string? newRole = roleString;
                     string? newEmployeeName = string.IsNullOrWhiteSpace(employeeName) ? null : employeeName;
-                    success = DatabaseHelper.UpdateAccount(username, newPassword, newRole, newEmployeeName);
+                    success = UserRepository.UpdateAccount(username, newPassword, newRole, newEmployeeName);
                 }
                 else
                 {
                     // Add mode - sử dụng employeeName mới
-                    success = DatabaseHelper.RegisterAccount(username, employeeName, password, roleString);
+                    success = UserRepository.RegisterAccount(username, employeeName, password, roleString);
                 }
 
                 if (success)

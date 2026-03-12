@@ -4,8 +4,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Text.RegularExpressions;
 
-namespace WpfApp1
+namespace FashionStore
 {
+    using FashionStore.Repositories;
     public partial class InvoiceManagementWindow : Window
     {
         private readonly List<InvoiceItemViewModel> _invoiceItems = new();
@@ -34,7 +35,7 @@ namespace WpfApp1
         {
             try
             {
-                var vouchers = DatabaseHelper.GetAllVouchers().Where(v => v.IsActive).ToList();
+                var vouchers = VoucherRepository.GetAllVouchers().Where(v => v.IsActive).ToList();
                 if (VoucherComboBox != null)
                 {
                     VoucherComboBox.ItemsSource = vouchers;
@@ -64,7 +65,7 @@ namespace WpfApp1
         {
             try
             {
-                var customers = DatabaseHelper.GetAllCustomers();
+                var customers = CustomerRepository.GetAllCustomers();
                 _allCustomerItems = customers.ConvertAll(c => new CustomerListItem
                 {
                     Id = c.Id,
@@ -279,7 +280,7 @@ namespace WpfApp1
         private (string tier, int points) GetSelectedCustomerLoyalty()
         {
             if (_selectedCustomerId is int customerId && customerId > 0)
-                return DatabaseHelper.GetCustomerLoyalty(customerId);
+                return CustomerRepository.GetCustomerLoyalty(customerId);
             return ("Regular", 0);
         }
 
@@ -291,7 +292,7 @@ namespace WpfApp1
         {
             try
             {
-                var products = DatabaseHelper.GetAllProductsWithCategories();
+                var products = ProductRepository.GetAllProductsWithCategories();
                 var productList = products.ConvertAll(p => new ProductListItem
                 {
                     Id = p.Id,
@@ -366,7 +367,7 @@ namespace WpfApp1
             // Check stock quantity
             if (ProductComboBox.SelectedItem is ProductListItem selectedProduct)
             {
-                int currentStock = DatabaseHelper.GetProductStockQuantity(selectedProduct.Id);
+                int currentStock = ProductRepository.GetProductStockQuantity(selectedProduct.Id);
                 
                 // Check if item already exists in invoice
                 var existingItem = _invoiceItems.FirstOrDefault(i => i.ProductId == selectedProduct.Id);
@@ -478,7 +479,7 @@ namespace WpfApp1
             if (sender is Button button && button.DataContext is InvoiceItemViewModel item)
             {
                 // Check stock before increasing quantity
-                int currentStock = DatabaseHelper.GetProductStockQuantity(item.ProductId);
+                int currentStock = ProductRepository.GetProductStockQuantity(item.ProductId);
                 int requestedQuantity = item.Quantity + 1;
                 
                 if (requestedQuantity > currentStock)
@@ -587,7 +588,7 @@ namespace WpfApp1
                 
                 var bestVoucher = vouchers
 
-                    .Where(v => v.IsValid(subtotal, DatabaseHelper.GetVoucherUsageCountForCustomer(v.Id, _selectedCustomerId.Value)))
+                    .Where(v => v.IsValid(subtotal, VoucherRepository.GetVoucherUsageCountForCustomer(v.Id, _selectedCustomerId.Value)))
                     .OrderByDescending(v => CalculateVoucherValue(subtotal, v))
                     .FirstOrDefault();
 
@@ -970,7 +971,7 @@ namespace WpfApp1
                     (item.ProductId, item.Quantity, item.UnitPrice)).ToList();
 
                 var currentUser = Application.Current.Resources["CurrentUser"]?.ToString() ?? "admin";
-                var employeeId = DatabaseHelper.GetEmployeeIdByUsername(currentUser);
+                var employeeId = UserRepository.GetEmployeeIdByUsername(currentUser);
                 
                 // Get selected voucher ID
                 int? voucherId = null;
@@ -981,7 +982,7 @@ namespace WpfApp1
 
                 System.Diagnostics.Debug.WriteLine($"Attempting to save invoice: CustomerId={customerId}, EmployeeId={employeeId}, Items={itemsForSave.Count}, VoucherId={voucherId}");
 
-                var result = DatabaseHelper.SaveInvoice(customerId, employeeId, subtotal, taxPercent,
+                var result = InvoiceRepository.SaveInvoice(customerId, employeeId, subtotal, taxPercent,
                     taxAmount, discount, total, paid, itemsForSave, voucherId: voucherId);
 
                 if (!result)
@@ -1024,7 +1025,7 @@ namespace WpfApp1
 
         private void ProcessSuccessfulSave(int customerId)
         {
-            var invoiceId = DatabaseHelper.LastSavedInvoiceId;
+            var invoiceId = InvoiceRepository.LastSavedInvoiceId;
             MessageBox.Show($"Hóa đơn #{invoiceId} đã được lưu.", "Thành công",
                 MessageBoxButton.OK, MessageBoxImage.Information);
 
@@ -1040,7 +1041,7 @@ namespace WpfApp1
             try
             {
                 var currentUser = Application.Current.Resources["CurrentUser"]?.ToString() ?? "admin";
-                var employeeId = DatabaseHelper.GetEmployeeIdByUsername(currentUser);
+                var employeeId = UserRepository.GetEmployeeIdByUsername(currentUser);
 
                 var printWindow = new InvoicePrintWindow(invoiceId, employeeId);
                 printWindow.ShowDialog();
@@ -1071,12 +1072,12 @@ namespace WpfApp1
                     
                 var total = Math.Max(0, subtotal + taxAmount - totalDiscount);
 
-                var (_, currentPoints) = DatabaseHelper.GetCustomerLoyalty(customerId);
+                var (_, currentPoints) = CustomerRepository.GetCustomerLoyalty(customerId);
                 var earnedPoints = (int)Math.Floor((double)total / 100000);
                 var newPoints = currentPoints + earnedPoints;
                 var newTier = TierSettingsManager.DetermineTierByPoints(newPoints);
 
-                DatabaseHelper.UpdateCustomerLoyalty(customerId, newPoints, newTier);
+                CustomerRepository.UpdateCustomerLoyalty(customerId, newPoints, newTier);
             }
             catch
             {
@@ -1113,7 +1114,7 @@ namespace WpfApp1
         private static decimal TryGetDecimal(string text) => decimal.TryParse(text, out var value) && value >= 0 ? value : 0m;
         private int GetEmployeeId(string username)
         {
-            try { return DatabaseHelper.GetEmployeeIdByUsername(username); }
+            try { return UserRepository.GetEmployeeIdByUsername(username); }
             catch { return 1; }
         }
 

@@ -1,8 +1,9 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace WpfApp1
+namespace FashionStore
 {
+    using FashionStore.Repositories;
     public partial class SupplierManagementWindow : Window
     {
         private PaginationHelper<Supplier> _paginationHelper = new();
@@ -17,7 +18,7 @@ namespace WpfApp1
 
         private void LoadSuppliers()
         {
-            var suppliers = DatabaseHelper.GetAllSuppliers();
+            var suppliers = SupplierRepository.GetAllSuppliers();
             _paginationHelper.SetData(suppliers);
         }
 
@@ -56,7 +57,7 @@ namespace WpfApp1
 
             };
 
-            if (DatabaseHelper.AddSupplier(supplier))
+            if (SupplierRepository.AddSupplier(supplier))
             {
                 MessageBox.Show("Thêm nhà cung cấp thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
                 LoadSuppliers();
@@ -85,7 +86,7 @@ namespace WpfApp1
             selectedSupplier.Address = AddressTextBox.Text.Trim();
 
 
-            if (DatabaseHelper.UpdateSupplier(selectedSupplier))
+            if (SupplierRepository.UpdateSupplier(selectedSupplier))
             {
                 MessageBox.Show("Cập nhật nhà cung cấp thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
                 LoadSuppliers();
@@ -108,7 +109,7 @@ namespace WpfApp1
             var result = MessageBox.Show($"Bạn có chắc chắn muốn xóa '{selectedSupplier.Name}'?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
-                if (DatabaseHelper.DeleteSupplier(selectedSupplier.Id))
+                if (SupplierRepository.DeleteSupplier(selectedSupplier.Id))
                 {
                     MessageBox.Show("Xóa nhà cung cấp thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
                     LoadSuppliers();

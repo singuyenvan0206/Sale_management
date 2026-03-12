@@ -2,7 +2,7 @@ using MySql.Data.MySqlClient;
 using System;
 using System.Diagnostics;
 
-namespace WpfApp1
+namespace FashionStore
 {
     /// <summary>
     /// Database migration helper for updating schema to match new comprehensive design

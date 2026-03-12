@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using MySql.Data.MySqlClient;
 
-namespace WpfApp1
+namespace FashionStore
 {
 	public class SettingsConfig
 	{
@@ -18,7 +18,7 @@ namespace WpfApp1
 	{
 		private static readonly string SettingsPath = Path.Combine(
 			Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-			"WpfApp1", "settings.json");
+			"FashionStore", "settings.json");
 
 		public static SettingsConfig Load()
 		{
