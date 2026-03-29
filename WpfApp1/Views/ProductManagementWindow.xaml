@@ -50,178 +50,183 @@
         <Border Grid.Row="0" Background="#1CB5E0" Padding="20">
             <TextBlock Text="📦 Quản Lý Sản Phẩm" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
         </Border>
+        
         <Grid Grid.Row="1" Margin="20">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="350"/>
+                <ColumnDefinition Width="{Binding LeftPanelWidth}"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Border Grid.Column="0" Background="White" CornerRadius="10" Padding="20" Margin="0,0,10,0">
+
+            <!-- Input Form -->
+            <Border Grid.Column="0" 
+                    Visibility="{Binding IsSearchMode, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                    Background="White" CornerRadius="10" Padding="20" Margin="0,0,10,0">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/> <!-- Title -->
-                            <RowDefinition Height="Auto"/> <!-- Status -->
-                            <RowDefinition Height="Auto"/> <!-- Name -->
-                            <RowDefinition Height="Auto"/> <!-- Code & Category -->
-                            <RowDefinition Height="Auto"/> <!-- Price & Stock -->
-                            <RowDefinition Height="Auto"/> <!-- Supplier -->
-                            <RowDefinition Height="Auto"/> <!-- Import Info -->
-                            <RowDefinition Height="Auto"/> <!-- Promo Info -->
-                            <RowDefinition Height="Auto"/> <!-- Description -->
-                            <RowDefinition Height="Auto"/> <!-- Buttons -->
-                            <RowDefinition Height="Auto"/> <!-- CSV Actions -->
-                        </Grid.RowDefinitions>
-                        
-                        <TextBlock Grid.Row="0" Text="📝 Thông Tin Sản Phẩm" FontSize="18" FontWeight="Bold" Foreground="#1CB5E0" Margin="0,0,0,15"/>
-
-                        <TextBlock Grid.Row="1" x:Name="StatusTextBlock" 
-                                   Text="Sẵn sàng" 
-                                   FontSize="12" 
-                                   Foreground="#666666" 
-                                   HorizontalAlignment="Right" 
-                                   Margin="0,0,0,10"/>
-
-                        <!-- Name -->
-                        <StackPanel Grid.Row="2" Margin="0,0,0,10">
-                            <TextBlock Text="Tên Sản Phẩm *" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                            <TextBox x:Name="ProductNameTextBox"/>
-                        </StackPanel>
-
-                        <!-- Code & Category -->
-                        <Grid Grid.Row="3" Margin="0,0,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="10"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <!-- Product Name -->
+                            <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                                <TextBlock Text="Tên Sản Phẩm *" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding EditingProduct.Name, UpdateSourceTrigger=PropertyChanged}" Height="35"/>
+                            </StackPanel>
+                            
+                            <!-- Product Code -->
+                            <StackPanel Grid.Row="1" Margin="0,0,0,12">
                                 <TextBlock Text="Mã Sản Phẩm" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                                <TextBox x:Name="ProductCodeTextBox"/>
+                                <TextBox Text="{Binding EditingProduct.Code, UpdateSourceTrigger=PropertyChanged}" Height="35"/>
                             </StackPanel>
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="Danh Mục" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                                <ComboBox x:Name="CategoryComboBox" DisplayMemberPath="Name" SelectedValuePath="Id"/>
+                            
+                            <!-- Category and Supplier -->
+                            <Grid Grid.Row="2" Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Danh Mục" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                    <ComboBox ItemsSource="{Binding Categories}" 
+                                              SelectedValuePath="Id" 
+                                              DisplayMemberPath="Name" 
+                                              SelectedValue="{Binding EditingProduct.CategoryId}" 
+                                              Height="35"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Nhà Cung Cấp" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                    <ComboBox ItemsSource="{Binding Suppliers}" 
+                                              SelectedValuePath="Id" 
+                                              DisplayMemberPath="Name" 
+                                              SelectedValue="{Binding EditingProduct.SupplierId}" 
+                                              Height="35"/>
+                                </StackPanel>
+                            </Grid>
+                            
+                            <!-- Prices -->
+                            <Grid Grid.Row="3" Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Giá Bán *" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                    <TextBox Text="{Binding EditingProduct.SalePrice, UpdateSourceTrigger=PropertyChanged}" Height="35"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Giá Nhập" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                    <TextBox Text="{Binding EditingProduct.PurchasePrice, UpdateSourceTrigger=PropertyChanged}" Height="35"/>
+                                </StackPanel>
+                            </Grid>
+                            
+                            <!-- Quantity -->
+                            <Grid Grid.Row="4" Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Số Lượng Nhập" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                    <TextBox Text="{Binding EditingProduct.ImportQuantity, UpdateSourceTrigger=PropertyChanged}" Height="35"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Còn Lại" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                    <TextBox Text="{Binding EditingProduct.StockQuantity, UpdateSourceTrigger=PropertyChanged}" Height="35"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Promotion -->
+                            <Border Grid.Row="5" Background="#FFF9C4" Padding="10" CornerRadius="8" Margin="0,0,0,12">
+                                <StackPanel>
+                                    <TextBlock Text="🎁 Khuyến Mãi" FontWeight="Bold" Foreground="#F57F17" Margin="0,0,0,5"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Giảm (%)" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBox Grid.Column="1" Text="{Binding EditingProduct.PromoDiscountPercent, UpdateSourceTrigger=PropertyChanged}" Height="30"/>
+                                    </Grid>
+                                    <Grid Margin="0,5,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="5"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="Từ Ngày" FontSize="11"/>
+                                            <DatePicker SelectedDate="{Binding EditingProduct.PromoStartDate}" Height="30"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="Đến Ngày" FontSize="11"/>
+                                            <DatePicker SelectedDate="{Binding EditingProduct.PromoEndDate}" Height="30"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Description -->
+                            <StackPanel Grid.Row="6" Margin="0,0,0,20">
+                                <TextBlock Text="Mô Tả Chi Tiết" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding EditingProduct.Description, UpdateSourceTrigger=PropertyChanged}"
+                                         Height="80" 
+                                         TextWrapping="Wrap" 
+                                         AcceptsReturn="True"
+                                         VerticalScrollBarVisibility="Auto"/>
                             </StackPanel>
+                            
+                            <!-- Actions -->
+                            <Grid Grid.Row="7" Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" Content="🌿 Thêm" Background="#4CAF50" Foreground="White" Command="{Binding AddCommand}"/>
+                                <Button Grid.Column="2" Content="📝 Sửa" Background="#2196F3" Foreground="White" Command="{Binding UpdateCommand}"/>
+                                <Button Grid.Column="4" Content="🗑️ Xóa" Background="#F44336" Foreground="White" Command="{Binding DeleteCommand}"/>
+                            </Grid>
+                            
+                            <Button Grid.Row="8" Content="🧹 Làm Mới Form" Background="#9E9E9E" Foreground="White" Command="{Binding ClearCommand}" Margin="0,0,0,10"/>
+                            
+                            <Expander Header="Chức Năng Khác" Grid.Row="9" Foreground="#666">
+                                <StackPanel Margin="5">
+                                    <Button Content="📥 Nhập từ CSV" Background="#FF9800" Foreground="White" Command="{Binding ImportCsvCommand}" Margin="0,0,0,5"/>
+                                    <Button Content="📤 Xuất sang CSV" Background="#FF9800" Foreground="White" Command="{Binding ExportCsvCommand}" Margin="0,0,0,5"/>
+                                    <Button Content="⚠ Xóa Tất Cả" Background="#9E9E9E" Foreground="White" Command="{Binding DeleteAllCommand}"/>
+                                </StackPanel>
+                            </Expander>
                         </Grid>
-
-                        <!-- Price & Stock -->
-                        <Grid Grid.Row="4" Margin="0,0,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="10"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Giá Bán *" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                                <TextBox x:Name="PriceTextBox"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="Số Lượng Tồn *" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                                <TextBox x:Name="StockQuantityTextBox"/>
-                            </StackPanel>
-                        </Grid>
-
-                        <!-- Supplier -->
-                        <StackPanel Grid.Row="5" Margin="0,0,0,15">
-                            <TextBlock Text="Nhà Cung Cấp" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                            <ComboBox x:Name="SupplierComboBox" DisplayMemberPath="Name" SelectedValuePath="Id"/>
-                        </StackPanel>
-                        
-                        <!-- Import Info Section -->
-                        <Border Grid.Row="6" BorderBrush="#EEEEEE" BorderThickness="1" Padding="10" Margin="0,0,0,15" Background="#FAFAFA" CornerRadius="4">
-                            <StackPanel>
-                                <TextBlock Text="📥 Thông Tin Nhập Hàng" FontWeight="Bold" Foreground="#757575" Margin="0,0,0,10" FontSize="12"/>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="10"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Giá Nhập" FontWeight="SemiBold" Margin="0,0,0,5" FontSize="12"/>
-                                        <TextBox x:Name="ImportPriceTextBox"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="2">
-                                        <TextBlock Text="Số Lượng Nhập" FontWeight="SemiBold" Margin="0,0,0,5" FontSize="12"/>
-                                        <TextBox x:Name="ImportQuantityTextBox"/>
-                                    </StackPanel>
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Promo Info Section -->
-                        <Border Grid.Row="7" BorderBrush="#FFF3E0" BorderThickness="1" Padding="10" Margin="0,0,0,15" Background="#FFF8E1" CornerRadius="4">
-                            <StackPanel>
-                                <TextBlock Text="🏷️ Khuyến Mãi" FontWeight="Bold" Foreground="#F57C00" Margin="0,0,0,10" FontSize="12"/>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="0.8*"/>
-                                        <ColumnDefinition Width="10"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="10"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Giảm giá (%)" FontWeight="SemiBold" Margin="0,0,0,5" FontSize="12"/>
-                                        <TextBox x:Name="PromoDiscountPercentTextBox" Text="0"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="2">
-                                        <TextBlock Text="Từ Ngày" FontWeight="SemiBold" Margin="0,0,0,5" FontSize="12"/>
-                                        <DatePicker x:Name="PromoStartDatePicker"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="4">
-                                        <TextBlock Text="Đến Ngày" FontWeight="SemiBold" Margin="0,0,0,5" FontSize="12"/>
-                                        <DatePicker x:Name="PromoEndDatePicker"/>
-                                    </StackPanel>
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Description -->
-                        <StackPanel Grid.Row="8" Margin="0,0,0,20">
-                            <TextBlock Text="Mô Tả Chi Tiết" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                            <TextBox x:Name="DescriptionTextBox" 
-                                     Height="60" 
-                                     TextWrapping="Wrap" 
-                                     AcceptsReturn="True"
-                                     VerticalScrollBarVisibility="Auto"/>
-                        </StackPanel>
-                        
-                        <!-- Primary Actions -->
-                        <Grid Grid.Row="9" Margin="0,0,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="10"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="10"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Button Grid.Column="0" Content="➕ Thêm" Background="#4CAF50" Foreground="White" Click="AddButton_Click"/>
-                            <Button Grid.Column="2" Content="✏️ Cập Nhật" Background="#2196F3" Foreground="White" Click="UpdateButton_Click"/>
-                            <Button Grid.Column="4" Content="🗑️ Xóa" Background="#F44336" Foreground="White" Click="DeleteButton_Click"/>
-                        </Grid>
-                        
-                        <!-- Secondary Actions -->
-                        <Expander Header="Chức Năng Khác" Grid.Row="10" Foreground="#666" Margin="0,10,0,0">
-                             <UniformGrid Columns="3">
-                                <Button Content="📥 Nhập CSV" Background="#FF9800" Foreground="White" Click="ImportCsvButton_Click" Margin="0,0,5,0" FontSize="12"/>
-                                <Button Content="📤 Xuất CSV" Background="#FF9800" Foreground="White" Click="ExportCsvButton_Click" Margin="0,0,5,0" FontSize="12"/>
-                                <Button Content="⚠️ Xóa Hết" Background="#9E9E9E" Foreground="White" Click="DeleteAllButton_Click" FontSize="12"/>
-                            </UniformGrid>
-                        </Expander>
-                    </Grid>
                     </StackPanel>
                 </ScrollViewer>
             </Border>
 
-            <Border Grid.Column="1" 
-                    Background="White" 
-                    CornerRadius="10" 
-                    Padding="20">
-                <StackPanel>
+            <!-- Product List Panel -->
+            <Border Grid.Column="1" Background="White" CornerRadius="10" Padding="20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                    <Grid Margin="0,0,0,15">
+                    <Grid Grid.Row="0" Margin="0,0,0,15">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
@@ -255,45 +260,19 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     
-                                    <!-- Category Filter -->
                                     <StackPanel Grid.Column="0" Margin="0,0,8,0">
                                         <TextBlock Text="Danh Mục" FontSize="11" Foreground="#666" Margin="0,0,0,3"/>
-                                        <ComboBox x:Name="FilterCategoryComboBox" 
-                                                  Height="32" 
-                                                  SelectionChanged="FilterChanged"
-                                                  DisplayMemberPath="Name"
-                                                  SelectedValuePath="Id">
-                                            <ComboBox.ItemContainerStyle>
-                                                <Style TargetType="ComboBoxItem">
-                                                    <Setter Property="Padding" Value="8,4"/>
-                                                </Style>
-                                            </ComboBox.ItemContainerStyle>
-                                        </ComboBox>
+                                        <ComboBox ItemsSource="{Binding FilterCategories}" SelectedValuePath="Id" DisplayMemberPath="Name" SelectedValue="{Binding SelectedFilterCategoryId}" Height="32"/>
                                     </StackPanel>
                                     
-                                    <!-- Supplier Filter -->
                                     <StackPanel Grid.Column="1" Margin="0,0,8,0">
                                         <TextBlock Text="Nhà Cung Cấp" FontSize="11" Foreground="#666" Margin="0,0,0,3"/>
-                                        <ComboBox x:Name="FilterSupplierComboBox" 
-                                                  Height="32" 
-                                                  SelectionChanged="FilterChanged"
-                                                  DisplayMemberPath="Name"
-                                                  SelectedValuePath="Id">
-                                            <ComboBox.ItemContainerStyle>
-                                                <Style TargetType="ComboBoxItem">
-                                                    <Setter Property="Padding" Value="8,4"/>
-                                                </Style>
-                                            </ComboBox.ItemContainerStyle>
-                                        </ComboBox>
+                                        <ComboBox ItemsSource="{Binding FilterSuppliers}" SelectedValuePath="Id" DisplayMemberPath="Name" SelectedValue="{Binding SelectedFilterSupplierId}" Height="32"/>
                                     </StackPanel>
                                     
-                                    <!-- Stock Status Filter -->
                                     <StackPanel Grid.Column="2" Margin="0,0,8,0">
                                         <TextBlock Text="Tồn Kho" FontSize="11" Foreground="#666" Margin="0,0,0,3"/>
-                                        <ComboBox x:Name="FilterStockComboBox" 
-                                                  Height="32" 
-                                                  SelectedIndex="0"
-                                                  SelectionChanged="FilterChanged">
+                                        <ComboBox SelectedValuePath="Tag" SelectedValue="{Binding SelectedFilterStock}" Height="32">
                                             <ComboBoxItem Content="Tất cả" Tag="All"/>
                                             <ComboBoxItem Content="Hết hàng (0)" Tag="OutOfStock"/>
                                             <ComboBoxItem Content="Sắp hết (&lt;10)" Tag="LowStock"/>
@@ -301,26 +280,18 @@
                                         </ComboBox>
                                     </StackPanel>
                                     
-                                    <!-- Promotion Filter -->
                                     <StackPanel Grid.Column="3" Margin="0,0,8,0">
                                         <TextBlock Text="Khuyến Mãi" FontSize="11" Foreground="#666" Margin="0,0,0,3"/>
-                                        <ComboBox x:Name="FilterPromoComboBox" 
-                                                  Height="32" 
-                                                  SelectedIndex="0"
-                                                  SelectionChanged="FilterChanged">
+                                        <ComboBox SelectedValuePath="Tag" SelectedValue="{Binding SelectedFilterPromo}" Height="32">
                                             <ComboBoxItem Content="Tất cả" Tag="All"/>
                                             <ComboBoxItem Content="Có KM" Tag="HasPromo"/>
                                             <ComboBoxItem Content="Không KM" Tag="NoPromo"/>
                                         </ComboBox>
                                     </StackPanel>
                                     
-                                    <!-- Price Range Filter -->
                                     <StackPanel Grid.Column="4" Margin="0,0,8,0">
                                         <TextBlock Text="Khoảng Giá" FontSize="11" Foreground="#666" Margin="0,0,0,3"/>
-                                        <ComboBox x:Name="FilterPriceComboBox" 
-                                                  Height="32" 
-                                                  SelectedIndex="0"
-                                                  SelectionChanged="FilterChanged">
+                                        <ComboBox SelectedValuePath="Tag" SelectedValue="{Binding SelectedFilterPrice}" Height="32">
                                             <ComboBoxItem Content="Tất cả" Tag="All"/>
                                             <ComboBoxItem Content="&lt; 100k" Tag="Under100k"/>
                                             <ComboBoxItem Content="100k - 500k" Tag="100kTo500k"/>
@@ -329,172 +300,72 @@
                                         </ComboBox>
                                     </StackPanel>
                                     
-                                    <!-- Reset Button -->
-                                    <Button Grid.Column="5" 
-                                            Content="🔄 Reset" 
-                                            Height="32" 
-                                            Width="80"
-                                            Background="#9E9E9E" 
-                                            Foreground="White"
-                                            Click="ResetFiltersButton_Click"
-                                            VerticalAlignment="Bottom"
-                                            FontSize="12"
-                                            Padding="8,4"/>
+                                    <Button Grid.Column="5" Content="🔄 Reset" Command="{Binding ResetFiltersCommand}" Height="32" Width="80" Background="#9E9E9E" Foreground="White" VerticalAlignment="Bottom" FontSize="12" Padding="8,4"/>
                                 </Grid>
                             </Grid>
                         </Border>
                         
                         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
-                            <TextBox x:Name="SearchTextBox" 
-                                     Width="250" 
-                                     Height="32"
-                                     Margin="0,0,10,0"
-                                     TextChanged="SearchTextBox_TextChanged"
-                                     VerticalContentAlignment="Center"
-                                     FontSize="14"
-                                     Padding="8,6"/>
-                            <Button Content="🔍 Tìm Kiếm" 
-                                    Width="100" 
-                                    Height="32"
-                                    Background="#FF9800" 
-                                    Foreground="White"
-                                    Click="SearchButton_Click"
-                                    FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}" 
+                                     Width="250" Height="32" Margin="0,0,10,0"
+                                     VerticalContentAlignment="Center" FontSize="14" Padding="8,6"/>
+                            <Button Content="🔍 Tìm Kiếm" Command="{Binding SearchCommand}" Width="100" Height="32" Background="#FF9800" Foreground="White" FontWeight="SemiBold"/>
                         </StackPanel>
                     </Grid>
-                    
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        
-                        <Border Grid.Row="0" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8">
-                            <DataGrid x:Name="ProductDataGrid" 
-                                      AutoGenerateColumns="False" 
-                                      IsReadOnly="True"
-                                      SelectionMode="Single"
-                                      SelectionChanged="ProductDataGrid_SelectionChanged"
-                                      GridLinesVisibility="Horizontal"
-                                      AlternatingRowBackground="#F8F9FA"
-                                      RowHeight="35"
-                                      MinHeight="525"
-                                      HorizontalAlignment="Stretch"
-                                      VerticalAlignment="Stretch"
-                                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                                      ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                      ScrollViewer.CanContentScroll="True"
-                                      EnableRowVirtualization="True"
-                                      EnableColumnVirtualization="False"
-                                      CanUserResizeColumns="True"
-                                      HeadersVisibility="Column"
-                                      BorderThickness="0">
+
+                    <Border Grid.Row="1" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8">
+                        <DataGrid x:Name="ProductDataGrid" 
+                                  ItemsSource="{Binding PagedProducts}"
+                                  SelectedItem="{Binding SelectedProduct, Mode=TwoWay}"
+                                  AutoGenerateColumns="False" 
+                                  IsReadOnly="True"
+                                  SelectionMode="Single"
+                                  Sorting="ProductDataGrid_Sorting"
+                                  GridLinesVisibility="Horizontal"
+                                  AlternatingRowBackground="#F8F9FA"
+                                  RowHeight="35"
+                                  HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Stretch"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="ID" Binding="{Binding Id}" SortMemberPath="Id" Width="60">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="HorizontalAlignment" Value="Center"/>
-                                            <Setter Property="FontWeight" Value="Bold"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-                                <DataGridTextColumn Header="📦 Tên Sản Phẩm" Binding="{Binding Name}" SortMemberPath="Name" Width="250"/>
-                                <DataGridTextColumn Header="🏷️ Mã SP" Binding="{Binding Code}" SortMemberPath="Code" Width="120">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="HorizontalAlignment" Value="Center"/>
-                                            <Setter Property="FontFamily" Value="Consolas"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-                                <DataGridTextColumn Header="📂 Danh Mục" Binding="{Binding CategoryName}" SortMemberPath="CategoryName" Width="120"/>
-                                <DataGridTextColumn Header="💰 Giá Bán" Binding="{Binding SalePrice, StringFormat=N0}" SortMemberPath="SalePrice" Width="120">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="HorizontalAlignment" Value="Right"/>
-                                            <Setter Property="FontWeight" Value="Bold"/>
-                                            <Setter Property="Foreground" Value="#4CAF50"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-                                <DataGridTextColumn Header="🔥 KM%" Binding="{Binding PromoDiscountPercent, StringFormat=N2}" SortMemberPath="PromoDiscountPercent" Width="80">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="HorizontalAlignment" Value="Center"/>
-                                            <Setter Property="FontWeight" Value="Bold"/>
-                                            <Setter Property="Foreground" Value="#E91E63"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-                                <DataGridTextColumn Header="📊 Tồn Kho" Binding="{Binding StockQuantity}" SortMemberPath="StockQuantity" Width="80">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="HorizontalAlignment" Value="Center"/>
-                                            <Setter Property="FontWeight" Value="Bold"/>
-                                            <Setter Property="Foreground" Value="#FF9800"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-                                <DataGridTextColumn Header="💰 Giá Nhập" Binding="{Binding PurchasePrice, StringFormat=N0}" SortMemberPath="PurchasePrice" Width="100">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="HorizontalAlignment" Value="Right"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-                                <DataGridTextColumn Header="📦 SL Nhập" Binding="{Binding ImportQuantity}" SortMemberPath="ImportQuantity" Width="80">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="HorizontalAlignment" Value="Center"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-                                <DataGridTextColumn Header="🏪 Nhà Cung Cấp" Binding="{Binding SupplierName}" SortMemberPath="SupplierName" Width="auto"/>
-                                <DataGridTextColumn Header="📝 Mô Tả" Binding="{Binding Description}" SortMemberPath="Description" Width="auto"/>
+                                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60" FontWeight="Bold"/>
+                                <DataGridTextColumn Header="📦 Tên Sản Phẩm" Binding="{Binding Name}" Width="250"/>
+                                <DataGridTextColumn Header="🏷️ Mã SP" Binding="{Binding Code}" Width="120" FontFamily="Consolas"/>
+                                <DataGridTextColumn Header="📂 Danh Mục" Binding="{Binding CategoryName}" Width="120"/>
+                                <DataGridTextColumn Header="💰 Giá Bán" Binding="{Binding SalePrice, StringFormat=N0}" Width="120" FontWeight="Bold" Foreground="#4CAF50"/>
+                                <DataGridTextColumn Header="🔥 KM%" Binding="{Binding PromoDiscountPercent, StringFormat=N0}" Width="60" Foreground="#E91E63"/>
+                                <DataGridTextColumn Header="📊 Tồn Kho" Binding="{Binding StockQuantity}" Width="80" FontWeight="Bold" Foreground="#FF9800"/>
+                                <DataGridTextColumn Header="💰 Giá Nhập" Binding="{Binding PurchasePrice, StringFormat=N0}" Width="100"/>
+                                <DataGridTextColumn Header="📦 SL Nhập" Binding="{Binding ImportQuantity}" Width="80"/>
+                                <DataGridTextColumn Header="🏪 Nhà Cung Cấp" Binding="{Binding SupplierName}" Width="150"/>
+                                <DataGridTextColumn Header="📝 Mô Tả" Binding="{Binding Description}" Width="200"/>
                             </DataGrid.Columns>
-                            </DataGrid>
-                        </Border>
-                        
-                        <Border Grid.Row="1" Background="#F8F9FA" Padding="15" Margin="0,10,0,0" CornerRadius="8">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                
-                                <!-- Page Info -->
-                                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <TextBlock Text="📄 Trang:" FontWeight="SemiBold" Margin="0,0,5,0"/>
-                                    <TextBlock x:Name="PageInfoTextBlock" Text="1 / 1" FontWeight="Bold" Foreground="#1CB5E0"/>
-                                    <TextBlock Text=" • " Margin="10,0"/>
-                                    <TextBlock Text="📊 Tổng:" FontWeight="SemiBold" Margin="0,0,5,0"/>
-                                    <TextBlock x:Name="TotalItemsTextBlock" Text="0 sản phẩm" FontWeight="Bold" Foreground="#FF9800"/>
-                                </StackPanel>
-                                
-                                <!-- Page Navigation -->
-                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button x:Name="FirstPageButton" Content="⏮️" Width="35" Height="30" 
-                                            Background="#2196F3" Foreground="White" FontWeight="Bold"
-                                            Click="FirstPageButton_Click" Margin="0,0,5,0"/>
-                                    <Button x:Name="PrevPageButton" Content="◀️" Width="35" Height="30" 
-                                            Background="#2196F3" Foreground="White" FontWeight="Bold"
-                                            Click="PrevPageButton_Click" Margin="0,0,5,0"/>
-                                    <TextBox x:Name="CurrentPageTextBox" Width="50" Height="30" 
-                                             TextAlignment="Center" VerticalContentAlignment="Center"
-                                             FontWeight="Bold" Margin="0,0,5,0"
-                                             KeyDown="CurrentPageTextBox_KeyDown"/>
-                                    <Button x:Name="NextPageButton" Content="▶️" Width="35" Height="30" 
-                                            Background="#2196F3" Foreground="White" FontWeight="Bold"
-                                            Click="NextPageButton_Click" Margin="0,0,5,0"/>
-                                    <Button x:Name="LastPageButton" Content="⏭️" Width="35" Height="30" 
-                                            Background="#2196F3" Foreground="White" FontWeight="Bold"
-                                            Click="LastPageButton_Click"/>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-                    </Grid>
-                </StackPanel>
+                        </DataGrid>
+                    </Border>
+
+                    <Border Grid.Row="2" Background="#F8F9FA" Padding="15" Margin="0,10,0,0" CornerRadius="8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding PageInfoText}" FontWeight="SemiBold" Foreground="#1CB5E0" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Content="⏮️" Width="35" Height="30" Background="#2196F3" Foreground="White" Command="{Binding FirstPageCommand}" Margin="0,0,5,0"/>
+                                <Button Content="◀️" Width="35" Height="30" Background="#2196F3" Foreground="White" Command="{Binding PrevPageCommand}" Margin="0,0,5,0"/>
+                                <TextBox Text="{Binding CurrentPageBox, UpdateSourceTrigger=PropertyChanged}" Width="50" Height="30" Margin="0,0,5,0" TextAlignment="Center" VerticalContentAlignment="Center">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Return" Command="{Binding GoToPageCommand}" />
+                                    </TextBox.InputBindings>
+                                </TextBox>
+                                <Button Content="▶️" Width="35" Height="30" Background="#2196F3" Foreground="White" Command="{Binding NextPageCommand}" Margin="0,0,5,0"/>
+                                <Button Content="⏭️" Width="35" Height="30" Background="#2196F3" Foreground="White" Command="{Binding LastPageCommand}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
             </Border>
         </Grid>
     </Grid>

@@ -71,16 +71,16 @@
                             </Grid.RowDefinitions>
                             
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Điểm tối thiểu:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            <TextBox Grid.Row="0" Grid.Column="1" x:Name="RegularMinPointsTextBox" Text="0" IsReadOnly="True" Background="#F0F0F0" Margin="10,0,0,10"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding RegularMinPoints}" IsReadOnly="True" Background="#F0F0F0" Margin="10,0,0,10"/>
                             
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Giảm giá (%):" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            <TextBox Grid.Row="1" Grid.Column="1" x:Name="RegularDiscountTextBox" Text="0" Margin="10,0,0,10"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding RegularDiscount, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,10"/>
                             
                             <TextBlock Grid.Row="2" Grid.Column="0" Text="Ưu đãi đặc biệt:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            <TextBox Grid.Row="2" Grid.Column="1" x:Name="RegularBenefitsTextBox" Text="Không có ưu đãi đặc biệt" Margin="10,0,0,10"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding RegularBenefits, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,10"/>
                             
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="Mô tả:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            <TextBox Grid.Row="3" Grid.Column="1" x:Name="RegularDescriptionTextBox" Text="Hạng thành viên cơ bản" Margin="10,0,0,0"/>
+                            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding RegularDescription, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,0"/>
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -103,16 +103,16 @@
                             </Grid.RowDefinitions>
                             
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Điểm tối thiểu:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            <TextBox Grid.Row="0" Grid.Column="1" x:Name="SilverMinPointsTextBox" Text="500" Margin="10,0,0,10"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding SilverMinPoints, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,10"/>
                             
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Giảm giá (%):" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            <TextBox Grid.Row="1" Grid.Column="1" x:Name="SilverDiscountTextBox" Text="3" Margin="10,0,0,10"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SilverDiscount, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,10"/>
                             
                             <TextBlock Grid.Row="2" Grid.Column="0" Text="Ưu đãi đặc biệt:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            <TextBox Grid.Row="2" Grid.Column="1" x:Name="SilverBenefitsTextBox" Text="Ưu tiên hỗ trợ khách hàng" Margin="10,0,0,10"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding SilverBenefits, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,10"/>
                             
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="Mô tả:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            <TextBox Grid.Row="3" Grid.Column="1" x:Name="SilverDescriptionTextBox" Text="Hạng thành viên bạc với ưu đãi cơ bản" Margin="10,0,0,0"/>
+                            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding SilverDescription, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,0"/>
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -135,16 +135,16 @@
                             </Grid.RowDefinitions>
                             
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Điểm tối thiểu:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            <TextBox Grid.Row="0" Grid.Column="1" x:Name="GoldMinPointsTextBox" Text="1000" Margin="10,0,0,10"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding GoldMinPoints, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,10"/>
                             
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Giảm giá (%):" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            <TextBox Grid.Row="1" Grid.Column="1" x:Name="GoldDiscountTextBox" Text="7" Margin="10,0,0,10"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding GoldDiscount, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,10"/>
                             
                             <TextBlock Grid.Row="2" Grid.Column="0" Text="Ưu đãi đặc biệt:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            <TextBox Grid.Row="2" Grid.Column="1" x:Name="GoldBenefitsTextBox" Text="Miễn phí giao hàng, ưu tiên đặt hàng" Margin="10,0,0,10"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding GoldBenefits, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,10"/>
                             
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="Mô tả:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            <TextBox Grid.Row="3" Grid.Column="1" x:Name="GoldDescriptionTextBox" Text="Hạng thành viên vàng với nhiều ưu đãi" Margin="10,0,0,0"/>
+                            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding GoldDescription, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,0"/>
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -167,16 +167,16 @@
                             </Grid.RowDefinitions>
                             
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Điểm tối thiểu:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            <TextBox Grid.Row="0" Grid.Column="1" x:Name="PlatinumMinPointsTextBox" Text="2000" Margin="10,0,0,10"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding PlatinumMinPoints, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,10"/>
                             
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Giảm giá (%):" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            <TextBox Grid.Row="1" Grid.Column="1" x:Name="PlatinumDiscountTextBox" Text="10" Margin="10,0,0,10"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding PlatinumDiscount, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,10"/>
                             
                             <TextBlock Grid.Row="2" Grid.Column="0" Text="Ưu đãi đặc biệt:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            <TextBox Grid.Row="2" Grid.Column="1" x:Name="PlatinumBenefitsTextBox" Text="Tư vấn cá nhân, quà tặng sinh nhật, sự kiện VIP" Margin="10,0,0,10"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding PlatinumBenefits, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,10"/>
                             
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="Mô tả:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            <TextBox Grid.Row="3" Grid.Column="1" x:Name="PlatinumDescriptionTextBox" Text="Hạng thành viên cao cấp nhất với đầy đủ ưu đãi" Margin="10,0,0,0"/>
+                            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding PlatinumDescription, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,0"/>
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -193,9 +193,8 @@
                 
                 <!-- Auto Update Option -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <CheckBox x:Name="AutoUpdateTiersCheckBox" 
-                              Content="🔄 Tự động cập nhật hạng khách hàng theo ngưỡng điểm mới"
-                              IsChecked="True"
+                    <CheckBox Content="🔄 Tự động cập nhật hạng khách hàng theo ngưỡng điểm mới"
+                              IsChecked="{Binding AutoUpdateTiers, Mode=TwoWay}"
                               FontSize="14"
                               FontWeight="SemiBold"
                               Foreground="#666666"
@@ -208,19 +207,19 @@
                             Width="120" 
                             Background="#4CAF50" 
                             Foreground="White" 
-                            Click="SaveButton_Click"
+                            Command="{Binding SaveCommand}"
                             Margin="0,0,10,0"/>
                     <Button Content="🔄 Khôi Phục Mặc Định" 
                             Width="150" 
                             Background="#FF9800" 
                             Foreground="White" 
-                            Click="ResetButton_Click"
+                            Command="{Binding ResetCommand}"
                             Margin="0,0,10,0"/>
                     <Button Content="❌ Đóng" 
                             Width="80" 
                             Background="#9E9E9E" 
                             Foreground="White" 
-                            Click="CloseButton_Click"/>
+                            Command="{Binding CloseCommand}"/>
                 </StackPanel>
             </Grid>
         </Border>

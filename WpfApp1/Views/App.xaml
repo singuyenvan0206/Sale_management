@@ -6,5 +6,7 @@
              ShutdownMode="OnMainWindowClose">
     <Application.Resources>
         <local:BooleanToStatusColorConverter x:Key="BooleanToStatusColorConverter" />
+        <local:BooleanToStatusTextConverter x:Key="BooleanToStatusTextConverter" />
+        <local:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
     </Application.Resources>
 </Application>

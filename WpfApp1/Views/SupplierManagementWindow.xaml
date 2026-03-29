@@ -36,7 +36,7 @@
             <Setter Property="FontSize" Value="14"/>
         </Style>
     </Window.Resources>
-    <Grid Background="#F5F5F5">
+    <Grid Background="#F5F5F5" PreviewMouseWheel="Grid_PreviewMouseWheel">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -58,29 +58,26 @@
             <Border Grid.Column="0" CornerRadius="12" Padding="20" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,20,0">
                 <StackPanel>
                     <TextBlock Text="Tên Nhà Cung Cấp *" FontWeight="Bold"/>
-                    <TextBox x:Name="NameTextBox"/>
+                    <TextBox Text="{Binding EditingSupplier.Name, UpdateSourceTrigger=PropertyChanged}"/>
 
                     <TextBlock Text="Người Liên Hệ"/>
-                    <TextBox x:Name="ContactTextBox"/>
+                    <TextBox Text="{Binding EditingSupplier.ContactName, UpdateSourceTrigger=PropertyChanged}"/>
 
                     <TextBlock Text="Số Điện Thoại"/>
-                    <TextBox x:Name="PhoneTextBox"/>
+                    <TextBox Text="{Binding EditingSupplier.Phone, UpdateSourceTrigger=PropertyChanged}"/>
 
                     <TextBlock Text="Email"/>
-                    <TextBox x:Name="EmailTextBox"/>
+                    <TextBox Text="{Binding EditingSupplier.Email, UpdateSourceTrigger=PropertyChanged}"/>
 
                     <TextBlock Text="Địa Chỉ"/>
-                    <TextBox x:Name="AddressTextBox" TextWrapping="Wrap" Height="60"/>
-
-                    <TextBlock Text="Ghi Chú"/>
-                    <TextBox x:Name="NoteTextBox" TextWrapping="Wrap" Height="60"/>
+                    <TextBox Text="{Binding EditingSupplier.Address, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" Height="60"/>
 
                     <StackPanel Orientation="Horizontal" Margin="0,10,0,0" HorizontalAlignment="Center">
-                        <Button Content="➕ Thêm" Width="80" Background="#4CAF50" Foreground="White" Click="AddButton_Click" Margin="0,0,10,0"/>
-                        <Button Content="✏️ Sửa" Width="80" Background="#2196F3" Foreground="White" Click="UpdateButton_Click" Margin="0,0,10,0"/>
-                        <Button Content="🗑️ Xóa" Width="80" Background="#F44336" Foreground="White" Click="DeleteButton_Click"/>
+                        <Button Content="➕ Thêm" Width="80" Background="#4CAF50" Foreground="White" Command="{Binding AddCommand}" Margin="0,0,10,0"/>
+                        <Button Content="✏️ Sửa" Width="80" Background="#2196F3" Foreground="White" Command="{Binding UpdateCommand}" Margin="0,0,10,0"/>
+                        <Button Content="🗑️ Xóa" Width="80" Background="#F44336" Foreground="White" Command="{Binding DeleteCommand}"/>
                     </StackPanel>
-                    <Button Content="🧹 Xóa Form" Background="#9E9E9E" Foreground="White" Margin="0,10,0,0" Click="ClearButton_Click"/>
+                    <Button Content="🧹 Xóa Form" Background="#9E9E9E" Foreground="White" Margin="0,10,0,0" Command="{Binding ClearCommand}"/>
                 </StackPanel>
             </Border>
 
@@ -101,34 +98,37 @@
                             <!-- Page Info -->
                             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="📄 Trang:" FontWeight="SemiBold" Margin="0,0,5,0"/>
-                                <TextBlock x:Name="SupplierPageInfoTextBlock" Text="1 / 1" FontWeight="Bold" Foreground="#1CB5E0"/>
+                                <TextBlock Text="{Binding PageInfoText}" FontWeight="Bold" Foreground="#1CB5E0"/>
                                 <TextBlock Text=" • " Margin="10,0"/>
                                 <TextBlock Text="🏭 Tổng:" FontWeight="SemiBold" Margin="0,0,5,0"/>
-                                <TextBlock x:Name="TotalSuppliersTextBlock" Text="0 nhà cung cấp" FontWeight="Bold" Foreground="#FF9800"/>
+                                <TextBlock Text="{Binding TotalSuppliersText}" FontWeight="Bold" Foreground="#FF9800"/>
                             </StackPanel>
                             
                             <!-- Page Navigation -->
                             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Button x:Name="SupplierFirstPageButton" Content="⏮️" Width="35" Height="30" 
+                                <Button Content="⏮️" Width="35" Height="30" 
                                         Background="#2196F3" Foreground="White" FontWeight="Bold"
-                                        Click="SupplierFirstPageButton_Click" Margin="0,0,5,0"/>
-                                <Button x:Name="SupplierPrevPageButton" Content="◀️" Width="35" Height="30" 
+                                        Command="{Binding FirstPageCommand}" Margin="0,0,5,0"/>
+                                <Button Content="◀️" Width="35" Height="30" 
                                         Background="#2196F3" Foreground="White" FontWeight="Bold"
-                                        Click="SupplierPrevPageButton_Click" Margin="0,0,5,0"/>
-                                <TextBox x:Name="SupplierCurrentPageTextBox" Width="50" Height="30" 
+                                        Command="{Binding PrevPageCommand}" Margin="0,0,5,0"/>
+                                <TextBox Text="{Binding CurrentPageBox, UpdateSourceTrigger=PropertyChanged}" Width="50" Height="30" 
                                          TextAlignment="Center" VerticalContentAlignment="Center"
-                                         FontWeight="Bold" Margin="0,0,5,0"
-                                         KeyDown="SupplierCurrentPageTextBox_KeyDown"/>
-                                <Button x:Name="SupplierNextPageButton" Content="▶️" Width="35" Height="30" 
+                                         FontWeight="Bold" Margin="0,0,5,0">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Return" Command="{Binding GoToPageCommand}" />
+                                    </TextBox.InputBindings>
+                                </TextBox>
+                                <Button Content="▶️" Width="35" Height="30" 
                                         Background="#2196F3" Foreground="White" FontWeight="Bold"
-                                        Click="SupplierNextPageButton_Click" Margin="0,0,5,0"/>
-                                <Button x:Name="SupplierLastPageButton" Content="⏭️" Width="35" Height="30" 
+                                        Command="{Binding NextPageCommand}" Margin="0,0,5,0"/>
+                                <Button Content="⏭️" Width="35" Height="30" 
                                         Background="#2196F3" Foreground="White" FontWeight="Bold"
-                                        Click="SupplierLastPageButton_Click"/>
+                                        Command="{Binding LastPageCommand}"/>
                             </StackPanel>
                         </Grid>
                     </Border>
-                    <ListBox x:Name="SuppliersListBox" SelectionChanged="SuppliersListBox_SelectionChanged" BorderBrush="#CCCCCC" BorderThickness="1">
+                    <ListBox ItemsSource="{Binding PagedSuppliers}" SelectedItem="{Binding SelectedSupplier, Mode=TwoWay}" BorderBrush="#CCCCCC" BorderThickness="1">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Margin="2">

@@ -4,6 +4,10 @@
         xmlns:local="clr-namespace:FashionStore"
         Title="Cài Đặt" Height="520" Width="760"
         WindowStartupLocation="CenterScreen">
+    
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
 
     <Grid Background="#F5F5F5">
         <Grid.RowDefinitions>
@@ -52,20 +56,20 @@
                             </Grid.RowDefinitions>
 
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Máy chủ MySQL:" VerticalAlignment="Center"/>
-                            <TextBox x:Name="ServerTextBox" Grid.Row="0" Grid.Column="1" Height="32"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" Height="32" Text="{Binding Server, UpdateSourceTrigger=PropertyChanged}"/>
 
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Cơ sở dữ liệu:" VerticalAlignment="Center" Margin="0,8,0,0"/>
-                            <TextBox x:Name="DatabaseTextBox" Grid.Row="1" Grid.Column="1" Height="32" Margin="0,8,0,0"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Height="32" Margin="0,8,0,0" Text="{Binding Database, UpdateSourceTrigger=PropertyChanged}"/>
 
                             <TextBlock Grid.Row="2" Grid.Column="0" Text="Tên đăng nhập:" VerticalAlignment="Center" Margin="0,8,0,0"/>
-                            <TextBox x:Name="UserIdTextBox" Grid.Row="2" Grid.Column="1" Height="32" Margin="0,8,0,0"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Height="32" Margin="0,8,0,0" Text="{Binding UserId, UpdateSourceTrigger=PropertyChanged}"/>
 
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="Mật khẩu:" VerticalAlignment="Center" Margin="0,8,0,0"/>
                             <PasswordBox x:Name="PasswordBox" Grid.Row="3" Grid.Column="1" Height="32" Margin="0,8,0,0"/>
 
                             <StackPanel Grid.Row="4" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-                                <Button x:Name="TestConnectionButton" Content="Kiểm Tra Kết Nối" Width="140" Height="34" Margin="0,0,8,0" Click="TestConnectionButton_Click"/>
-                                <Button x:Name="SaveSettingsButton" Content="Lưu" Width="100" Height="34" Background="#4CAF50" Foreground="White" Click="SaveSettingsButton_Click"/>
+                                <Button Content="Kiểm Tra Kết Nối" Width="140" Height="34" Margin="0,0,8,0" Click="TestConnectionButton_Click"/>
+                                <Button Content="Lưu" Width="100" Height="34" Background="#4CAF50" Foreground="White" Click="SaveSettingsButton_Click"/>
                             </StackPanel>
                         </Grid>
                     </Grid>
@@ -91,15 +95,15 @@
                                        Foreground="#666"
                                        Margin="0,0,0,16"/>
                             
-                            <Button x:Name="OpenTierSettingsButton"
-                                    Content="⚙️ Mở Cài Đặt Hạng Thành Viên"
+                            <Button Content="⚙️ Mở Cài Đặt Hạng Thành Viên"
                                     Width="250"
                                     Height="40"
                                     Background="#673AB7"
                                     Foreground="White"
                                     FontSize="14"
                                     FontWeight="SemiBold"
-                                    Click="OpenTierSettingsButton_Click"
+                                    Command="{Binding OpenTierSettingsCommand}"
+                                    Visibility="{Binding IsTierSettingsVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                     HorizontalAlignment="Left"/>
                         </StackPanel>
                     </Grid>
@@ -132,15 +136,14 @@
                                        Margin="0,0,0,16"
                                        TextWrapping="Wrap"/>
                             
-                            <Button x:Name="RunPasswordMigrationButton"
-                                    Content="🔐 Mã Hóa Mật Khẩu Cũ"
+                            <Button Content="🔐 Mã Hóa Mật Khẩu Cũ"
                                     Width="220"
                                     Height="40"
                                     Background="#FF9800"
                                     Foreground="White"
                                     FontSize="14"
                                     FontWeight="SemiBold"
-                                    Click="RunPasswordMigrationButton_Click"
+                                    Command="{Binding RunPasswordMigrationCommand}"
                                     HorizontalAlignment="Left"
                                     ToolTip="Mã hóa tất cả mật khẩu chưa được mã hóa trong database"/>
                         </StackPanel>
@@ -178,8 +181,7 @@
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Bật QR Code:" VerticalAlignment="Center"/>
                             <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                 <ToggleButton x:Name="QRCodeToggleButton" Width="60" Height="30" 
-                                              Checked="QRCodeToggleButton_Checked" 
-                                              Unchecked="QRCodeToggleButton_Unchecked">
+                                              IsChecked="{Binding EnableQRCode, Mode=TwoWay}">
                                     <ToggleButton.Style>
                                         <Style TargetType="ToggleButton">
                                             <Setter Property="Background" Value="#E0E0E0"/>
@@ -225,25 +227,25 @@
                                         </Style>
                                     </ToggleButton.Style>
                                 </ToggleButton>
-                                <TextBlock x:Name="QRCodeStatusText" Text="QR Code đã được bật" 
+                                <TextBlock Text="{Binding QRCodeStatusText}" 
                                            Margin="12,0,0,0" VerticalAlignment="Center" 
                                            FontSize="12" Foreground="#666666"/>
                             </StackPanel>
 
                             <!-- Bank Account -->
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Số tài khoản:" VerticalAlignment="Center" Margin="0,16,0,0"/>
-                            <TextBox x:Name="BankAccountTextBox" Grid.Row="1" Grid.Column="1" Height="32" Margin="0,16,0,0"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Height="32" Margin="0,16,0,0" Text="{Binding BankAccount, UpdateSourceTrigger=PropertyChanged}"/>
 
                             <!-- Bank Code -->
                             <TextBlock Grid.Row="2" Grid.Column="0" Text="Mã ngân hàng:" VerticalAlignment="Center" Margin="0,8,0,0"/>
-                            <TextBox x:Name="BankCodeTextBox" Grid.Row="2" Grid.Column="1" Height="32" Margin="0,8,0,0" ToolTip="Nhập mã ngân hàng (VD: TPB, VCB, BIDV...)"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Height="32" Margin="0,8,0,0" Text="{Binding BankCode, UpdateSourceTrigger=PropertyChanged}" ToolTip="Nhập mã ngân hàng (VD: TPB, VCB, BIDV...)"/>
 
                             <!-- Account Holder -->
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="Tên chủ tài khoản:" VerticalAlignment="Center" Margin="0,8,0,0"/>
-                            <TextBox x:Name="AccountHolderTextBox" Grid.Row="3" Grid.Column="1" Height="32" Margin="0,8,0,0" ToolTip="Nhập tên chủ tài khoản"/>
+                            <TextBox Grid.Row="3" Grid.Column="1" Height="32" Margin="0,8,0,0" Text="{Binding AccountHolder, UpdateSourceTrigger=PropertyChanged}" ToolTip="Nhập tên chủ tài khoản"/>
 
                             <StackPanel Grid.Row="4" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-                                <Button x:Name="SaveQRCodeSettingsButton" Content="Lưu thông tin ngân hàng" Width="180" Height="34" Background="#9C27B0" Foreground="White" Click="SaveQRCodeSettingsButton_Click"/>
+                                <Button Content="Lưu thông tin ngân hàng" Width="180" Height="34" Background="#9C27B0" Foreground="White" Command="{Binding SavePaymentSettingsCommand}"/>
                             </StackPanel>
                         </Grid>
                     </Grid>
@@ -251,7 +253,7 @@
             </StackPanel>
         </ScrollViewer>
 
-        <TextBlock x:Name="StatusTextBlock" Grid.Row="2" Text="" Foreground="#666" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+        <TextBlock Text="{Binding StatusText}" Grid.Row="2" Foreground="#666" HorizontalAlignment="Center" Margin="0,0,0,12"/>
         
         <!-- Reset Data Section -->
     </Grid>

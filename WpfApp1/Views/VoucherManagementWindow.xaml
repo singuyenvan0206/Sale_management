@@ -63,19 +63,19 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
                         <TextBlock Text="Mã Voucher *" FontWeight="Bold"/>
-                        <TextBox x:Name="CodeTextBox" CharacterCasing="Upper"/>
+                        <TextBox x:Name="CodeTextBox" CharacterCasing="Upper" Text="{Binding Code, UpdateSourceTrigger=PropertyChanged}"/>
 
                         <TextBlock Text="Loại Giảm Giá"/>
-                        <ComboBox x:Name="DiscountTypeComboBox" Height="35" Margin="0,0,0,10" SelectedIndex="0">
+                        <ComboBox x:Name="DiscountTypeComboBox" Height="35" Margin="0,0,0,10" SelectedIndex="{Binding DiscountTypeIndex, Mode=TwoWay}">
                             <ComboBoxItem Content="VND - Theo số tiền"/>
                             <ComboBoxItem Content="% - Theo phần trăm"/>
                         </ComboBox>
 
                         <TextBlock Text="Giá Trị Giảm"/>
-                        <TextBox x:Name="DiscountValueTextBox"/>
+                        <TextBox Text="{Binding DiscountValue, UpdateSourceTrigger=PropertyChanged}"/>
 
                         <TextBlock Text="Hóa Đơn Tối Thiểu"/>
-                        <TextBox x:Name="MinInvoiceTextBox" Text="0"/>
+                        <TextBox Text="{Binding MinInvoice, UpdateSourceTrigger=PropertyChanged}"/>
 
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -84,25 +84,25 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" Margin="0,0,5,0">
                                 <TextBlock Text="Ngày Bắt Đầu"/>
-                                <DatePicker x:Name="StartDatePicker" Height="35" Margin="0,0,0,10"/>
+                                <DatePicker Height="35" Margin="0,0,0,10" SelectedDate="{Binding StartDate, Mode=TwoWay}"/>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Margin="5,0,0,0">
                                 <TextBlock Text="Ngày Kết Thúc"/>
-                                <DatePicker x:Name="EndDatePicker" Height="35" Margin="0,0,0,10"/>
+                                <DatePicker Height="35" Margin="0,0,0,10" SelectedDate="{Binding EndDate, Mode=TwoWay}"/>
                             </StackPanel>
                         </Grid>
 
                         <TextBlock Text="Giới Hạn Số Lượt Dùng (0 = Vô hạn)"/>
-                        <TextBox x:Name="UsageLimitTextBox" Text="0"/>
+                        <TextBox Text="{Binding UsageLimit, UpdateSourceTrigger=PropertyChanged}"/>
 
-                        <CheckBox x:Name="IsActiveCheckBox" Content="Kích hoạt" IsChecked="True" Margin="0,5,0,15" FontSize="14"/>
+                        <CheckBox Content="Kích hoạt" IsChecked="{Binding IsActive, Mode=TwoWay}" Margin="0,5,0,15" FontSize="14"/>
 
                         <StackPanel Orientation="Horizontal" Margin="0,10,0,0" HorizontalAlignment="Center">
-                            <Button Content="➕ Thêm" Width="80" Background="#4CAF50" Foreground="White" Click="AddButton_Click" Margin="0,0,10,0"/>
-                            <Button Content="✏️ Sửa" Width="80" Background="#2196F3" Foreground="White" Click="UpdateButton_Click" Margin="0,0,10,0"/>
-                            <Button Content="🗑️ Xóa" Width="80" Background="#F44336" Foreground="White" Click="DeleteButton_Click"/>
+                            <Button Content="➕ Thêm" Width="80" Background="#4CAF50" Foreground="White" Command="{Binding AddCommand}" Margin="0,0,10,0"/>
+                            <Button Content="✏️ Sửa" Width="80" Background="#2196F3" Foreground="White" Command="{Binding UpdateCommand}" Margin="0,0,10,0"/>
+                            <Button Content="🗑️ Xóa" Width="80" Background="#F44336" Foreground="White" Command="{Binding DeleteCommand}"/>
                         </StackPanel>
-                        <Button Content="🧹 Xóa Form" Background="#9E9E9E" Foreground="White" Margin="0,10,0,0" Click="ClearButton_Click"/>
+                        <Button Content="🧹 Xóa Form" Background="#9E9E9E" Foreground="White" Margin="0,10,0,0" Command="{Binding ClearFormCommand}"/>
                     </StackPanel>
                 </ScrollViewer>
             </Border>
@@ -119,9 +119,7 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
-                            
                             <TextBlock Grid.Row="0" Text="🔍 Lọc theo:" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="#555"/>
-                            
                             <Grid Grid.Row="1">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -131,75 +129,43 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 
-                                <!-- Active Status Filter -->
                                 <StackPanel Grid.Column="0" Margin="0,0,8,0">
                                     <TextBlock Text="Trạng Thái" FontSize="11" Foreground="#666" Margin="0,0,0,3"/>
-                                    <ComboBox x:Name="FilterActiveComboBox" 
-                                              Height="32" 
-                                              SelectedIndex="0"
-                                              SelectionChanged="VoucherFilterChanged">
-                                        <ComboBoxItem Content="Tất cả" Tag="All"/>
-                                        <ComboBoxItem Content="Đang hoạt động" Tag="Active"/>
-                                        <ComboBoxItem Content="Không hoạt động" Tag="Inactive"/>
-                                    </ComboBox>
+                                    <ComboBox x:Name="FilterActiveComboBox" Height="32"
+                                              ItemsSource="{Binding ActiveFilterOptions}"
+                                              SelectedItem="{Binding ActiveFilter, Mode=TwoWay}"/>
                                 </StackPanel>
                                 
-                                <!-- Discount Type Filter -->
                                 <StackPanel Grid.Column="1" Margin="0,0,8,0">
                                     <TextBlock Text="Loại Giảm Giá" FontSize="11" Foreground="#666" Margin="0,0,0,3"/>
-                                    <ComboBox x:Name="FilterDiscountTypeComboBox" 
-                                              Height="32" 
-                                              SelectedIndex="0"
-                                              SelectionChanged="VoucherFilterChanged">
-                                        <ComboBoxItem Content="Tất cả" Tag="All"/>
-                                        <ComboBoxItem Content="Giảm VNĐ" Tag="VND"/>
-                                        <ComboBoxItem Content="Giảm %" Tag="Percent"/>
-                                    </ComboBox>
+                                    <ComboBox x:Name="FilterDiscountTypeComboBox" Height="32"
+                                              ItemsSource="{Binding DiscountTypeFilterOptions}"
+                                              SelectedItem="{Binding DiscountTypeFilter, Mode=TwoWay}"/>
                                 </StackPanel>
                                 
-                                <!-- Validity Filter -->
                                 <StackPanel Grid.Column="2" Margin="0,0,8,0">
                                     <TextBlock Text="Thời Hạn" FontSize="11" Foreground="#666" Margin="0,0,0,3"/>
-                                    <ComboBox x:Name="FilterValidityComboBox" 
-                                              Height="32" 
-                                              SelectedIndex="0"
-                                              SelectionChanged="VoucherFilterChanged">
-                                        <ComboBoxItem Content="Tất cả" Tag="All"/>
-                                        <ComboBoxItem Content="Còn hiệu lực" Tag="ValidNow"/>
-                                        <ComboBoxItem Content="Hết hạn" Tag="Expired"/>
-                                        <ComboBoxItem Content="Sắp diễn ra" Tag="Upcoming"/>
-                                    </ComboBox>
+                                    <ComboBox x:Name="FilterValidityComboBox" Height="32"
+                                              ItemsSource="{Binding ValidityFilterOptions}"
+                                              SelectedItem="{Binding ValidityFilter, Mode=TwoWay}"/>
                                 </StackPanel>
                                 
-                                <!-- Usage Filter -->
                                 <StackPanel Grid.Column="3" Margin="0,0,8,0">
                                     <TextBlock Text="Sử Dụng" FontSize="11" Foreground="#666" Margin="0,0,0,3"/>
-                                    <ComboBox x:Name="FilterUsageComboBox" 
-                                              Height="32" 
-                                              SelectedIndex="0"
-                                              SelectionChanged="VoucherFilterChanged">
-                                        <ComboBoxItem Content="Tất cả" Tag="All"/>
-                                        <ComboBoxItem Content="Còn lượt dùng" Tag="Available"/>
-                                        <ComboBoxItem Content="Hết lượt dùng" Tag="FullyUsed"/>
-                                    </ComboBox>
+                                    <ComboBox x:Name="FilterUsageComboBox" Height="32"
+                                              ItemsSource="{Binding UsageFilterOptions}"
+                                              SelectedItem="{Binding UsageFilter, Mode=TwoWay}"/>
                                 </StackPanel>
                                 
-                                <!-- Reset Button -->
-                                <Button Grid.Column="4" 
-                                        Content="🔄 Reset" 
-                                        Height="32" 
-                                        Width="80"
-                                        Background="#9E9E9E" 
-                                        Foreground="White"
-                                        Click="ResetVoucherFiltersButton_Click"
-                                        VerticalAlignment="Bottom"
-                                        FontSize="12"
-                                        Padding="8,4"/>
+                                <Button Grid.Column="4" Content="🔄 Reset" Height="32" Width="80"
+                                        Background="#9E9E9E" Foreground="White"
+                                        Command="{Binding ResetFiltersCommand}"
+                                        VerticalAlignment="Bottom" FontSize="12" Padding="8,4"/>
                             </Grid>
                         </Grid>
                     </Border>
                     
-                    <!-- Voucher Pagination Controls -->
+                    <!-- Pagination Controls -->
                     <Border DockPanel.Dock="Bottom" Background="#F8F9FA" Padding="15" Margin="0,10,0,0" CornerRadius="8">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -207,38 +173,36 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            
-                            <!-- Page Info -->
                             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="📄 Trang:" FontWeight="SemiBold" Margin="0,0,5,0"/>
-                                <TextBlock x:Name="VoucherPageInfoTextBlock" Text="1 / 1" FontWeight="Bold" Foreground="#1CB5E0"/>
+                                <TextBlock Text="{Binding PageInfo}" FontWeight="Bold" Foreground="#1CB5E0"/>
                                 <TextBlock Text=" • " Margin="10,0"/>
                                 <TextBlock Text="🎟️ Tổng:" FontWeight="SemiBold" Margin="0,0,5,0"/>
-                                <TextBlock x:Name="TotalVouchersTextBlock" Text="0 mã" FontWeight="Bold" Foreground="#FF9800"/>
+                                <TextBlock Text="{Binding TotalVouchersText}" FontWeight="Bold" Foreground="#FF9800"/>
                             </StackPanel>
-                            
-                            <!-- Page Navigation -->
                             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Button x:Name="VoucherFirstPageButton" Content="⏮️" Width="35" Height="30" 
-                                        Background="#2196F3" Foreground="White" FontWeight="Bold"
-                                        Click="VoucherFirstPageButton_Click" Margin="0,0,5,0"/>
-                                <Button x:Name="VoucherPrevPageButton" Content="◀️" Width="35" Height="30" 
-                                        Background="#2196F3" Foreground="White" FontWeight="Bold"
-                                        Click="VoucherPrevPageButton_Click" Margin="0,0,5,0"/>
-                                <TextBox x:Name="VoucherCurrentPageTextBox" Width="50" Height="30" 
-                                         TextAlignment="Center" VerticalContentAlignment="Center"
+                                <Button Content="⏮️" Width="35" Height="30" Background="#2196F3" Foreground="White" FontWeight="Bold"
+                                        Command="{Binding FirstPageCommand}" IsEnabled="{Binding CanFirst}" Margin="0,0,5,0"/>
+                                <Button Content="◀️" Width="35" Height="30" Background="#2196F3" Foreground="White" FontWeight="Bold"
+                                        Command="{Binding PrevPageCommand}" IsEnabled="{Binding CanPrev}" Margin="0,0,5,0"/>
+                                <TextBox Width="50" Height="30" TextAlignment="Center" VerticalContentAlignment="Center"
                                          FontWeight="Bold" Margin="0,0,5,0"
-                                         KeyDown="VoucherCurrentPageTextBox_KeyDown"/>
-                                <Button x:Name="VoucherNextPageButton" Content="▶️" Width="35" Height="30" 
-                                        Background="#2196F3" Foreground="White" FontWeight="Bold"
-                                        Click="VoucherNextPageButton_Click" Margin="0,0,5,0"/>
-                                <Button x:Name="VoucherLastPageButton" Content="⏭️" Width="35" Height="30" 
-                                        Background="#2196F3" Foreground="White" FontWeight="Bold"
-                                        Click="VoucherLastPageButton_Click"/>
+                                         Text="{Binding CurrentPageText, UpdateSourceTrigger=PropertyChanged}">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding GoToPageCommand}" CommandParameter="{Binding CurrentPageText}"/>
+                                    </TextBox.InputBindings>
+                                </TextBox>
+                                <Button Content="▶️" Width="35" Height="30" Background="#2196F3" Foreground="White" FontWeight="Bold"
+                                        Command="{Binding NextPageCommand}" IsEnabled="{Binding CanNext}" Margin="0,0,5,0"/>
+                                <Button Content="⏭️" Width="35" Height="30" Background="#2196F3" Foreground="White" FontWeight="Bold"
+                                        Command="{Binding LastPageCommand}" IsEnabled="{Binding CanLast}"/>
                             </StackPanel>
                         </Grid>
                     </Border>
-                    <ListBox x:Name="VouchersListBox" SelectionChanged="VouchersListBox_SelectionChanged" BorderBrush="#CCCCCC" BorderThickness="1">
+
+                    <ListBox ItemsSource="{Binding PagedVouchers}"
+                             SelectedItem="{Binding SelectedVoucher, Mode=TwoWay}"
+                             BorderBrush="#CCCCCC" BorderThickness="1">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Grid Margin="5">
@@ -255,7 +219,7 @@
                                             <TextBlock Text=" • Đơn tối thiểu: " Foreground="#666" Margin="10,0,0,0"/>
                                             <TextBlock Text="{Binding MinInvoiceAmount, StringFormat={}{0:N0}}"/>
                                         </StackPanel>
-                                        <TextBlock DataContext="{Binding}" Foreground="#555" FontSize="12" Margin="0,2,0,0">
+                                        <TextBlock Foreground="#555" FontSize="12" Margin="0,2,0,0">
                                             <TextBlock.Text>
                                                 <MultiBinding StringFormat="📅 {0:dd/MM/yyyy} ➡ {1:dd/MM/yyyy}">
                                                     <Binding Path="StartDate"/>
@@ -268,8 +232,7 @@
                                         <Border Background="{Binding IsActive, Converter={StaticResource BooleanToStatusColorConverter}}" CornerRadius="4" Padding="6,2">
                                             <TextBlock Text="{Binding IsActive, Converter={StaticResource BooleanToStatusTextConverter}}" Foreground="White" FontSize="11"/>
                                         </Border>
-                                        <TextBlock Text="{Binding UsedCount, StringFormat='Đã dùng: {0}'}" 
-                                                   FontSize="12" Foreground="#666" HorizontalAlignment="Right" Margin="0,4,0,0"/>
+                                        <TextBlock Text="{Binding UsedCount, StringFormat='Đã dùng: {0}'}" FontSize="12" Foreground="#666" HorizontalAlignment="Right" Margin="0,4,0,0"/>
                                     </StackPanel>
                                 </Grid>
                             </DataTemplate>

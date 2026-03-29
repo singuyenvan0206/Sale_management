@@ -60,77 +60,50 @@
                     <StackPanel>
                         <TextBlock Text="Thông Tin Khách Hàng" FontSize="18" FontWeight="Bold" Foreground="#1CB5E0" Margin="0,0,0,20"/>
                         <TextBlock Text="Tên Khách Hàng *" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <TextBox x:Name="CustomerNameTextBox" Margin="0,0,0,15"/>
+                        <TextBox Margin="0,0,0,15" Text="{Binding EditingCustomer.Name, UpdateSourceTrigger=PropertyChanged}"/>
                         <TextBlock Text="Số Điện Thoại *" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <TextBox x:Name="PhoneTextBox" Margin="0,0,0,15"/>
+                        <TextBox Margin="0,0,0,15" Text="{Binding EditingCustomer.Phone, UpdateSourceTrigger=PropertyChanged}"/>
                         <TextBlock Text="Địa Chỉ Email" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <TextBox x:Name="EmailTextBox" Margin="0,0,0,15"/>
-                        <TextBlock Text="Loại Khách Hàng" FontWeight="SemiBold" Margin="0,0,0,5" Visibility="Collapsed"/>
-                        <ComboBox x:Name="CustomerTypeComboBox" Margin="0,0,0,15" Visibility="Collapsed"/>
+                        <TextBox Margin="0,0,0,15" Text="{Binding EditingCustomer.Email, UpdateSourceTrigger=PropertyChanged}"/>
 
-                        <TextBlock x:Name="TierLabel" Text="Hạng thành viên" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <ComboBox x:Name="TierComboBox" Margin="0,0,0,10">
-                            <ComboBoxItem Content="Regular" IsSelected="True"/>
+                        <TextBlock Text="Hạng thành viên" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox IsEnabled="{Binding IsAdminOrManager}" Text="{Binding EditingCustomer.Tier, Mode=TwoWay}" Margin="0,0,0,10" x:Name="TierComboBox">
+                            <ComboBoxItem Content="Regular"/>
                             <ComboBoxItem Content="Silver"/>
                             <ComboBoxItem Content="Gold"/>
                             <ComboBoxItem Content="Platinum"/>
                         </ComboBox>
-                        <TextBlock x:Name="PointsLabel" Text="Điểm tích lũy" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <TextBox x:Name="PointsTextBox" Margin="0,0,0,15" Text="0"/>
+                        <TextBlock Text="Điểm tích lũy" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <TextBox IsEnabled="{Binding IsAdminOrManager}" Text="{Binding EditingCustomer.Points, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,15"/>
                         <TextBlock Text="Địa Chỉ" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <TextBox x:Name="AddressTextBox" Height="41" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="0,0,0,20"/>
+                        <TextBox Height="41" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="0,0,0,20" Text="{Binding EditingCustomer.Address, UpdateSourceTrigger=PropertyChanged}"/>
                         <TextBlock Text="Thao Tác" FontWeight="Bold" FontSize="16" Foreground="#1CB5E0" Margin="0,10,0,10"/>
                         <UniformGrid Columns="2" Margin="0,0,0,10">
-                            <Button Content="➕ Thêm" Background="#4CAF50" Foreground="White" Click="AddButton_Click" Margin="0,0,5,5"/>
-                            <Button Content="✏️ Cập Nhật" Background="#2196F3" Foreground="White" Click="UpdateButton_Click" Margin="5,0,0,5"/>
+                            <Button Content="➕ Thêm" Background="#4CAF50" Foreground="White" Command="{Binding AddCommand}" Margin="0,0,5,5"/>
+                            <Button Content="✏️ Cập Nhật" Background="#2196F3" Foreground="White" Command="{Binding UpdateCommand}" Margin="5,0,0,5"/>
                         </UniformGrid>
                         <UniformGrid Columns="2" Margin="0,0,0,10">
-                            <Button Content="🏆 Cập nhật hạng" Background="#9C27B0" Foreground="White" Click="UpdateLoyaltyButton_Click" Margin="0,0,5,5"/>
-                            <Button Content="🗑️ Xóa" 
-                                    Background="#F44336" 
-                                    Foreground="White" 
-                                    Click="DeleteButton_Click"
-                                    Margin="5,0,0,5"/>
+                            <Button Content="🏆 Cập nhật hạng" Background="#9C27B0" Foreground="White" Command="{Binding UpdateLoyaltyCommand}" Margin="0,0,5,5"/>
+                            <Button Content="🗑️ Xóa" Background="#F44336" Foreground="White" Command="{Binding DeleteCommand}" Margin="5,0,0,5"/>
                         </UniformGrid>
                         
                         <!-- Secondary Actions -->
                         <TextBlock Text="Quản Lý Dữ Liệu" FontWeight="Bold" FontSize="14" Foreground="#666" Margin="0,15,0,10"/>
-                        
                         <UniformGrid Columns="2" Margin="0,0,0,10">
-                            <Button Content="📥 Nhập CSV" 
-                                    Background="#FF9800" 
-                                    Foreground="White" 
-                                    Click="ImportCsvButton_Click"
-                                    Margin="0,0,5,5"/>
-                            <Button Content="📤 Xuất CSV" 
-                                    Background="#FF9800" 
-                                    Foreground="White"
-                                    Click="ExportCsvButton_Click"
-                                    Margin="5,0,0,5"/>
+                            <Button Content="📥 Nhập CSV" Background="#FF9800" Foreground="White" Command="{Binding ImportCsvCommand}" Margin="0,0,5,5"/>
+                            <Button Content="📤 Xuất CSV" Background="#FF9800" Foreground="White" Command="{Binding ExportCsvCommand}" Margin="5,0,0,5"/>
                         </UniformGrid>
-                        
-                        <Button Content="🗑️ Xóa Tất Cả" 
-                                Background="#9E9E9E" 
-                                Foreground="White" 
-                                Click="DeleteAllCustomersButton_Click"
-                                Margin="0,5,0,0"/>
+                        <Button Content="🗑️ Xóa Tất Cả" Background="#9E9E9E" Foreground="White" Command="{Binding DeleteAllCommand}" Margin="0,5,0,0"/>
+                        <Button Content="🧹 Xóa Form" Background="#9E9E9E" Foreground="White" Command="{Binding ClearCommand}" Margin="0,10,0,0"/>
 
                         <!-- Status -->
-                        <TextBlock x:Name="StatusTextBlock" 
-                                   Text="Sẵn sàng" 
-                                   FontSize="12" 
-                                   Foreground="#666666" 
-                                   HorizontalAlignment="Center" 
-                                   Margin="0,15,0,0"/>
+                        <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="#666666" HorizontalAlignment="Center" Margin="0,15,0,0"/>
                     </StackPanel>
                 </ScrollViewer>
             </Border>
             
             <!-- Customer List with Tabs -->
-            <Border Grid.Column="1" 
-                    Background="White" 
-                    CornerRadius="10" 
-                    Padding="15">
+            <Border Grid.Column="1" Background="White" CornerRadius="10" Padding="15">
                 <TabControl>
                     <!-- Customer List Tab -->
                     <TabItem Header="📋 Danh Sách Khách Hàng" HorizontalAlignment="Right" Margin="0,-2,-2,0" Width="159">
@@ -148,12 +121,7 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
                                 
-                                <TextBlock Grid.Row="0" 
-                                           Text="🔍 Tìm Kiếm Khách Hàng" 
-                                           FontSize="16" 
-                                           FontWeight="Bold" 
-                                           Foreground="#1CB5E0"
-                                           Margin="0,0,0,10"/>
+                                <TextBlock Grid.Row="0" Text="🔍 Tìm Kiếm Khách Hàng" FontSize="16" FontWeight="Bold" Foreground="#1CB5E0" Margin="0,0,0,10"/>
                                 
                                 <!-- Filter Panel -->
                                 <Border Grid.Row="1" Background="#F8F9FA" Padding="12" Margin="0,0,0,10" CornerRadius="8">
@@ -176,10 +144,7 @@
                                             <!-- Tier Filter -->
                                             <StackPanel Grid.Column="0" Margin="0,0,8,0">
                                                 <TextBlock Text="Hạng Thành Viên" FontSize="11" Foreground="#666" Margin="0,0,0,3"/>
-                                                <ComboBox x:Name="FilterTierComboBox" 
-                                                          Height="32" 
-                                                          SelectedIndex="0"
-                                                          SelectionChanged="CustomerFilterChanged">
+                                                <ComboBox Height="32" x:Name="FilterTierComboBox" SelectedValuePath="Tag" SelectedValue="{Binding SelectedFilterTier, Mode=TwoWay}">
                                                     <ComboBoxItem Content="Tất cả" Tag="All"/>
                                                     <ComboBoxItem Content="Regular" Tag="Regular"/>
                                                     <ComboBoxItem Content="Silver" Tag="Silver"/>
@@ -191,10 +156,7 @@
                                             <!-- Points Filter -->
                                             <StackPanel Grid.Column="1" Margin="0,0,8,0">
                                                 <TextBlock Text="Điểm Tích Lũy" FontSize="11" Foreground="#666" Margin="0,0,0,3"/>
-                                                <ComboBox x:Name="FilterPointsComboBox" 
-                                                          Height="32" 
-                                                          SelectedIndex="0"
-                                                          SelectionChanged="CustomerFilterChanged">
+                                                <ComboBox Height="32" x:Name="FilterPointsComboBox" SelectedValuePath="Tag" SelectedValue="{Binding SelectedFilterPoints, Mode=TwoWay}">
                                                     <ComboBoxItem Content="Tất cả" Tag="All"/>
                                                     <ComboBoxItem Content="&lt; 100 điểm" Tag="Under100"/>
                                                     <ComboBoxItem Content="100 - 500 điểm" Tag="100To500"/>
@@ -206,10 +168,7 @@
                                             <!-- Activity Filter -->
                                             <StackPanel Grid.Column="2" Margin="0,0,8,0">
                                                 <TextBlock Text="Trạng Thái" FontSize="11" Foreground="#666" Margin="0,0,0,3"/>
-                                                <ComboBox x:Name="FilterActivityComboBox" 
-                                                          Height="32" 
-                                                          SelectedIndex="0"
-                                                          SelectionChanged="CustomerFilterChanged">
+                                                <ComboBox Height="32" x:Name="FilterActivityComboBox" SelectedValuePath="Tag" SelectedValue="{Binding SelectedFilterActivity, Mode=TwoWay}">
                                                     <ComboBoxItem Content="Tất cả" Tag="All"/>
                                                     <ComboBoxItem Content="Có giao dịch" Tag="HasPurchases"/>
                                                     <ComboBoxItem Content="Chưa mua hàng" Tag="NoPurchases"/>
@@ -217,32 +176,17 @@
                                             </StackPanel>
                                             
                                             <!-- Reset Button -->
-                                            <Button Grid.Column="3" 
-                                                    Content="🔄 Reset" 
-                                                    Height="32" 
-                                                    Width="80"
-                                                    Background="#9E9E9E" 
-                                                    Foreground="White"
-                                                    Click="ResetCustomerFiltersButton_Click"
-                                                    VerticalAlignment="Bottom"
-                                                    FontSize="12"
-                                                    Padding="8,4"/>
+                                            <Button Grid.Column="3" Content="🔄 Reset" Height="32" Width="80"
+                                                    Background="#9E9E9E" Foreground="White" Command="{Binding ResetFiltersCommand}"
+                                                    VerticalAlignment="Bottom" FontSize="12" Padding="8,4"/>
                                         </Grid>
                                     </Grid>
                                 </Border>
                                 
                                 <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
-                                    <TextBox x:Name="SearchTextBox" 
-                                             Width="250" 
-                                             Margin="0,0,10,0"
-                                             TextChanged="SearchTextBox_TextChanged"
-                                             VerticalContentAlignment="Center"
-                                             FontSize="14"/>
-                                    <Button Content="🔍 Tìm" 
-                                            Width="80" 
-                                            Background="#FF9800" 
-                                            Foreground="White"
-                                            Click="SearchButton_Click"/>
+                                    <TextBox Width="250" Margin="0,0,10,0" VerticalContentAlignment="Center" FontSize="14"
+                                             Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"/>
+                                    <TextBlock Text="🔍 Tìm" Padding="25,5" Background="#FF9800" Foreground="White" />
                                 </StackPanel>
                             </Grid>
                             
@@ -253,19 +197,22 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
                                 
-                                <ScrollViewer Grid.Row="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" MinHeight="400">
-                                    <DataGrid x:Name="CustomerDataGrid" 
-                                              AutoGenerateColumns="False" 
-                                              IsReadOnly="True"
-                                              SelectionMode="Single"
-                                              SelectionChanged="CustomerDataGrid_SelectionChanged"
-                                              GridLinesVisibility="Horizontal"
-                                              AlternatingRowBackground="#F8F9FA"
-                                              RowHeight="35"
-                                              HorizontalAlignment="Stretch"
-                                              VerticalAlignment="Stretch"
-                                              MinHeight="400"
-                                              CanUserResizeColumns="True">
+                                <DataGrid x:Name="CustomerDataGrid" 
+                                          Grid.Row="0"
+                                          ItemsSource="{Binding PagedCustomers}"
+                                          SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}"
+                                          AutoGenerateColumns="False" 
+                                          IsReadOnly="True"
+                                          SelectionMode="Single"
+                                          Sorting="CustomerDataGrid_Sorting"
+                                          GridLinesVisibility="Horizontal"
+                                          AlternatingRowBackground="#F8F9FA"
+                                          RowHeight="35"
+                                          HorizontalAlignment="Stretch"
+                                          VerticalAlignment="Stretch"
+                                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                          CanUserResizeColumns="True">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="ID" Binding="{Binding Id}" SortMemberPath="Id" Width="60">
                                             <DataGridTextColumn.ElementStyle>
@@ -295,10 +242,9 @@
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
-                                        <DataGridTextColumn Header="🏠 Địa Chỉ" Binding="{Binding Address}" SortMemberPath="Address" Width="auto"/>
+                                        <DataGridTextColumn Header="🏠 Địa Chỉ" Binding="{Binding Address}" SortMemberPath="Address" Width="250"/>
                                     </DataGrid.Columns>
-                                    </DataGrid>
-                                </ScrollViewer>
+                                </DataGrid>
                                 
                                 <!-- Customer Pagination Controls -->
                                 <Border Grid.Row="1" Background="#F8F9FA" Padding="15" Margin="0,10,0,0" CornerRadius="8">
@@ -311,31 +257,23 @@
                                         
                                         <!-- Page Info -->
                                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                            <TextBlock Text="📄 Trang:" FontWeight="SemiBold" Margin="0,0,5,0"/>
-                                            <TextBlock x:Name="CustomerPageInfoTextBlock" Text="1 / 1" FontWeight="Bold" Foreground="#1CB5E0"/>
+                                            <TextBlock Text="{Binding PageInfoText}" FontWeight="Bold" Foreground="#1CB5E0"/>
                                             <TextBlock Text=" • " Margin="10,0"/>
                                             <TextBlock Text="👥 Tổng:" FontWeight="SemiBold" Margin="0,0,5,0"/>
-                                            <TextBlock x:Name="TotalCustomersTextBlock" Text="0 khách hàng" FontWeight="Bold" Foreground="#FF9800"/>
+                                            <TextBlock Text="{Binding TotalCustomersText}" FontWeight="Bold" Foreground="#FF9800"/>
                                         </StackPanel>
                                         
                                         <!-- Page Navigation -->
                                         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                            <Button x:Name="CustomerFirstPageButton" Content="⏮️" Width="35" Height="30" 
-                                                    Background="#2196F3" Foreground="White" FontWeight="Bold"
-                                                    Click="CustomerFirstPageButton_Click" Margin="0,0,5,0"/>
-                                            <Button x:Name="CustomerPrevPageButton" Content="◀️" Width="35" Height="30" 
-                                                    Background="#2196F3" Foreground="White" FontWeight="Bold"
-                                                    Click="CustomerPrevPageButton_Click" Margin="0,0,5,0"/>
-                                            <TextBox x:Name="CustomerCurrentPageTextBox" Width="50" Height="30" 
-                                                     TextAlignment="Center" VerticalContentAlignment="Center"
-                                                     FontWeight="Bold" Margin="0,0,5,0"
-                                                     KeyDown="CustomerCurrentPageTextBox_KeyDown"/>
-                                            <Button x:Name="CustomerNextPageButton" Content="▶️" Width="35" Height="30" 
-                                                    Background="#2196F3" Foreground="White" FontWeight="Bold"
-                                                    Click="CustomerNextPageButton_Click" Margin="0,0,5,0"/>
-                                            <Button x:Name="CustomerLastPageButton" Content="⏭️" Width="35" Height="30" 
-                                                    Background="#2196F3" Foreground="White" FontWeight="Bold"
-                                                    Click="CustomerLastPageButton_Click"/>
+                                            <Button Content="⏮️" Width="35" Height="30" Background="#2196F3" Foreground="White" FontWeight="Bold" Command="{Binding FirstPageCommand}" Margin="0,0,5,0"/>
+                                            <Button Content="◀️" Width="35" Height="30" Background="#2196F3" Foreground="White" FontWeight="Bold" Command="{Binding PrevPageCommand}" Margin="0,0,5,0"/>
+                                            <TextBox Text="{Binding CurrentPageBox, UpdateSourceTrigger=PropertyChanged}" Width="50" Height="30" TextAlignment="Center" VerticalContentAlignment="Center" FontWeight="Bold" Margin="0,0,5,0">
+                                                <TextBox.InputBindings>
+                                                    <KeyBinding Key="Return" Command="{Binding GoToPageCommand}"/>
+                                                </TextBox.InputBindings>
+                                            </TextBox>
+                                            <Button Content="▶️" Width="35" Height="30" Background="#2196F3" Foreground="White" FontWeight="Bold" Command="{Binding NextPageCommand}" Margin="0,0,5,0"/>
+                                            <Button Content="⏭️" Width="35" Height="30" Background="#2196F3" Foreground="White" FontWeight="Bold" Command="{Binding LastPageCommand}"/>
                                         </StackPanel>
                                     </Grid>
                                 </Border>
@@ -351,15 +289,10 @@
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
                             
-                            <TextBlock Grid.Row="0" 
-                                       Text="📊 Lịch Sử Giao Dịch" 
-                                       FontSize="16" 
-                                       FontWeight="Bold" 
-                                       Foreground="#1CB5E0" 
-                                       Margin="0,0,0,15"/>
+                            <TextBlock Grid.Row="0" Text="📊 Lịch Sử Giao Dịch" FontSize="16" FontWeight="Bold" Foreground="#1CB5E0" Margin="0,0,0,15"/>
                             
                             <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" MinHeight="300">
-                                <DataGrid x:Name="PurchaseHistoryDataGrid"
+                                <DataGrid ItemsSource="{Binding PurchaseHistory}"
                                           AutoGenerateColumns="False"
                                           IsReadOnly="True"
                                           GridLinesVisibility="Horizontal"

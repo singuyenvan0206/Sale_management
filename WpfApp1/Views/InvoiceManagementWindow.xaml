@@ -4,8 +4,17 @@
         xmlns:oxy="http://oxyplot.org/wpf"
         xmlns:local="clr-namespace:FashionStore"
         Title="Quản Lý Hóa Đơn" Height="800" Width="1280"
-        WindowStartupLocation="CenterScreen"
-        KeyDown="Window_KeyDown">
+        WindowStartupLocation="CenterScreen">
+    
+    <Window.InputBindings>
+        <KeyBinding Key="Enter" Command="{Binding AddItemCommand}"/>
+        <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveInvoiceCommand}"/>
+    </Window.InputBindings>
+    
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
+
 	<Grid Background="#F5F5F5" PreviewMouseWheel="Grid_PreviewMouseWheel">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
@@ -31,22 +40,22 @@
 						         Height="32"
 						         FontSize="14"
 						         VerticalContentAlignment="Center"
-						         TextChanged="CustomerSearchTextBox_TextChanged"
-						         KeyDown="CustomerSearchTextBox_KeyDown"
+						         Text="{Binding CustomerSearchText, UpdateSourceTrigger=PropertyChanged}"
 						         ToolTip="Gõ tên / SĐT để tìm khách hàng"/>
 						<Popup x:Name="CustomerSuggestionsPopup"
 						       PlacementTarget="{Binding ElementName=CustomerSearchTextBox}"
 						       Placement="Bottom"
 						       StaysOpen="False"
 						       AllowsTransparency="False"
-						       PopupAnimation="Fade">
+						       PopupAnimation="Fade"
+                               IsOpen="{Binding IsCustomerPopupOpen, Mode=TwoWay}">
 							<Border Background="White" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="6" Padding="4">
 								<ListBox x:Name="CustomerSuggestionsListBox"
 								         Width="{Binding ElementName=CustomerSearchTextBox, Path=ActualWidth}"
 								         MaxHeight="240"
-								         MouseLeftButtonUp="CustomerSuggestionsListBox_MouseLeftButtonUp"
-								         KeyDown="CustomerSuggestionsListBox_KeyDown"
-								         PreviewMouseWheel="CustomerSuggestionsListBox_PreviewMouseWheel">
+                                         ItemsSource="{Binding FilteredCustomers}"
+                                         SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}"
+								         PreviewMouseWheel="ListBox_PreviewMouseWheel">
 									<ListBox.ItemTemplate>
 										<DataTemplate>
 											<StackPanel Orientation="Horizontal">
@@ -60,14 +69,14 @@
 							</Border>
 						</Popup>
 					</Grid>
-					<Button x:Name="OpenHistoryButton" Content="📜 Lịch sử" Width="120" Height="32" Margin="12,0,0,0" 
-							Background="#FF9800" Foreground="White" FontWeight="SemiBold" Click="OpenHistoryButton_Click"/>
+					<Button Content="📜 Lịch sử" Width="120" Height="32" Margin="12,0,0,0" 
+							Background="#FF9800" Foreground="White" FontWeight="SemiBold" Command="{Binding OpenHistoryCommand}"/>
 					<Border Background="#1496C6" CornerRadius="6" Padding="8,4" Margin="12,0,0,0" VerticalAlignment="Center">
 						<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
 							<TextBlock Text="🏷️ " Foreground="White"/>
-							<TextBlock x:Name="LoyaltyTierTextBlock" Text="Regular" Foreground="White" FontWeight="Bold"/>
+							<TextBlock Text="{Binding LoyaltyTierText}" Foreground="White" FontWeight="Bold"/>
 							<TextBlock Text=" • " Foreground="#B3E5FC"/>
-							<TextBlock x:Name="LoyaltyPointsTextBlock" Text="0 điểm" Foreground="#B3E5FC"/>
+							<TextBlock Text="{Binding LoyaltyPointsText}" Foreground="#B3E5FC"/>
 						</StackPanel>
 					</Border>
 				</StackPanel>
@@ -98,20 +107,22 @@
 					<StackPanel Grid.Column="0" Margin="0,0,12,0">
 						<TextBlock Text="🔍 Chọn sản phẩm" FontWeight="SemiBold" Margin="0,0,0,4" Foreground="#333"/>
 						<ComboBox x:Name="ProductComboBox" Height="36" IsEditable="True" StaysOpenOnEdit="True"
-								DisplayMemberPath="Name" SelectedValuePath="Id" SelectionChanged="ProductComboBox_SelectionChanged"
+								DisplayMemberPath="Name"
+                                ItemsSource="{Binding Products}"
+                                SelectedItem="{Binding SelectedProduct, Mode=TwoWay}"
 								IsTextSearchEnabled="True" FontSize="14" Padding="8,6" ToolTip="Gõ để tìm sản phẩm theo tên hoặc mã"/>
 					</StackPanel>
 					<StackPanel Grid.Column="1" Margin="0,0,8,0" VerticalAlignment="Bottom">
 						<TextBlock Text="📦 Số lượng" FontWeight="SemiBold" Margin="0,0,0,4" Foreground="#333"/>
-						<TextBox x:Name="QuantityTextBox" Height="36" Text="1" FontSize="14" Padding="8,6" TextAlignment="Center" ToolTip="Số lượng"/>
+						<TextBox Height="36" Text="{Binding QuantityText, UpdateSourceTrigger=PropertyChanged}" FontSize="14" Padding="8,6" TextAlignment="Center" ToolTip="Số lượng"/>
 					</StackPanel>
 					<StackPanel Grid.Column="2" Margin="0,0,8,0" VerticalAlignment="Bottom">
 						<TextBlock Text="💰 Đơn giá" FontWeight="SemiBold" Margin="0,0,0,4" Foreground="#333"/>
-						<TextBox x:Name="UnitPriceTextBox" Height="36" FontSize="14" Padding="8,6" TextAlignment="Right" ToolTip="Đơn giá bán"/>
+						<TextBox Height="36" FontSize="14" Padding="8,6" TextAlignment="Right" ToolTip="Đơn giá bán" Text="{Binding UnitPriceText, UpdateSourceTrigger=PropertyChanged}"/>
 					</StackPanel>
-					<Button x:Name="AddItemButton" Grid.Column="3" Content="➕ Thêm vào hóa đơn" Width="180" Height="40" 
+					<Button Grid.Column="3" Content="➕ Thêm vào hóa đơn" Width="180" Height="40" 
 							Background="#4CAF50" Foreground="White" FontWeight="SemiBold" FontSize="14" 
-							Click="AddItemButton_Click" VerticalAlignment="Bottom" ToolTip="Thêm sản phẩm vào hóa đơn (Enter)"/>
+							Command="{Binding AddItemCommand}" VerticalAlignment="Bottom" ToolTip="Thêm sản phẩm vào hóa đơn (Enter)"/>
 				</Grid>
 			</Border>
 
@@ -133,7 +144,7 @@
 							<TextBlock Text="🛒 Danh sách sản phẩm" FontSize="16" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
 							<StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
 								<TextBlock Text="Tổng:" Foreground="White" FontWeight="SemiBold" Margin="0,0,5,0"/>
-								<TextBlock x:Name="ItemCountTextBlock" Text="0 mục" Foreground="White" FontWeight="Bold"/>
+								<TextBlock Text="{Binding ItemCountText}" Foreground="White" FontWeight="Bold"/>
 							</StackPanel>
 						</Grid>
 					</Border>
@@ -151,6 +162,7 @@
 					          GridLinesVisibility="Horizontal"
 					          HeadersVisibility="Column"
 					          MinHeight="400"
+                              ItemsSource="{Binding InvoiceItems}"
 					          PreviewMouseWheel="ListBox_PreviewMouseWheel">
 				<DataGrid.Resources>
 					<Style TargetType="TextBlock" x:Key="RightAlignedCell">
@@ -202,11 +214,11 @@
 							<DataTemplate>
 								<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 									<Button Content="➕" Width="30" Height="28" Margin="0,0,4,0" 
-											Background="#4CAF50" Foreground="White" FontWeight="Bold" Click="IncreaseQtyButton_Click"/>
+											Background="#4CAF50" Foreground="White" FontWeight="Bold" Command="{Binding DataContext.IncreaseQtyCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"/>
 									<Button Content="➖" Width="30" Height="28" Margin="0,0,4,0" 
-											Background="#FF9800" Foreground="White" FontWeight="Bold" Click="DecreaseQtyButton_Click"/>
+											Background="#FF9800" Foreground="White" FontWeight="Bold" Command="{Binding DataContext.DecreaseQtyCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"/>
 									<Button Content="🗑️" Width="40" Height="28" 
-											Background="#F44336" Foreground="White" FontWeight="Bold" Click="RemoveItemButton_Click"/>
+											Background="#F44336" Foreground="White" FontWeight="Bold" Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"/>
 								</StackPanel>
 							</DataTemplate>
 						</DataGridTemplateColumn.CellTemplate>
@@ -252,55 +264,47 @@
 							</Grid.ColumnDefinitions>
 
 							<TextBlock Grid.Row="0" Grid.Column="0" Text="💰 Tạm tính:" HorizontalAlignment="Left" Margin="0,0,8,8" FontWeight="SemiBold"/>
-							<TextBlock x:Name="SubtotalTextBlock" Grid.Row="0" Grid.Column="1" Text="0₫" HorizontalAlignment="Left" TextAlignment="Left" FontSize="16" FontWeight="Bold" Foreground="#2E7D32"/>
+							<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SubtotalText}" HorizontalAlignment="Left" TextAlignment="Left" FontSize="16" FontWeight="Bold" Foreground="#2E7D32"/>
 
 							<StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,8" Height="auto">
 								<TextBlock Text="📊 Thuế (tự động theo danh mục):" VerticalAlignment="Center" FontWeight="SemiBold"/>
-								<TextBox x:Name="TaxPercentTextBox" Width="56" Height="28" Text="0" Visibility="Collapsed" IsReadOnly="True" Margin="0" TextAlignment="Center"/>
 								<TextBlock Text="Thuế:" VerticalAlignment="Center" Margin="12,0,0,0" FontWeight="SemiBold"/>
-								<TextBlock x:Name="TaxAmountTextBlock" Text="0₫" Width="80" TextAlignment="Left" Margin="6,0,0,0" FontWeight="Bold"/>
+								<TextBlock Text="{Binding TaxAmountText}" Width="80" TextAlignment="Left" Margin="6,0,0,0" FontWeight="Bold"/>
 							</StackPanel>
 
 							<!-- Voucher Selection -->
 							<StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,0">
 								<TextBlock Text="🎟️ Voucher:" VerticalAlignment="Center" FontWeight="SemiBold"/>
 								<ComboBox x:Name="VoucherComboBox" Width="180" Height="28" Margin="6,0,0,0" 
-										  DisplayMemberPath="Code" SelectedValuePath="Id"
-										  SelectionChanged="VoucherComboBox_SelectionChanged"
+										  DisplayMemberPath="Code"
+                                          ItemsSource="{Binding Vouchers}" SelectedItem="{Binding SelectedVoucher, Mode=TwoWay}"
 										  ToolTip="Chọn mã giảm giá"/>
 							</StackPanel>
 
 							<StackPanel Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,8">
 								<TextBlock Text="🎁 Giảm giá:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-							<ComboBox x:Name="DiscountModeComboBox" Width="70" Height="28" Margin="6,0,0,0" SelectedIndex="0" SelectionChanged="TotalsSelectionChanged">
-									<ComboBoxItem Content="VND"/>
-									<ComboBoxItem Content="%"/>
-								</ComboBox>
-								<TextBox x:Name="DiscountValueTextBox" Width="80" Height="28" Text="0" TextChanged="TotalsInput_TextChanged" Margin="6,0,0,0" TextAlignment="Center"/>
+							<ComboBox x:Name="DiscountModeComboBox" Width="70" Height="28" Margin="6,0,0,0" ItemsSource="{Binding DiscountModes}" SelectedItem="{Binding SelectedDiscountMode, Mode=TwoWay}"/>
+								<TextBox Width="80" Height="28" Margin="6,0,0,0" TextAlignment="Center" Text="{Binding DiscountValueText, UpdateSourceTrigger=PropertyChanged}"/>
 								
 							</StackPanel>
                             <StackPanel Grid.Row="4" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,8">
-                            <TextBlock x:Name="TierDiscountInlineText" Text="(+ Ưu đãi hạng: 0₫)" Margin="8,0,0,0" Foreground="#4CAF50" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding TierDiscountInlineText}" Margin="8,0,0,0" Foreground="#4CAF50" FontWeight="SemiBold"/>
                             </StackPanel>
                             <Border Grid.Row="5" Grid.ColumnSpan="2" Background="#E0E0E0" Height="1" Margin="0,0,0,8"/>
 
 							<TextBlock Grid.Row="6" Grid.Column="0" Text="💵 Tổng cộng:" HorizontalAlignment="Left" FontWeight="Bold" FontSize="16" Margin="0,0,8,8" Foreground="#D32F2F"/>
-							<TextBlock x:Name="TotalTextBlock" Grid.Row="6" Grid.Column="1" Text="0₫" HorizontalAlignment="Left" TextAlignment="Left" FontWeight="Bold" FontSize="22" Foreground="#D32F2F"/>
+							<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding TotalText}" HorizontalAlignment="Left" TextAlignment="Left" FontWeight="Bold" FontSize="22" Foreground="#D32F2F"/>
 
 							<StackPanel Grid.Row="7" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,8">
 								<TextBlock Text="💳 PTTT:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-								<ComboBox x:Name="PaymentMethodComboBox" Width="100" Height="28" Margin="6,0,12,0" SelectedIndex="0" FontSize="12" SelectionChanged="PaymentMethodComboBox_SelectionChanged">
-									<ComboBoxItem Content="💵 Tiền mặt"/>
-									<ComboBoxItem Content="💳 Thẻ"/>
-									<ComboBoxItem Content="🏦 Chuyển khoản"/>
-								</ComboBox>
+								<ComboBox x:Name="PaymentMethodComboBox" Width="100" Height="28" Margin="6,0,12,0" FontSize="12" ItemsSource="{Binding PaymentMethods}" SelectedItem="{Binding SelectedPaymentMethod, Mode=TwoWay}"/>
 								<TextBlock Text="Đã trả:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-								<TextBox x:Name="PaidTextBox" Width="70" Height="28" Text="0" TextChanged="TotalsInput_TextChanged" Margin="6,0,0,0" TextAlignment="Center"/>
+								<TextBox Width="70" Height="28" Margin="6,0,0,0" TextAlignment="Center" Text="{Binding PaidText, UpdateSourceTrigger=PropertyChanged}"/>
 							</StackPanel>
 
 							<StackPanel Grid.Row="8" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,12">
 								<TextBlock Text="🔄 Tiền thừa:" VerticalAlignment="Center" FontWeight="Bold"/>
-								<TextBlock x:Name="ChangeTextBlock" Text="0₫" Width="80" TextAlignment="Left" Margin="6,0,0,0" FontWeight="Bold" Foreground="#388E3C"/>
+								<TextBlock Text="{Binding ChangeText}" Width="80" TextAlignment="Left" Margin="6,0,0,0" FontWeight="Bold" Foreground="#388E3C"/>
 							</StackPanel>
 
 							<!-- QR Code Section -->
@@ -326,20 +330,22 @@
 											BorderBrush="#E0E0E0" BorderThickness="2" MinHeight="200"> 
 											<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
 											<Image x:Name="InvoiceQRCode" Width="200" Height="200"
-												   Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-											<TextBlock x:Name="QRPlaceholderText" Text="Chọn 'Chuyển khoản' để hiển thị QR" FontSize="10"
+												   Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   Source="{Binding QRCodeImage}" Visibility="{Binding IsQRCodeVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+											<TextBlock Text="{Binding QRPlaceholderText}" FontSize="10"
 													   Foreground="#9E9E9E" HorizontalAlignment="Center" TextAlignment="Center"
-													   Margin="0,8,0,0" TextWrapping="Wrap"/>
+													   Margin="0,8,0,0" TextWrapping="Wrap"
+                                                       Visibility="{Binding IsQRPlaceholderVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 										</StackPanel>
 									</Border>
 								</Grid>
 							</Border>
 							
 							<StackPanel Grid.Row="10" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,0">
-								<Button x:Name="SaveInvoiceButton" Content="💾 Lưu Hóa Đơn" Width="140" Height="40" 
-										Background="#4CAF50" Foreground="White" FontWeight="SemiBold" Click="SaveInvoiceButton_Click" Margin="0,0,8,0"/>
-								<Button x:Name="ClearInvoiceButton" Content="🧹 Xóa Hóa Đơn" Width="140" Height="40"
-										Background="#9E9E9E" Foreground="White" FontWeight="SemiBold" Click="ClearInvoiceButton_Click" Margin="0,0,0,0"/>
+								<Button Content="💾 Lưu Hóa Đơn" Width="140" Height="40" 
+										Background="#4CAF50" Foreground="White" FontWeight="SemiBold" Command="{Binding SaveInvoiceCommand}" Margin="0,0,8,0"/>
+								<Button Content="🧹 Xóa Hóa Đơn" Width="140" Height="40"
+										Background="#9E9E9E" Foreground="White" FontWeight="SemiBold" Command="{Binding ClearInvoiceCommand}" Margin="0,0,0,0"/>
 							</StackPanel>
 						</Grid>
 					</Border>

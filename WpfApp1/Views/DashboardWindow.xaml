@@ -49,8 +49,7 @@
                                FontWeight="Bold" 
                                Foreground="White" 
                                VerticalAlignment="Center"/>
-                    <TextBlock x:Name="UserInfoTextBlock" 
-                               Text="Welcome, Admin" 
+                    <TextBlock Text="{Binding UserInfoText}" 
                                FontSize="16" 
                                Foreground="#B3E5FC" 
                                VerticalAlignment="Center"
@@ -76,8 +75,7 @@
                                     CornerRadius="12" 
                                     Padding="6,2"
                                     MinWidth="30">
-                                <TextBlock x:Name="LowStockAlertCount" 
-                                          Text="0" 
+                                <TextBlock Text="{Binding LowStockAlertCount}" 
                                           Foreground="White" 
                                           FontWeight="Bold" 
                                           FontSize="12"
@@ -91,7 +89,8 @@
                             Height="35" 
                             Background="#FC5C7D" 
                             Foreground="White" 
-                            Click="LogoutButton_Click"/>
+                            Command="{Binding LogoutCommand}"
+                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -186,7 +185,7 @@
                                 <ListBoxItem x:Name="CategoriesNavItem" Content="📂 Danh Mục"/>
                                 <ListBoxItem x:Name="SuppliersNavItem" Content="🏭 Nhà Cung Cấp"/>
                                 <ListBoxItem x:Name="VouchersNavItem" Content="🎟️ Mã Giảm Giá"/>
-                                <ListBoxItem x:Name="ProductSearchNavItem" Content="🔎 Tìm Kiếm Sản Phẩm" Visibility="Collapsed"/>
+                                <ListBoxItem x:Name="ProductSearchNavItem" Content="🔎 Tìm Kiếm Sản Phẩm" Visibility="Visible"/>
                                 <ListBoxItem x:Name="CustomersNavItem" Content="👥 Khách Hàng"/>
                                 <ListBoxItem x:Name="InvoicesNavItem" Content="🧾 Hóa Đơn"/>
                                 <ListBoxItem x:Name="ReportsNavItem" Content="📊 Báo Cáo"/>
@@ -223,25 +222,25 @@
                     <Border Background="White" CornerRadius="16" Padding="20" Margin="8">
                         <StackPanel>
                             <TextBlock Text="💰 Doanh thu hôm nay" Foreground="#777" FontSize="12"/>
-                            <TextBlock x:Name="RevenueTodayText" Text="0₫" FontSize="28" FontWeight="Bold" Foreground="#059669"/>
+                            <TextBlock Text="{Binding RevenueTodayText}" FontSize="28" FontWeight="Bold" Foreground="#059669"/>
                         </StackPanel>
                     </Border>
                     <Border Grid.Column="1" Background="White" CornerRadius="16" Padding="20" Margin="8">
                         <StackPanel>
                             <TextBlock Text="📈 Doanh thu 30 ngày" Foreground="#777" FontSize="12"/>
-                            <TextBlock x:Name="Revenue30Text" Text="0₫" FontSize="28" FontWeight="Bold" Foreground="#0D9488"/>
+                            <TextBlock Text="{Binding Revenue30Text}" FontSize="28" FontWeight="Bold" Foreground="#0D9488"/>
                         </StackPanel>
                     </Border>
                     <Border Grid.Column="2" Background="White" CornerRadius="16" Padding="20" Margin="8">
                         <StackPanel>
                             <TextBlock Text="🧾 Hóa đơn hôm nay" Foreground="#777" FontSize="12"/>
-                            <TextBlock x:Name="InvoicesTodayText" Text="0" FontSize="28" FontWeight="Bold" Foreground="#DC2626"/>
+                            <TextBlock Text="{Binding InvoicesTodayText}" FontSize="28" FontWeight="Bold" Foreground="#DC2626"/>
                         </StackPanel>
                     </Border>
                     <Border Grid.Column="3" Background="White" CornerRadius="16" Padding="20" Margin="8">
                         <StackPanel>
                             <TextBlock Text="👥 Khách hàng / Sản phẩm" Foreground="#777" FontSize="12"/>
-                            <TextBlock x:Name="CountsText" Text="0 / 0" FontSize="28" FontWeight="Bold" Foreground="#7C3AED"/>
+                            <TextBlock Text="{Binding CountsText}" FontSize="28" FontWeight="Bold" Foreground="#7C3AED"/>
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -255,13 +254,13 @@
                             <Border Background="White" CornerRadius="16" Padding="12" Margin="8">
                                 <StackPanel>
                                     <TextBlock Text="📊 Doanh thu 30 ngày qua" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="#374151"/>
-                                    <oxy:PlotView x:Name="HomeRevenuePlot" Height="220"/>
+                                    <oxy:PlotView Model="{Binding HomeRevenuePlotModel}" Height="220"/>
                                 </StackPanel>
                             </Border>
                             <Border Grid.Column="1" Background="White" CornerRadius="16" Padding="12" Margin="8">
                                 <StackPanel>
                                     <TextBlock Text="🥧 Doanh thu theo danh mục" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="#374151"/>
-                                    <oxy:PlotView x:Name="HomeCategoryPie" Height="220"/>
+                                    <oxy:PlotView Model="{Binding HomeCategoryPieModel}" Height="220"/>
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -275,21 +274,19 @@
                             <Border Background="White" CornerRadius="16" Padding="12" Margin="8">
                                 <StackPanel>
                                     <TextBlock Text="👥 Top 10 Khách Hàng" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="#374151"/>
-                                    <oxy:PlotView x:Name="TopCustomersPlot" Height="220"/>
+                                    <oxy:PlotView Model="{Binding TopCustomersPlotModel}" Height="220"/>
                                 </StackPanel>
                             </Border>
                             <Border Grid.Column="1" Background="White" CornerRadius="16" Padding="12" Margin="8">
                                 <StackPanel>
                                     <TextBlock Text="🔥 Top 10 Sản Phẩm Bán Chạy" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="#374151"/>
-                                    <oxy:PlotView x:Name="TopProductsPlot" Height="220"/>
+                                    <oxy:PlotView Model="{Binding TopProductsPlotModel}" Height="220"/>
                                 </StackPanel>
                             </Border>
                         </Grid>
                     </Grid>
                 </ScrollViewer>
-                <ScrollViewer x:Name="MainContentScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Visibility="Collapsed">
-                    <ContentControl x:Name="MainContentHost"/>
-                </ScrollViewer>
+                <ContentControl x:Name="MainContentHost" Visibility="Collapsed"/>
             </Grid>
         </Grid>
     </Grid>
