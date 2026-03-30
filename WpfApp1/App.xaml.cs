@@ -9,7 +9,7 @@ namespace FashionStore
         protected override void OnStartup(StartupEventArgs e)
         {
             var cultureInfo = new System.Globalization.CultureInfo("vi-VN");
-            cultureInfo.NumberFormat.CurrencySymbol = "đ";
+                cultureInfo.NumberFormat.CurrencySymbol = "đ";
             
             System.Threading.Thread.CurrentThread.CurrentCulture = cultureInfo;
             System.Threading.Thread.CurrentThread.CurrentUICulture = cultureInfo;
