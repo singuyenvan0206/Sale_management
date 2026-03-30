@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
 using FashionStore.Services;
+using FashionStore.Core;
 using FashionStore.Models;
 
 namespace FashionStore.ViewModels

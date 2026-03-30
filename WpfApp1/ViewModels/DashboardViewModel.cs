@@ -6,6 +6,7 @@ using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
 using FashionStore.Services;
+using FashionStore.Core;
 using FashionStore.Models;
 
 namespace FashionStore.ViewModels

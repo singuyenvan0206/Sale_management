@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using System.Windows.Input;
 using FashionStore.Services;
+using FashionStore.Core;
 using FashionStore.Models;
 
 namespace FashionStore.ViewModels

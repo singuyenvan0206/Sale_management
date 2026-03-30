@@ -1,6 +1,8 @@
-﻿using MySql.Data.MySqlClient;
+using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
+using FashionStore.Core;
+using FashionStore.Models;
 
 namespace FashionStore.Services
 {
@@ -241,11 +243,11 @@ namespace FashionStore.Services
                     catch { }
                 }
 
-                if (migratedCount > 0) System.Diagnostics.Debug.WriteLine($"ÄĂ£ mĂ£ hĂ³a {migratedCount} máº­t kháº©u.");
+                if (migratedCount > 0) System.Diagnostics.Debug.WriteLine($"Đã mã hóa {migratedCount} mật khẩu.");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Lá»—i khi migrate máº­t kháº©u: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Lỗi khi migrate mật khẩu: {ex.Message}");
             }
             finally
             {
@@ -282,7 +284,7 @@ namespace FashionStore.Services
                 }
                 reader.Close();
 
-                if (accountsToMigrate.Count == 0) return (true, 0, "Táº¥t cáº£ máº­t kháº©u Ä‘Ă£ Ä‘Æ°á»£c mĂ£ hĂ³a.");
+                if (accountsToMigrate.Count == 0) return (true, 0, "Tất cả mật khẩu đã được mã hóa.");
 
                 int migratedCount = 0;
                 int failedCount = 0;
@@ -301,18 +303,18 @@ namespace FashionStore.Services
                     catch (Exception ex)
                     {
                         failedCount++;
-                        System.Diagnostics.Debug.WriteLine($"Lá»—i khi migrate máº­t kháº©u cho {account.Username}: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"Lỗi khi migrate mật khẩu cho {account.Username}: {ex.Message}");
                     }
                 }
 
-                string message = $"ÄĂ£ mĂ£ hĂ³a {migratedCount} máº­t kháº©u.";
-                if (failedCount > 0) message += $" {failedCount} máº­t kháº©u khĂ´ng thá»ƒ mĂ£ hĂ³a.";
+                string message = $"Đã mã hóa {migratedCount} mật khẩu.";
+                if (failedCount > 0) message += $" {failedCount} mật khẩu không thể mã hóa.";
 
                 return (failedCount == 0, migratedCount, message);
             }
             catch (Exception ex)
             {
-                return (false, 0, $"Lá»—i khi cháº¡y migration: {ex.Message}");
+                return (false, 0, $"Lỗi khi chạy migration: {ex.Message}");
             }
         }
     }

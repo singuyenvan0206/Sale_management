@@ -14,9 +14,7 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ApplicationDefinition Include="Views\App.xaml" />
-  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="MySql.Data" Version="9.4.0" />

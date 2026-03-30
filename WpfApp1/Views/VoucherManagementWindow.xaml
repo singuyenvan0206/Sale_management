@@ -36,8 +36,6 @@
             <Setter Property="Margin" Value="0,0,0,4"/>
             <Setter Property="FontSize" Value="14"/>
         </Style>
-        <local:BooleanToStatusColorConverter x:Key="BooleanToStatusColorConverter"/>
-        <local:BooleanToStatusTextConverter x:Key="BooleanToStatusTextConverter"/>
     </Window.Resources>
     
     <Grid Background="#F5F5F5" PreviewMouseWheel="Grid_PreviewMouseWheel">

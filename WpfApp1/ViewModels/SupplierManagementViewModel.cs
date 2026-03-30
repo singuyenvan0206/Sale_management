@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Input;
 using FashionStore.Models;
 using FashionStore.Services;
+using FashionStore.Core;
 
 namespace FashionStore.ViewModels
 {

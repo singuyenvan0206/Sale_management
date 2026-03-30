@@ -5,8 +5,9 @@ using System.Windows.Media;
 
 namespace FashionStore
 {
-    using FashionStore.Services;
-    using FashionStore.ViewModels;
+    using FashionStore.Core;
+using FashionStore.Services;
+using FashionStore.ViewModels;
     public partial class InvoicePrintWindow : Window
     {
         private readonly List<InvoiceItemViewModel> _items;

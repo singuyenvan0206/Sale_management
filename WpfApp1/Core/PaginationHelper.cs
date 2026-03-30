@@ -1,6 +1,5 @@
-
-namespace FashionStore
-{
+namespace FashionStore.Core
+{ 
     public class PaginationHelper<T>
     {
         private List<T> _allItems = new();

@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace FashionStore.ViewModels
+namespace FashionStore.Core
 {
     public abstract class BaseViewModel : INotifyPropertyChanged
     {

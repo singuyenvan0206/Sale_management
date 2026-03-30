@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using MySql.Data.MySqlClient;
 
-namespace FashionStore
+namespace FashionStore.Core
 {
 	public class SettingsConfig
 	{

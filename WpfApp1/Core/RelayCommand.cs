@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Input;
 
-namespace FashionStore.ViewModels
+namespace FashionStore.Core
 {
     public class RelayCommand : ICommand
     {

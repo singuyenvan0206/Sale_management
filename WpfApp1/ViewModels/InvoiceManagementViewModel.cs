@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using FashionStore.Models;
 using FashionStore.Services;
+using FashionStore.Core;
 
 namespace FashionStore.ViewModels
 {

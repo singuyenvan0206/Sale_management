@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Input;
 using FashionStore.Services;
+using FashionStore.Core;
 
 namespace FashionStore.ViewModels
 {
@@ -54,7 +55,7 @@ namespace FashionStore.ViewModels
         public ICommand SaveDbSettingsCommand { get; }
         public ICommand SavePaymentSettingsCommand { get; }
         public ICommand OpenTierSettingsCommand { get; }
-        public ICommand RunPasswordMigrationCommand { get; }
+
 
         // Password is passed as a parameter from code-behind
         public SettingsViewModel()
@@ -63,7 +64,7 @@ namespace FashionStore.ViewModels
             SaveDbSettingsCommand = new RelayCommand(p => SaveDbSettings(p?.ToString() ?? ""));
             SavePaymentSettingsCommand = new RelayCommand(_ => SavePaymentSettings());
             OpenTierSettingsCommand = new RelayCommand(_ => OpenTierSettings());
-            RunPasswordMigrationCommand = new RelayCommand(_ => RunPasswordMigration());
+
 
             LoadDbSettings();
             LoadPaymentSettings();
@@ -149,15 +150,7 @@ namespace FashionStore.ViewModels
             catch (System.Exception ex) { MessageBox.Show($"Lỗi khi mở cài đặt hạng thành viên: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error); }
         }
 
-        private void RunPasswordMigration()
-        {
-            try
-            {
-                var w = new PasswordMigrationWindow { WindowStartupLocation = WindowStartupLocation.CenterScreen };
-                w.ShowDialog();
-            }
-            catch (System.Exception ex) { MessageBox.Show($"Lỗi khi mở cửa sổ migration: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error); }
-        }
+
 
         public string LoadPassword()
         {

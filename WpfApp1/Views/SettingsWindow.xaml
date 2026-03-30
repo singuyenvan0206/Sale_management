@@ -109,46 +109,7 @@
                     </Grid>
                 </Border>
 
-                <!-- Security Settings -->
-                <Border Background="White" CornerRadius="14" Padding="24" Margin="0,0,0,16">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
 
-                        <TextBlock Text="🔐 Bảo Mật"
-                                   FontSize="18"
-                                   FontWeight="SemiBold"
-                                   Foreground="#1CB5E0"
-                                   Margin="0,0,0,12"/>
-
-                        <StackPanel Grid.Row="1">
-                            <TextBlock Text="Mã hóa mật khẩu: Tất cả mật khẩu trong hệ thống đã được mã hóa bằng SHA256 với salt."
-                                       FontSize="14"
-                                       Foreground="#666"
-                                       Margin="0,0,0,12"
-                                       TextWrapping="Wrap"/>
-                            
-                            <TextBlock Text="Nếu bạn có mật khẩu cũ chưa được mã hóa, hãy chạy migration để mã hóa chúng."
-                                       FontSize="13"
-                                       Foreground="#FF9800"
-                                       Margin="0,0,0,16"
-                                       TextWrapping="Wrap"/>
-                            
-                            <Button Content="🔐 Mã Hóa Mật Khẩu Cũ"
-                                    Width="220"
-                                    Height="40"
-                                    Background="#FF9800"
-                                    Foreground="White"
-                                    FontSize="14"
-                                    FontWeight="SemiBold"
-                                    Command="{Binding RunPasswordMigrationCommand}"
-                                    HorizontalAlignment="Left"
-                                    ToolTip="Mã hóa tất cả mật khẩu chưa được mã hóa trong database"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
 
                 <!-- QR Code Settings -->
                 <Border Background="White" CornerRadius="14" Padding="24">

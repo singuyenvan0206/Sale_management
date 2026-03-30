@@ -1,10 +1,11 @@
-﻿using MySql.Data.MySqlClient;
+using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 
-namespace FashionStore
+namespace FashionStore.Data
 {
     using FashionStore.Services;
+    using FashionStore.Core;
     public static class DatabaseHelper
     {
         private static string ConnectionString => SettingsManager.BuildConnectionString();

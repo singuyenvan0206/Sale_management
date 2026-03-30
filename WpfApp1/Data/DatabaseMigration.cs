@@ -2,7 +2,7 @@ using MySql.Data.MySqlClient;
 using System;
 using System.Diagnostics;
 
-namespace FashionStore
+namespace FashionStore.Data
 {
     /// <summary>
     /// Database migration helper for updating schema to match new comprehensive design

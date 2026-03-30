@@ -1,23 +1,21 @@
-
 using System.Windows;
+using FashionStore.Services;
+using FashionStore.Data;
 
 namespace FashionStore
 {
-    using FashionStore.Services;
-
     public partial class App : Application
     {
         protected override void OnStartup(StartupEventArgs e)
         {
             var cultureInfo = new System.Globalization.CultureInfo("vi-VN");
-            cultureInfo.NumberFormat.CurrencySymbol = "đ"; // Customize currency symbol if needed
+            cultureInfo.NumberFormat.CurrencySymbol = "đ";
             
             System.Threading.Thread.CurrentThread.CurrentCulture = cultureInfo;
             System.Threading.Thread.CurrentThread.CurrentUICulture = cultureInfo;
             System.Globalization.CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
             System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
             
-            // Fix for WPF FrameworkElement.Language property which defaults to en-US
             FrameworkElement.LanguageProperty.OverrideMetadata(
                 typeof(FrameworkElement),
                 new FrameworkPropertyMetadata(
@@ -26,6 +24,7 @@ namespace FashionStore
             base.OnStartup(e);
             TryInitializeDatabaseWithFallback();
         }
+
         protected override void OnExit(ExitEventArgs e)
         {
             try
@@ -43,12 +42,11 @@ namespace FashionStore
             }
             catch { }
 
-
             try
             {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
+                System.GC.Collect();
+                System.GC.WaitForPendingFinalizers();
+                System.GC.Collect();
             }
             catch { }
 
@@ -90,6 +88,5 @@ namespace FashionStore
             }
         }
     }
-
 }
 
