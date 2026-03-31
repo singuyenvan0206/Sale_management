@@ -1,0 +1,32 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <!-- Common strings -->
+    <sys:String x:Key="AppTitle">🏪 Hệ Thống Quản Lý POS</sys:String>
+    <sys:String x:Key="Logout">🚪 Đăng Xuất</sys:String>
+    <sys:String x:Key="Settings">⚙️ Cài Đặt</sys:String>
+    
+    <!-- Menu -->
+    <sys:String x:Key="MenuHome">🏠 Trang Chủ</sys:String>
+    <sys:String x:Key="MenuProducts">📦 Sản Phẩm</sys:String>
+    <sys:String x:Key="MenuCategories">📂 Danh Mục</sys:String>
+    <sys:String x:Key="MenuSuppliers">🏭 Nhà Cung Cấp</sys:String>
+    <sys:String x:Key="MenuVouchers">🎟️ Mã Giảm Giá</sys:String>
+    <sys:String x:Key="MenuCustomers">👥 Khách Hàng</sys:String>
+    <sys:String x:Key="MenuInvoices">🧾 Hóa Đơn</sys:String>
+    <sys:String x:Key="MenuReports">📊 Báo Cáo</sys:String>
+    <sys:String x:Key="MenuUserManagement">👤 Quản Lý Người Dùng</sys:String>
+    <sys:String x:Key="MenuSearch">🔎 Tìm Kiếm Sản Phẩm</sys:String>
+
+    <!-- Dashboard -->
+    <sys:String x:Key="KpiRevenueToday">💰 Doanh thu hôm nay</sys:String>
+    <sys:String x:Key="KpiRevenue30Days">📈 Doanh thu 30 ngày</sys:String>
+    <sys:String x:Key="KpiInvoicesToday">🧾 Hóa đơn hôm nay</sys:String>
+    <sys:String x:Key="KpiCounts">👥 Khách hàng / Sản phẩm</sys:String>
+    
+    <!-- Settings headers -->
+    <sys:String x:Key="GeneralSettings">Cài Đặt Chung</sys:String>
+    <sys:String x:Key="DbConfigHeader">Cấu Hình Cơ Sở Dữ Liệu</sys:String>
+    <sys:String x:Key="Language">Ngôn Ngữ</sys:String>
+    <sys:String x:Key="SaveGeneralSettings">Lưu Cài Đặt Chung</sys:String>
+</ResourceDictionary>

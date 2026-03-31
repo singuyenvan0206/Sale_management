@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:oxy="http://oxyplot.org/wpf"
         xmlns:local="clr-namespace:FashionStore"
-        Title="Bảng Điều Khiển - Hệ Thống POS" Height="700" Width="1200"
+        Title="{DynamicResource AppTitle}" Height="700" Width="1200"
         WindowStartupLocation="CenterScreen"
         WindowState="Maximized">  
     <Window.Resources>
@@ -44,7 +44,7 @@
                 </Grid.ColumnDefinitions>
                 
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="🏪 Hệ Thống Quản Lý POS" 
+                    <TextBlock Text="{DynamicResource AppTitle}" 
                                FontSize="24" 
                                FontWeight="Bold" 
                                Foreground="White" 
@@ -84,7 +84,7 @@
                         </StackPanel>
                     </Button>
                     
-                    <Button Content="🚪 Đăng Xuất" 
+                    <Button Content="{DynamicResource Logout}" 
                             Width="120" 
                             Height="35" 
                             Background="#FC5C7D" 
@@ -180,17 +180,17 @@
                                         <Setter Property="HorizontalContentAlignment" Value="Left"/>
                                     </Style>
                                 </ListBox.Resources>
-                                <ListBoxItem x:Name="HomeNavItem" Content="🏠 Trang Chủ" IsSelected="True"/>
-                                <ListBoxItem x:Name="ProductsNavItem" Content="📦 Sản Phẩm" />
-                                <ListBoxItem x:Name="CategoriesNavItem" Content="📂 Danh Mục"/>
-                                <ListBoxItem x:Name="SuppliersNavItem" Content="🏭 Nhà Cung Cấp"/>
-                                <ListBoxItem x:Name="VouchersNavItem" Content="🎟️ Mã Giảm Giá"/>
-                                <ListBoxItem x:Name="ProductSearchNavItem" Content="🔎 Tìm Kiếm Sản Phẩm" Visibility="Visible"/>
-                                <ListBoxItem x:Name="CustomersNavItem" Content="👥 Khách Hàng"/>
-                                <ListBoxItem x:Name="InvoicesNavItem" Content="🧾 Hóa Đơn"/>
-                                <ListBoxItem x:Name="ReportsNavItem" Content="📊 Báo Cáo"/>
-                                <ListBoxItem x:Name="UserManagementNavItem" Content="👤 Quản Lý Người Dùng"/>
-                                <ListBoxItem x:Name="SettingsNavItem" Content="⚙️ Cài Đặt"/>
+                                <ListBoxItem x:Name="HomeNavItem" Content="{DynamicResource MenuHome}" IsSelected="True"/>
+                                <ListBoxItem x:Name="ProductsNavItem" Content="{DynamicResource MenuProducts}" />
+                                <ListBoxItem x:Name="CategoriesNavItem" Content="{DynamicResource MenuCategories}"/>
+                                <ListBoxItem x:Name="SuppliersNavItem" Content="{DynamicResource MenuSuppliers}"/>
+                                <ListBoxItem x:Name="VouchersNavItem" Content="{DynamicResource MenuVouchers}"/>
+                                <ListBoxItem x:Name="ProductSearchNavItem" Content="{DynamicResource MenuSearch}" Visibility="Visible"/>
+                                <ListBoxItem x:Name="CustomersNavItem" Content="{DynamicResource MenuCustomers}"/>
+                                <ListBoxItem x:Name="InvoicesNavItem" Content="{DynamicResource MenuInvoices}"/>
+                                <ListBoxItem x:Name="ReportsNavItem" Content="{DynamicResource MenuReports}"/>
+                                <ListBoxItem x:Name="UserManagementNavItem" Content="{DynamicResource MenuUserManagement}"/>
+                                <ListBoxItem x:Name="SettingsNavItem" Content="{DynamicResource Settings}"/>
                             </ListBox>
                         </StackPanel>
                     </ScrollViewer>
@@ -221,25 +221,25 @@
                     
                     <Border Background="White" CornerRadius="16" Padding="20" Margin="8">
                         <StackPanel>
-                            <TextBlock Text="💰 Doanh thu hôm nay" Foreground="#777" FontSize="12"/>
+                            <TextBlock Text="{DynamicResource KpiRevenueToday}" Foreground="#777" FontSize="12"/>
                             <TextBlock Text="{Binding RevenueTodayText}" FontSize="28" FontWeight="Bold" Foreground="#059669"/>
                         </StackPanel>
                     </Border>
                     <Border Grid.Column="1" Background="White" CornerRadius="16" Padding="20" Margin="8">
                         <StackPanel>
-                            <TextBlock Text="📈 Doanh thu 30 ngày" Foreground="#777" FontSize="12"/>
+                            <TextBlock Text="{DynamicResource KpiRevenue30Days}" Foreground="#777" FontSize="12"/>
                             <TextBlock Text="{Binding Revenue30Text}" FontSize="28" FontWeight="Bold" Foreground="#0D9488"/>
                         </StackPanel>
                     </Border>
                     <Border Grid.Column="2" Background="White" CornerRadius="16" Padding="20" Margin="8">
                         <StackPanel>
-                            <TextBlock Text="🧾 Hóa đơn hôm nay" Foreground="#777" FontSize="12"/>
+                            <TextBlock Text="{DynamicResource KpiInvoicesToday}" Foreground="#777" FontSize="12"/>
                             <TextBlock Text="{Binding InvoicesTodayText}" FontSize="28" FontWeight="Bold" Foreground="#DC2626"/>
                         </StackPanel>
                     </Border>
                     <Border Grid.Column="3" Background="White" CornerRadius="16" Padding="20" Margin="8">
                         <StackPanel>
-                            <TextBlock Text="👥 Khách hàng / Sản phẩm" Foreground="#777" FontSize="12"/>
+                            <TextBlock Text="{DynamicResource KpiCounts}" Foreground="#777" FontSize="12"/>
                             <TextBlock Text="{Binding CountsText}" FontSize="28" FontWeight="Bold" Foreground="#7C3AED"/>
                         </StackPanel>
                     </Border>

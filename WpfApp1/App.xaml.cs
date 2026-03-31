@@ -1,6 +1,7 @@
 using System.Windows;
 using FashionStore.Services;
 using FashionStore.Data;
+using FashionStore.Core;
 
 namespace FashionStore
 {
@@ -8,7 +9,13 @@ namespace FashionStore
     {
         protected override void OnStartup(StartupEventArgs e)
         {
-            var cultureInfo = new System.Globalization.CultureInfo("vi-VN");
+            var settings = SettingsManager.Load();
+            LanguageService.SetLanguage(settings.Language);
+
+            var cultureTag = settings.Language.ToLower() == "en" ? "en-US" : "vi-VN";
+            var cultureInfo = new System.Globalization.CultureInfo(cultureTag);
+            
+            if (settings.Language.ToLower() == "vi")
                 cultureInfo.NumberFormat.CurrencySymbol = "đ";
             
             System.Threading.Thread.CurrentThread.CurrentCulture = cultureInfo;

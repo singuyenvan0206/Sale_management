@@ -1,0 +1,32 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <!-- Common strings -->
+    <sys:String x:Key="AppTitle">🏪 POS Management System</sys:String>
+    <sys:String x:Key="Logout">🚪 Logout</sys:String>
+    <sys:String x:Key="Settings">⚙️ Settings</sys:String>
+    
+    <!-- Menu -->
+    <sys:String x:Key="MenuHome">🏠 Home</sys:String>
+    <sys:String x:Key="MenuProducts">📦 Products</sys:String>
+    <sys:String x:Key="MenuCategories">📂 Categories</sys:String>
+    <sys:String x:Key="MenuSuppliers">🏭 Suppliers</sys:String>
+    <sys:String x:Key="MenuVouchers">🎟️ Vouchers</sys:String>
+    <sys:String x:Key="MenuCustomers">👥 Customers</sys:String>
+    <sys:String x:Key="MenuInvoices">🧾 Invoices</sys:String>
+    <sys:String x:Key="MenuReports">📊 Reports</sys:String>
+    <sys:String x:Key="MenuUserManagement">👤 Users</sys:String>
+    <sys:String x:Key="MenuSearch">🔎 Search Products</sys:String>
+
+    <!-- Dashboard -->
+    <sys:String x:Key="KpiRevenueToday">💰 Revenue Today</sys:String>
+    <sys:String x:Key="KpiRevenue30Days">📈 30-Day Revenue</sys:String>
+    <sys:String x:Key="KpiInvoicesToday">🧾 Invoices Today</sys:String>
+    <sys:String x:Key="KpiCounts">👥 Users / Products</sys:String>
+    
+    <!-- Settings headers -->
+    <sys:String x:Key="GeneralSettings">General Settings</sys:String>
+    <sys:String x:Key="DbConfigHeader">Database Configuration</sys:String>
+    <sys:String x:Key="Language">Language</sys:String>
+    <sys:String x:Key="SaveGeneralSettings">Save General Settings</sys:String>
+</ResourceDictionary>

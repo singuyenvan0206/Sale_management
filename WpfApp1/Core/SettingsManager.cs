@@ -12,6 +12,7 @@ namespace FashionStore.Core
 		public string Database { get; set; } = "main";
 		public string UserId { get; set; } = "root";
 		public string Password { get; set; } = "02062003";
+		public string Language { get; set; } = "vi";
 	}
 
 	public static class SettingsManager

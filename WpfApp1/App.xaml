@@ -6,6 +6,11 @@
              StartupUri="MainWindow.xaml"
              ShutdownMode="OnMainWindowClose">
     <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Languages/vi.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            
             <converters:BooleanToStatusColorConverter x:Key="BooleanToStatusColorConverter" />
             <converters:BooleanToStatusTextConverter x:Key="BooleanToStatusTextConverter" />
             <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
