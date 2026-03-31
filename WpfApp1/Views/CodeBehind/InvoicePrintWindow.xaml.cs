@@ -6,8 +6,8 @@ using System.Windows.Media;
 namespace FashionStore
 {
     using FashionStore.Core;
-using FashionStore.Services;
-using FashionStore.ViewModels;
+    using FashionStore.Services;
+    using FashionStore.ViewModels;
     public partial class InvoicePrintWindow : Window
     {
         private readonly List<InvoiceItemViewModel> _items;
@@ -94,10 +94,10 @@ using FashionStore.ViewModels;
         {
             try
             {
-                
+
                 var (header, items) = InvoiceService.GetInvoiceDetails(invoiceId);
                 _invoiceHeader = header; // LÆ°u header Ä‘á»ƒ sá»­ dá»¥ng trong CreateInvoiceContent
-                
+
 
                 // Header
                 SetText("InvoiceDateText", header.CreatedDate.ToString("dd/MM/yyyy"));
@@ -110,7 +110,7 @@ using FashionStore.ViewModels;
                     var accounts = UserService.GetAllAccounts();
                     // Sá»­ dá»¥ng EmployeeId tá»« header thay vĂ¬ tá»« tham sá»‘
                     var employee = accounts.FirstOrDefault(a => a.Id == header.EmployeeId);
-                    SetText("EmployeeNameText", employee != default 
+                    SetText("EmployeeNameText", employee != default
                         ? (string.IsNullOrWhiteSpace(employee.EmployeeName) ? employee.Username : employee.EmployeeName)
                         : "Không xác định");
                 }
@@ -140,8 +140,8 @@ using FashionStore.ViewModels;
                         LineTotal = it.LineTotal
                     });
                 }
-                
-                
+
+
                 SetItemsSource("InvoiceItemsList", vmItems);
 
                 // Totals
@@ -180,13 +180,13 @@ using FashionStore.ViewModels;
 
                     printDialog.PrintVisual(toPrint, "Invoice #" + _invoiceId);
 
-                    MessageBox.Show("Invoice printed successfully!", "Print Success", 
+                    MessageBox.Show("Invoice printed successfully!", "Print Success",
                         MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error printing invoice: {ex.Message}", "Print Error", 
+                MessageBox.Show($"Error printing invoice: {ex.Message}", "Print Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -219,7 +219,7 @@ using FashionStore.ViewModels;
             // Company Info
             var companyStack = new StackPanel();
             companyStack.Children.Add(new TextBlock { Text = "HỆ THỐNG QUẢN LÝ BÁN HÀNG", FontSize = 26, FontWeight = FontWeights.Bold });
-            
+
             // Thêm thông tin nhân viên
             try
             {
@@ -299,14 +299,14 @@ using FashionStore.ViewModels;
         private FrameworkElement CreateItemsTable()
         {
             var table = new StackPanel();
-            
+
             // Header
             var header = new Grid { Background = Brushes.LightGray };
             header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) });
             header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            
+
             header.Children.Add(new TextBlock { Text = "Sản phẩm", FontWeight = FontWeights.Bold, Margin = new Thickness(8), FontSize = 14 });
             var qty = new TextBlock { Text = "SL", FontWeight = FontWeights.Bold, Margin = new Thickness(8), FontSize = 14 };
             Grid.SetColumn(qty, 1);
@@ -317,9 +317,9 @@ using FashionStore.ViewModels;
             var total = new TextBlock { Text = "Thành tiền", FontWeight = FontWeights.Bold, Margin = new Thickness(8), FontSize = 14 };
             Grid.SetColumn(total, 3);
             header.Children.Add(total);
-            
+
             table.Children.Add(header);
-            
+
             // Items
             foreach (var item in _items)
             {
@@ -328,7 +328,7 @@ using FashionStore.ViewModels;
                 row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
                 row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
                 row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-                
+
                 row.Children.Add(new TextBlock { Text = item.ProductName, Margin = new Thickness(8), FontSize = 13 });
                 var itemQty = new TextBlock { Text = item.Quantity.ToString(), Margin = new Thickness(8), FontSize = 13 };
                 Grid.SetColumn(itemQty, 1);
@@ -339,10 +339,10 @@ using FashionStore.ViewModels;
                 var itemTotal = new TextBlock { Text = item.LineTotal.ToString("C"), Margin = new Thickness(8), FontSize = 13 };
                 Grid.SetColumn(itemTotal, 3);
                 row.Children.Add(itemTotal);
-                
+
                 table.Children.Add(row);
             }
-            
+
             return table;
         }
 
@@ -360,7 +360,7 @@ using FashionStore.ViewModels;
             // Right side - Totals
             var totalsStack = new StackPanel { HorizontalAlignment = HorizontalAlignment.Right };
             var totalsTable = new StackPanel();
-            
+
             totalsTable.Children.Add(new TextBlock { Text = $"Tạm tính: {_subtotal:C}", HorizontalAlignment = HorizontalAlignment.Right, FontSize = 14, Margin = new Thickness(0, 2, 0, 2) });
             totalsTable.Children.Add(new TextBlock { Text = $"Thuế: {_taxAmount:C}", HorizontalAlignment = HorizontalAlignment.Right, FontSize = 14, Margin = new Thickness(0, 2, 0, 2) });
             totalsTable.Children.Add(new TextBlock { Text = $"Giảm giá: {_discount:C}", HorizontalAlignment = HorizontalAlignment.Right, FontSize = 14, Margin = new Thickness(0, 2, 0, 2) });
@@ -380,7 +380,7 @@ using FashionStore.ViewModels;
             try
             {
                 var paymentSettings = PaymentSettingsManager.Load();
-                
+
                 if (!paymentSettings.EnableQRCode)
                 {
                     // áº¨n QR code náº¿u bá»‹ táº¯t
@@ -410,7 +410,7 @@ using FashionStore.ViewModels;
                         {
                             description = description.Substring(0, 8);
                         }
-                        
+
                         // Ensure it starts with letters and is safe from being confused with amounts
                         if (string.IsNullOrWhiteSpace(description) || char.IsDigit(description[0]))
                         {
@@ -433,7 +433,7 @@ using FashionStore.ViewModels;
                             qrBorderHide.Visibility = Visibility.Collapsed;
                         }
                     }
-                    
+
                     // Hiá»ƒn thá»‹ QR code container náº¿u bá»‹ áº©n
                     if (qrCodeImage.Parent is Border qrBorder)
                     {

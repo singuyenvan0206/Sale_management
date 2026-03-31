@@ -83,19 +83,19 @@ namespace FashionStore.ViewModels
         private void AddCategory()
         {
             string name = EditingCategoryName.Trim();
-            
+
             if (string.IsNullOrWhiteSpace(name))
             {
                 MessageBox.Show("Vui lòng nhập tên danh mục.", "Lỗi xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            
+
             if (name.Length > 255)
             {
                 MessageBox.Show("Tên danh mục quá dài. Tối đa 255 ký tự được phép.", "Lỗi xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            
+
             if (CategoryService.AddCategory(name, EditingCategoryTax))
             {
                 LoadCategories();
@@ -120,19 +120,19 @@ namespace FashionStore.ViewModels
             }
 
             string name = EditingCategoryName.Trim();
-            
+
             if (string.IsNullOrWhiteSpace(name))
             {
                 MessageBox.Show("Vui lòng nhập tên danh mục.", "Lỗi xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            
+
             if (name.Length > 255)
             {
                 MessageBox.Show("Tên danh mục quá dài. Tối đa 255 ký tự được phép.", "Lỗi xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            
+
             if (CategoryService.UpdateCategory(SelectedCategory.Id, name, EditingCategoryTax))
             {
                 LoadCategories();
@@ -158,7 +158,7 @@ namespace FashionStore.ViewModels
 
             string categoryName = SelectedCategory.Name;
             var result = MessageBox.Show($"Bạn có chắc chắn muốn xóa danh mục '{categoryName}'?\n\nHành động này không thể hoàn tác.", "Xác nhận xóa", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            
+
             if (result == MessageBoxResult.Yes)
             {
                 if (CategoryService.DeleteCategory(SelectedCategory.Id))
@@ -180,7 +180,7 @@ namespace FashionStore.ViewModels
         private void DeleteAllCategories()
         {
             var result = MessageBox.Show("Bạn có chắc chắn muốn xóa tất cả danh mục không?\n\nHành động này không thể hoàn tác.", "Xác nhận xóa", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            
+
             if (result == MessageBoxResult.Yes)
             {
                 if (CategoryService.DeleteAllCategories())

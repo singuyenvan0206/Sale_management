@@ -1,0 +1,16 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fashion-store-web
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=mysql://root:02062003@host.docker.internal:3306/main
+      - NEXTAUTH_SECRET=h6V7g8H9j0K1l2M3n4B5v6C7x8Z9a0S1_prod_99
+      - NEXTAUTH_URL=http://localhost:3000
+      - NODE_ENV=production
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

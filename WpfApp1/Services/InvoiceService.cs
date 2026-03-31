@@ -56,17 +56,17 @@ namespace FashionStore.Services
                         SELECT MIN(t1.Id + 1) 
                         FROM (SELECT Id FROM Invoices UNION SELECT 0 AS Id) t1
                         WHERE NOT EXISTS (SELECT 1 FROM Invoices t2 WHERE t2.Id = t1.Id + 1);";
-                        
+
                     int nextId = 1;
                     using (var gapCmd = new MySqlCommand(findGapSql, connection, tx))
                     {
                         var result = gapCmd.ExecuteScalar();
                         if (result != DBNull.Value && result != null) nextId = Convert.ToInt32(result);
                     }
-                    
+
                     string insertInvoice = @"INSERT INTO Invoices (Id, CustomerId, EmployeeId, Subtotal, TaxPercent, TaxAmount, Discount, Total, Paid, CreatedDate)
                                              VALUES (@Id, @CustomerId, @EmployeeId, @Subtotal, @TaxPercent, @TaxAmount, @Discount, @Total, @Paid, @CreatedDate);";
-                                             
+
                     using var invCmd = new MySqlCommand(insertInvoice, connection, tx);
                     invCmd.Parameters.AddWithValue("@Id", nextId);
                     invCmd.Parameters.AddWithValue("@CustomerId", customerId);
@@ -88,7 +88,7 @@ namespace FashionStore.Services
                     using var stockCmd = new MySqlCommand(updateStock, connection, tx);
                     stockCmd.Parameters.AddWithValue("@qty", quantity);
                     stockCmd.Parameters.AddWithValue("@pid", productId);
-                    
+
                     if (stockCmd.ExecuteNonQuery() == 0) throw new Exception($"Product ID {productId} is out of stock.");
 
                     decimal lineTotal = unitPrice * quantity;
@@ -356,8 +356,18 @@ namespace FashionStore.Services
                         {
                             currentInvoice = new InvoiceHeader
                             {
-                                Id = invId, CreatedDate = invDate, CustomerName = fields[2].Trim('"'), CustomerPhone = fields[3].Trim('"'), CustomerEmail = fields[4].Trim('"'), CustomerAddress = fields[5].Trim('"'),
-                                Subtotal = decimal.Parse(fields[6]), TaxPercent = decimal.Parse(fields[7]), TaxAmount = decimal.Parse(fields[8]), DiscountAmount = decimal.Parse(fields[9]), Total = decimal.Parse(fields[10]), Paid = decimal.Parse(fields[11]),
+                                Id = invId,
+                                CreatedDate = invDate,
+                                CustomerName = fields[2].Trim('"'),
+                                CustomerPhone = fields[3].Trim('"'),
+                                CustomerEmail = fields[4].Trim('"'),
+                                CustomerAddress = fields[5].Trim('"'),
+                                Subtotal = decimal.Parse(fields[6]),
+                                TaxPercent = decimal.Parse(fields[7]),
+                                TaxAmount = decimal.Parse(fields[8]),
+                                DiscountAmount = decimal.Parse(fields[9]),
+                                Total = decimal.Parse(fields[10]),
+                                Paid = decimal.Parse(fields[11]),
                                 EmployeeId = int.TryParse(fields[12], out int empId) ? empId : employeeId
                             };
                             currentItems.Clear();
@@ -414,7 +424,7 @@ namespace FashionStore.Services
                 if (ProductService.DoesProductIdExist(productIdFromCsv)) productIdToUse = productIdFromCsv;
             }
             if (productIdToUse == 0 && !string.IsNullOrWhiteSpace(productName)) productIdToUse = ProductService.FindProductIdByName(productName);
-            
+
             if (productIdToUse > 0) items.Add((productIdToUse, qty, unitPrice));
         }
 

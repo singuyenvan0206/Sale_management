@@ -10,7 +10,7 @@ namespace FashionStore
         {
             InitializeComponent();
             DataContext = new ReportsViewModel();
-            
+
             // Keep DataGrid sorting wired up via code-behind for UI column indicator updates
             InvoicesDataGrid.Sorting += InvoicesDataGrid_Sorting;
         }
@@ -63,8 +63,8 @@ namespace FashionStore
             while (parent != null)
             {
                 if (parent is T) return true;
-                parent = (parent is System.Windows.Media.Visual || parent is System.Windows.Media.Media3D.Visual3D) 
-                    ? System.Windows.Media.VisualTreeHelper.GetParent(parent) 
+                parent = (parent is System.Windows.Media.Visual || parent is System.Windows.Media.Media3D.Visual3D)
+                    ? System.Windows.Media.VisualTreeHelper.GetParent(parent)
                     : null;
             }
             return false;

@@ -12,6 +12,7 @@
     <sys:String x:Key="MenuCategories">📂 Danh Mục</sys:String>
     <sys:String x:Key="MenuSuppliers">🏭 Nhà Cung Cấp</sys:String>
     <sys:String x:Key="MenuVouchers">🎟️ Mã Giảm Giá</sys:String>
+    <sys:String x:Key="MenuPromotions">🎁 Chương Trình KM</sys:String>
     <sys:String x:Key="MenuCustomers">👥 Khách Hàng</sys:String>
     <sys:String x:Key="MenuInvoices">🧾 Hóa Đơn</sys:String>
     <sys:String x:Key="MenuReports">📊 Báo Cáo</sys:String>

@@ -87,7 +87,11 @@
                             <!-- Product Code -->
                             <StackPanel Grid.Row="1" Margin="0,0,0,12">
                                 <TextBlock Text="Mã Sản Phẩm" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding EditingProduct.Code, UpdateSourceTrigger=PropertyChanged}" Height="35"/>
+                                <TextBox Text="{Binding EditingProduct.Code, UpdateSourceTrigger=PropertyChanged}" Height="35" LostFocus="BarcodeTextBox_LostFocus">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding LookupProductByCodeCommand}" />
+                                    </TextBox.InputBindings>
+                                </TextBox>
                             </StackPanel>
                             
                             <!-- Category and Supplier -->
@@ -334,6 +338,7 @@
                                 <DataGridTextColumn Header="🏷️ Mã SP" Binding="{Binding Code}" Width="120" FontFamily="Consolas"/>
                                 <DataGridTextColumn Header="📂 Danh Mục" Binding="{Binding CategoryName}" Width="120"/>
                                 <DataGridTextColumn Header="💰 Giá Bán" Binding="{Binding SalePrice, StringFormat=N0}" Width="120" FontWeight="Bold" Foreground="#4CAF50"/>
+                                <DataGridTextColumn Header="🏷️ Giá sau KM" Binding="{Binding FinalPrice, StringFormat=N0}" Width="120" FontWeight="Bold" Foreground="#E91E63"/>
                                 <DataGridTextColumn Header="🔥 KM%" Binding="{Binding PromoDiscountPercent, StringFormat=N0}" Width="60" Foreground="#E91E63"/>
                                 <DataGridTextColumn Header="📊 Tồn Kho" Binding="{Binding StockQuantity}" Width="80" FontWeight="Bold" Foreground="#FF9800"/>
                                 <DataGridTextColumn Header="💰 Giá Nhập" Binding="{Binding PurchasePrice, StringFormat=N0}" Width="100"/>

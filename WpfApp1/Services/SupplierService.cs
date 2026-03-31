@@ -15,7 +15,7 @@ namespace FashionStore.Services
             var suppliers = new List<Supplier>();
             using var connection = new MySqlConnection(ConnectionString);
             connection.Open();
-            string sql = "SELECT * FROM Suppliers ORDER BY Name";
+            string sql = "SELECT * FROM Suppliers ORDER BY Id";
             using var cmd = new MySqlCommand(sql, connection);
             using var reader = cmd.ExecuteReader();
             while (reader.Read())

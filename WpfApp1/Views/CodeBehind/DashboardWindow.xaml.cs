@@ -26,13 +26,13 @@ namespace FashionStore
 
             // Set current user in application resources for other windows to access
             Application.Current.Resources["CurrentUser"] = username;
-            
+
             // Subscribe to refresh event
             DashboardViewModel.OnDashboardRefreshNeeded += HandleDashboardRefreshNeeded;
 
             // Add cleanup when window is closing
             this.Closing += DashboardWindow_Closing;
-            
+
             // Apply role-based visibility for unified dashboard
             ApplyRoleVisibility(ParseRole(role));
 
@@ -112,14 +112,14 @@ namespace FashionStore
                 Owner = this,
                 ResizeMode = ResizeMode.NoResize
             };
-            
+
             var grid = new Grid();
             lowStockWindow.Content = grid;
-            
+
             grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(60) });
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-            
+
             var header = new Border
             {
                 Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 243, 205)),
@@ -128,7 +128,7 @@ namespace FashionStore
             };
             grid.Children.Add(header);
             Grid.SetRow(header, 0);
-            
+
             var headerText = new TextBlock
             {
                 Text = "⚠️ Danh Sách Sản Phẩm Sắp Hết (Tồn kho ≤ 10)",
@@ -138,7 +138,7 @@ namespace FashionStore
                 VerticalAlignment = System.Windows.VerticalAlignment.Center
             };
             header.Child = headerText;
-            
+
             var dataGrid = new DataGrid
             {
                 AutoGenerateColumns = false,
@@ -154,15 +154,15 @@ namespace FashionStore
                 SelectionMode = DataGridSelectionMode.Single,
                 Margin = new System.Windows.Thickness(0)
             };
-            
+
             dataGrid.Columns.Add(new DataGridTextColumn { Header = "STT", Width = 50, Binding = new System.Windows.Data.Binding("Index") });
             dataGrid.Columns.Add(new DataGridTextColumn { Header = "Tên Sản Phẩm", Width = new DataGridLength(1, DataGridLengthUnitType.Star), Binding = new System.Windows.Data.Binding("ProductName") });
             dataGrid.Columns.Add(new DataGridTextColumn { Header = "Danh Mục", Width = 150, Binding = new System.Windows.Data.Binding("CategoryName") });
             dataGrid.Columns.Add(new DataGridTextColumn { Header = "Tồn Kho", Width = 100, Binding = new System.Windows.Data.Binding("StockQuantity") });
-            
+
             grid.Children.Add(dataGrid);
             Grid.SetRow(dataGrid, 2);
-            
+
             try
             {
                 var lowStock = ProductService.GetLowStockProducts(10);
@@ -173,11 +173,11 @@ namespace FashionStore
                     CategoryName = p.CategoryName,
                     StockQuantity = p.StockQuantity
                 }).ToList();
-                
+
                 dataGrid.ItemsSource = items;
             }
             catch { }
-            
+
             lowStockWindow.ShowDialog();
         }
 
@@ -211,16 +211,17 @@ namespace FashionStore
 
                 System.Windows.Window? contentWindow = tab switch
                 {
-                    "📦 Sản Phẩm" or "Products" => new ProductManagementWindow(),
-                    "🔎 Tìm Kiếm Sản Phẩm" or "Search" => new ProductManagementWindow { DataContext = new ProductManagementViewModel { IsSearchMode = true } },
-                    "📂 Danh Mục" or "Categories" => new CategoryManagementWindow(),
-                    "🏭 Nhà Cung Cấp" or "Suppliers" => new SupplierManagementWindow(),
-                    "🎟️ Mã Giảm Giá" or "Vouchers" => new VoucherManagementWindow(),
-                    "👥 Khách Hàng" or "Customers" => new CustomerManagementWindow(),
-                    "🧾 Hóa Đơn" or "Invoices" => new InvoiceManagementWindow(),
-                    "📊 Báo Cáo" or "Reports" => new ReportsWindow(),
-                    "👤 Quản Lý Người Dùng" or "User Management" => new UserManagementWindow(),
-                    "⚙️ Cài Đặt" or "Settings" => new SettingsWindow(),
+                    "📦 Sản Phẩm" or "📦 Products" => new ProductManagementWindow(),
+                    "🔎 Tìm Kiếm Sản Phẩm" or "🔎 Search Products" => new ProductManagementWindow { DataContext = new ProductManagementViewModel { IsSearchMode = true } },
+                    "📂 Danh Mục" or "📂 Categories" => new CategoryManagementWindow(),
+                    "🏭 Nhà Cung Cấp" or "🏭 Suppliers" => new SupplierManagementWindow(),
+                    "🎟️ Mã Giảm Giá" or "🎟️ Vouchers" => new VoucherManagementWindow(),
+                    "🎁 Chương Trình KM" or "🎁 Promotions" => new PromotionManagementWindow(),
+                    "👥 Khách Hàng" or "👥 Customers" => new CustomerManagementWindow(),
+                    "🧾 Hóa Đơn" or "🧾 Invoices" => new InvoiceManagementWindow(),
+                    "📊 Báo Cáo" or "📊 Reports" => new ReportsWindow(),
+                    "👤 Quản Lý Người Dùng" or "👤 Users" => new UserManagementWindow(),
+                    "⚙️ Cài Đặt" or "⚙️ Settings" => new SettingsWindow(),
                     "🚪 Đăng Xuất" or "Logout" => null,
                     _ => null
                 };
@@ -243,7 +244,7 @@ namespace FashionStore
                         // before it's moved to avoid inheriting DashboardViewModel
                         content.DataContext = contentWindow.DataContext;
                     }
-                    
+
                     contentWindow.Content = null;
                     MainContentHost.Content = content;
                     DefaultContentScrollViewer.Visibility = System.Windows.Visibility.Collapsed;

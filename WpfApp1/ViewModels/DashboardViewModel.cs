@@ -126,7 +126,7 @@ namespace FashionStore.ViewModels
                 Revenue30Text = $"{revenue30:N0}₫";
                 InvoicesTodayText = invoicesToday.ToString();
                 CountsText = $"{totalCustomers} / {totalProducts}";
-                
+
                 LoadHomeCharts(monthStart, monthEnd);
             }
             catch { }
@@ -219,7 +219,7 @@ namespace FashionStore.ViewModels
                 var loginWindow = new MainWindow();
                 Application.Current.MainWindow = loginWindow;
                 loginWindow.Show();
-                
+
                 if (parameter is Window window)
                 {
                     window.Close();

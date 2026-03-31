@@ -26,13 +26,16 @@ namespace FashionStore.Data
             cmd.ExecuteNonQuery();
 
             // Ensure EmployeeName column exists
-            try {
+            try
+            {
                 using var checkEmpCol = new MySqlCommand("SHOW COLUMNS FROM Accounts LIKE 'EmployeeName';", connection);
-                if (checkEmpCol.ExecuteScalar() == null) {
+                if (checkEmpCol.ExecuteScalar() == null)
+                {
                     using var addEmpCol = new MySqlCommand("ALTER TABLE Accounts ADD COLUMN EmployeeName VARCHAR(255);", connection);
                     addEmpCol.ExecuteNonQuery();
                 }
-            } catch { }
+            }
+            catch { }
 
             string categoryCmd = @"CREATE TABLE IF NOT EXISTS Categories (
                 Id INT AUTO_INCREMENT PRIMARY KEY,
@@ -142,7 +145,7 @@ namespace FashionStore.Data
             DatabaseMigration.RunAllMigrations(connection);
 
             EnsureAdminAccount(connection);
-            
+
             // Migrate unhashed passwords
             UserService.MigratePasswordsToHashed(connection);
         }

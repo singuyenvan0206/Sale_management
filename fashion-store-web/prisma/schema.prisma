@@ -1,0 +1,239 @@
+generator client {
+provider = "prisma-client-js"
+}
+
+datasource db {
+provider = "mysql"
+url = "mysql://root:02062003@localhost:3306/main"
+}
+
+model accounts {
+Id Int @id @default(autoincrement())
+Username String @unique(map: "Username") @db.VarChar(255)
+Password String @db.VarChar(255)
+Role String @default("Cashier") @db.VarChar(20)
+employeeName String? @db.VarChar(100)
+LastLoginDate DateTime? @db.DateTime(0)
+IsActive Boolean? @default(true)
+CreatedDate DateTime? @default(now()) @db.DateTime(0)
+invoiceitems invoiceitems[]
+invoices invoices[]
+stockmovements stockmovements[]
+}
+
+model categories {
+Id Int @id @default(autoincrement())
+Name String @unique(map: "Name") @db.VarChar(255)
+TaxPercent Decimal @default(0.00) @db.Decimal(5, 2)
+Description String? @db.Text
+IsActive Boolean? @default(true)
+products products[]
+promotions promotions[]
+}
+
+model customers {
+Id Int @id @default(autoincrement())
+Name String @db.VarChar(255)
+Phone String? @db.VarChar(20)
+Email String? @db.VarChar(255)
+Address String? @db.Text
+CustomerType String? @default("Regular") @db.VarChar(50)
+Points Int @default(0)
+UpdatedDate DateTime? @default(now()) @db.DateTime(0)
+TotalSpent Decimal? @default(0.00) @db.Decimal(15, 2)
+DateOfBirth DateTime? @db.Date
+Gender String? @db.VarChar(10)
+LastPurchaseDate DateTime? @db.DateTime(0)
+IsActive Boolean? @default(true)
+CreatedDate DateTime? @default(now()) @db.DateTime(0)
+customervoucherusage customervoucherusage[]
+invoices invoices[]
+}
+
+model customervoucherusage {
+Id Int @id @default(autoincrement())
+CustomerId Int
+VoucherId Int
+InvoiceId Int?
+DiscountAmount Decimal @db.Decimal(12, 2)
+UsedDate DateTime? @default(now()) @db.DateTime(0)
+customers customers @relation(fields: [CustomerId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "customervoucherusage_ibfk_1")
+vouchers vouchers @relation(fields: [VoucherId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "customervoucherusage_ibfk_2")
+invoices invoices? @relation(fields: [InvoiceId], references: [Id], onUpdate: NoAction, map: "customervoucherusage_ibfk_3")
+
+@@index([InvoiceId], map: "InvoiceId")
+@@index([CustomerId], map: "idx_customer")
+@@index([UsedDate], map: "idx_used_date")
+@@index([VoucherId], map: "idx_voucher")
+}
+
+model featureflags {
+Key String @id @db.VarChar(100)
+IsEnabled Boolean @default(true)
+UpdatedAt DateTime? @default(now()) @db.DateTime(0)
+}
+
+model invoiceitems {
+Id Int @id @default(autoincrement())
+InvoiceId Int
+ProductId Int
+ProductName String? @db.VarChar(255)
+ProductCode String? @db.VarChar(50)
+EmployeeId Int
+UnitPrice Decimal @db.Decimal(12, 2)
+Quantity Int
+LineTotal Decimal @db.Decimal(12, 2)
+DiscountPercent Decimal? @default(0.00) @db.Decimal(5, 2)
+DiscountAmount Decimal? @default(0.00) @db.Decimal(12, 2)
+invoices invoices @relation(fields: [InvoiceId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "invoiceitems_ibfk_1")
+products products @relation(fields: [ProductId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "invoiceitems_ibfk_2")
+accounts accounts @relation(fields: [EmployeeId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "invoiceitems_ibfk_3")
+
+@@index([EmployeeId], map: "EmployeeId")
+@@index([InvoiceId], map: "InvoiceId")
+@@index([ProductId], map: "ProductId")
+}
+
+model invoices {
+Id Int @id @default(autoincrement())
+InvoiceNumber String? @unique(map: "InvoiceNumber") @db.VarChar(50)
+CustomerId Int
+EmployeeId Int
+Subtotal Decimal @db.Decimal(12, 2)
+TaxPercent Decimal @default(0.00) @db.Decimal(5, 2)
+TaxAmount Decimal @default(0.00) @db.Decimal(12, 2)
+DiscountAmount Decimal @default(0.00) @db.Decimal(15, 2)
+Total Decimal @db.Decimal(12, 2)
+Paid Decimal @default(0.00) @db.Decimal(12, 2)
+CreatedDate DateTime? @default(now()) @db.DateTime(0)
+VoucherId Int?
+VoucherDiscount Decimal? @default(0.00) @db.Decimal(15, 2)
+TierDiscount Decimal? @default(0.00) @db.Decimal(15, 2)
+PaymentMethod String? @default("Cash") @db.VarChar(50)
+PaymentStatus String? @default("Paid") @db.VarChar(20)
+ChangeAmount Decimal? @default(0.00) @db.Decimal(15, 2)
+Notes String? @db.Text
+Status String? @default("Completed") @db.VarChar(20)
+UpdatedDate DateTime? @default(now()) @db.DateTime(0)
+CompletedDate DateTime? @db.DateTime(0)
+customervoucherusage customervoucherusage[]
+invoiceitems invoiceitems[]
+customers customers @relation(fields: [CustomerId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "invoices_ibfk_1")
+accounts accounts @relation(fields: [EmployeeId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "invoices_ibfk_2")
+vouchers vouchers? @relation(fields: [VoucherId], references: [Id], onUpdate: NoAction, map: "invoices_ibfk_3")
+
+@@index([CustomerId], map: "CustomerId")
+@@index([EmployeeId], map: "EmployeeId")
+@@index([VoucherId], map: "VoucherId")
+}
+
+model products {
+Id Int @id @default(autoincrement())
+Name String @db.VarChar(255)
+Code String? @unique(map: "Code") @db.VarChar(50)
+CategoryId Int?
+SalePrice Decimal @db.Decimal(10, 2)
+PromoDiscountPercent Decimal @default(0.00) @db.Decimal(5, 2)
+PromoStartDate DateTime? @db.DateTime(0)
+PromoEndDate DateTime? @db.DateTime(0)
+PurchasePrice Decimal? @default(0.00) @db.Decimal(10, 2)
+PurchaseUnit String? @default("Cái") @db.VarChar(50)
+ImportQuantity Int? @default(0)
+StockQuantity Int @default(0)
+Description String? @db.Text
+CreatedDate DateTime? @default(now()) @db.DateTime(0)
+UpdatedDate DateTime? @default(now()) @db.DateTime(0)
+SupplierId Int? @default(0)
+MinStockLevel Int? @default(10)
+MaxStockLevel Int? @default(1000)
+IsActive Boolean? @default(true)
+invoiceitems invoiceitems[]
+categories categories? @relation(fields: [CategoryId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "products_ibfk_1")
+promotions_promotions_RequiredProductIdToproducts promotions[] @relation("promotions_RequiredProductIdToproducts")
+promotions_promotions_RewardProductIdToproducts promotions[] @relation("promotions_RewardProductIdToproducts")
+stockmovements stockmovements[]
+
+@@index([CategoryId], map: "CategoryId")
+}
+
+model promotions {
+Id Int @id @default(autoincrement())
+Name String @db.VarChar(255)
+Type String @db.VarChar(50)
+StartDate DateTime @db.DateTime(0)
+EndDate DateTime @db.DateTime(0)
+DiscountPercent Decimal? @default(0.00) @db.Decimal(5, 2)
+DiscountAmount Decimal? @default(0.00) @db.Decimal(12, 2)
+RequiredProductId Int?
+RequiredQuantity Int? @default(0)
+RewardProductId Int?
+RewardQuantity Int? @default(0)
+TargetCategoryId Int?
+IsActive Boolean? @default(true)
+CreatedDate DateTime? @default(now()) @db.DateTime(0)
+products_promotions_RequiredProductIdToproducts products? @relation("promotions_RequiredProductIdToproducts", fields: [RequiredProductId], references: [Id], onUpdate: NoAction, map: "promotions_ibfk_1")
+products_promotions_RewardProductIdToproducts products? @relation("promotions_RewardProductIdToproducts", fields: [RewardProductId], references: [Id], onUpdate: NoAction, map: "promotions_ibfk_2")
+categories categories? @relation(fields: [TargetCategoryId], references: [Id], onUpdate: NoAction, map: "promotions_ibfk_3")
+
+@@index([RequiredProductId], map: "RequiredProductId")
+@@index([RewardProductId], map: "RewardProductId")
+@@index([TargetCategoryId], map: "TargetCategoryId")
+}
+
+model stockmovements {
+Id Int @id @default(autoincrement())
+ProductId Int
+MovementType String @db.VarChar(20)
+Quantity Int
+PreviousStock Int
+NewStock Int
+ReferenceType String? @db.VarChar(50)
+ReferenceId Int?
+Notes String? @db.Text
+EmployeeId Int?
+CreatedDate DateTime? @default(now()) @db.DateTime(0)
+products products @relation(fields: [ProductId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "stockmovements_ibfk_1")
+accounts accounts? @relation(fields: [EmployeeId], references: [Id], onUpdate: NoAction, map: "stockmovements_ibfk_2")
+
+@@index([EmployeeId], map: "EmployeeId")
+@@index([CreatedDate], map: "idx_created_date")
+@@index([MovementType], map: "idx_movement_type")
+@@index([ProductId], map: "idx_product")
+}
+
+model suppliers {
+Id Int @id @default(autoincrement())
+Name String @db.VarChar(255)
+ContactName String? @db.VarChar(255)
+Phone String? @db.VarChar(50)
+Email String? @db.VarChar(255)
+Address String? @db.Text
+TaxCode String? @db.VarChar(50)
+Website String? @db.VarChar(255)
+Notes String? @db.Text
+IsActive Boolean? @default(true)
+CreatedDate DateTime? @default(now()) @db.DateTime(0)
+}
+
+model vouchers {
+Id Int @id @default(autoincrement())
+Code String @unique(map: "Code") @db.VarChar(50)
+Name String? @db.VarChar(255)
+DiscountType String @db.VarChar(20)
+DiscountValue Decimal @db.Decimal(12, 2)
+MinInvoiceAmount Decimal @default(0.00) @db.Decimal(12, 2)
+StartDate DateTime @db.DateTime(0)
+EndDate DateTime @db.DateTime(0)
+UsageLimit Int @default(0)
+UsedCount Int @default(0)
+IsActive Boolean @default(true)
+MaxDiscountAmount Decimal? @db.Decimal(12, 2)
+UsageLimitPerCustomer Int? @default(0)
+ApplicableCategories String? @db.Text
+ApplicableProducts String? @db.Text
+ApplicableCustomerTypes String? @db.VarChar(255)
+CreatedBy Int?
+CreatedDate DateTime? @default(now()) @db.DateTime(0)
+customervoucherusage customervoucherusage[]
+invoices invoices[]
+}

@@ -50,7 +50,7 @@ namespace FashionStore.ViewModels
 
         private string _pageInfoText = "Trang: 1 / 1";
         public string PageInfoText { get => _pageInfoText; set => SetProperty(ref _pageInfoText, value); }
-        
+
         private string _totalSuppliersText = "0 nhà cung cấp";
         public string TotalSuppliersText { get => _totalSuppliersText; set => SetProperty(ref _totalSuppliersText, value); }
 
@@ -117,7 +117,7 @@ namespace FashionStore.ViewModels
             EditingSupplier = new Supplier();
             SelectedSupplier = null;
         }
-        
+
         private bool ValidateInput()
         {
             if (string.IsNullOrWhiteSpace(EditingSupplier.Name))

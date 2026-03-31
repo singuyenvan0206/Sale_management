@@ -15,28 +15,28 @@ namespace FashionStore.ViewModels
     {
         private int _id;
         public int Id { get => _id; set => SetProperty(ref _id, value); }
-        
+
         private string _name = "";
         public string Name { get => _name; set => SetProperty(ref _name, value); }
-        
+
         private string _phone = "";
         public string Phone { get => _phone; set => SetProperty(ref _phone, value); }
-        
+
         private string _email = "";
         public string Email { get => _email; set => SetProperty(ref _email, value); }
-        
+
         private string _address = "";
         public string Address { get => _address; set => SetProperty(ref _address, value); }
-        
+
         private string _customerType = "Regular";
         public string CustomerType { get => _customerType; set => SetProperty(ref _customerType, value); }
-        
+
         private string _tier = "Regular";
         public string Tier { get => _tier; set => SetProperty(ref _tier, value); }
-        
+
         private int _points;
         public int Points { get => _points; set => SetProperty(ref _points, value); }
-        
+
         public CustomerItemViewModel Clone()
         {
             return (CustomerItemViewModel)this.MemberwiseClone();
@@ -185,7 +185,7 @@ namespace FashionStore.ViewModels
                 IsAdminOrManager = false;
                 return;
             }
-            
+
             var userRole = UserService.GetUserRole(currentUser);
             IsAdminOrManager = ParseRole(userRole).CanManageTierSettings();
         }
@@ -237,7 +237,7 @@ namespace FashionStore.ViewModels
                     PurchaseHistory.Add(h);
                 }
             }
-            catch {}
+            catch { }
         }
 
         private void OnPageChanged()
@@ -314,7 +314,8 @@ namespace FashionStore.ViewModels
                     {
                         CustomerService.UpdateCustomerLoyalty(id, 0, "Regular");
                     }
-                } catch { }
+                }
+                catch { }
 
                 LoadCustomers();
                 ClearForm();
@@ -345,7 +346,8 @@ namespace FashionStore.ViewModels
                     {
                         CustomerService.UpdateCustomerLoyalty(SelectedCustomer.Id, EditingCustomer.Points, EditingCustomer.Tier);
                     }
-                } catch { }
+                }
+                catch { }
 
                 LoadCustomers();
                 ClearForm();
@@ -461,7 +463,7 @@ namespace FashionStore.ViewModels
         private void ApplyFilters()
         {
             string term = SearchTerm.ToLower();
-            
+
             _paginationHelper.SetFilter(c =>
             {
                 bool matchesSearch = string.IsNullOrWhiteSpace(term) ||
@@ -472,9 +474,9 @@ namespace FashionStore.ViewModels
                     c.Address.ToLower().Contains(term) ||
                     c.Tier.ToLower().Contains(term) ||
                     c.Points.ToString().Contains(term);
-                
+
                 bool matchesTier = SelectedFilterTier == "All" || string.Equals(c.Tier, SelectedFilterTier, StringComparison.OrdinalIgnoreCase);
-                
+
                 bool matchesPoints = SelectedFilterPoints switch
                 {
                     "Under100" => c.Points < 100,
@@ -483,14 +485,14 @@ namespace FashionStore.ViewModels
                     "Over1000" => c.Points >= 1000,
                     _ => true
                 };
-                
+
                 bool matchesActivity = SelectedFilterActivity switch
                 {
                     "HasPurchases" => CustomerService.GetCustomerPurchaseHistory(c.Id).Any(),
                     "NoPurchases" => !CustomerService.GetCustomerPurchaseHistory(c.Id).Any(),
                     _ => true
                 };
-                
+
                 return matchesSearch && matchesTier && matchesPoints && matchesActivity;
             });
             UpdateDisplay();

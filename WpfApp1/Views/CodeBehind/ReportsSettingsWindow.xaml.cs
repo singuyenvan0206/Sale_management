@@ -20,13 +20,13 @@ namespace FashionStore
                 // Get database statistics
                 int totalInvoices = InvoiceService.GetTotalInvoices();
                 decimal totalRevenue = InvoiceService.GetTotalRevenue();
-                
+
                 // Safely update UI elements
                 if (TotalInvoicesTextBlock != null)
                     TotalInvoicesTextBlock.Text = totalInvoices.ToString("N0");
                 if (TotalRevenueTextBlock != null)
                     TotalRevenueTextBlock.Text = totalRevenue.ToString("C0");
-                
+
                 // Calculate date range
                 var (oldestDate, newestDate) = InvoiceService.GetInvoiceDateRange();
                 if (DateRangeTextBlock != null)
@@ -41,7 +41,7 @@ namespace FashionStore
                         DateRangeTextBlock.Text = "Chưa có dữ liệu";
                     }
                 }
-                
+
                 // Estimate database size (simplified)
                 if (DatabaseSizeTextBlock != null)
                     DatabaseSizeTextBlock.Text = EstimateDatabaseSize();
@@ -64,10 +64,10 @@ namespace FashionStore
                 int totalInvoices = InvoiceService.GetTotalInvoices();
                 int totalProducts = ProductService.GetTotalProducts();
                 int totalCustomers = CustomerService.GetTotalCustomers();
-                
+
                 // Rough estimation: each invoice ~1KB, product ~0.5KB, customer ~0.3KB
                 long estimatedBytes = (totalInvoices * 1024) + (totalProducts * 512) + (totalCustomers * 300);
-                
+
                 if (estimatedBytes < 1024 * 1024) // Less than 1MB
                 {
                     return $"{estimatedBytes / 1024:N0} KB";
@@ -91,9 +91,9 @@ namespace FashionStore
                                        "• Tất cả hóa đơn\n" +
                                        "• Chi tiết hóa đơn\n" +
                                        "• Lịch sử giao dịch\n\n" +
-                                       "Bạn có CHẮC CHẮN muốn tiếp tục?", 
+                                       "Bạn có CHẮC CHẮN muốn tiếp tục?",
                                        "XÁC NHẬN XÓA TẤT CẢ", MessageBoxButton.YesNo, MessageBoxImage.Stop);
-            
+
             if (result == MessageBoxResult.Yes)
             {
                 // Simple text confirmation using MessageBox
@@ -102,43 +102,43 @@ namespace FashionStore
                     "XÁC NHẬN CUỐI CÙNG",
                     MessageBoxButton.OKCancel,
                     MessageBoxImage.Stop);
-                
+
                 string userInput = (confirmResult == MessageBoxResult.OK) ? "DELETE ALL" : "";
-                
+
                 if (userInput == "DELETE ALL")
                 {
                     try
                     {
                         // Get count before deletion
                         int deletedCount = InvoiceService.GetTotalInvoices();
-                        
+
                         // Delete all invoices
                         bool success = InvoiceService.DeleteAllInvoices();
-                        
+
                         if (success)
                         {
-                            MessageBox.Show($"Đã xóa {deletedCount} hóa đơn.\n\nTất cả dữ liệu hóa đơn đã được xóa khỏi hệ thống.", 
+                            MessageBox.Show($"Đã xóa {deletedCount} hóa đơn.\n\nTất cả dữ liệu hóa đơn đã được xóa khỏi hệ thống.",
                                           "Xóa hoàn tất", MessageBoxButton.OK, MessageBoxImage.Information);
-                            
+
                             // Trigger dashboard refresh for real-time updates
                             DashboardWindow.TriggerDashboardRefresh();
                         }
                         else
                         {
-                            MessageBox.Show("Không thể xóa hóa đơn. Vui lòng thử lại.", 
+                            MessageBox.Show("Không thể xóa hóa đơn. Vui lòng thử lại.",
                                           "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                         }
                         LoadDatabaseStatistics(); // Refresh statistics
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Lỗi xóa dữ liệu: {ex.Message}", 
+                        MessageBox.Show($"Lỗi xóa dữ liệu: {ex.Message}",
                                       "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 else
                 {
-                    MessageBox.Show("Xác nhận không đúng. Hủy thao tác xóa.", 
+                    MessageBox.Show("Xác nhận không đúng. Hủy thao tác xóa.",
                                   "Hủy thao tác", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
@@ -167,7 +167,7 @@ namespace FashionStore
                 {
                     LoadDatabaseStatistics(); // Refresh statistics
                     MessageBox.Show($"Đã nhập thành công {importedCount} hóa đơn từ tệp CSV.", "Nhập thành công", MessageBoxButton.OK, MessageBoxImage.Information);
-                    
+
                     // Trigger dashboard refresh for real-time updates
                     DashboardWindow.TriggerDashboardRefresh();
                 }

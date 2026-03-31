@@ -12,6 +12,7 @@
     <sys:String x:Key="MenuCategories">📂 Categories</sys:String>
     <sys:String x:Key="MenuSuppliers">🏭 Suppliers</sys:String>
     <sys:String x:Key="MenuVouchers">🎟️ Vouchers</sys:String>
+    <sys:String x:Key="MenuPromotions">🎁 Promotions</sys:String>
     <sys:String x:Key="MenuCustomers">👥 Customers</sys:String>
     <sys:String x:Key="MenuInvoices">🧾 Invoices</sys:String>
     <sys:String x:Key="MenuReports">📊 Reports</sys:String>

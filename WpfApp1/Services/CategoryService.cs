@@ -14,7 +14,7 @@ namespace FashionStore.Services
             var categories = new List<(int, string, decimal)>();
             using var connection = new MySqlConnection(ConnectionString);
             connection.Open();
-            string selectCmd = "SELECT Id, Name, TaxPercent FROM Categories ORDER BY Name;";
+            string selectCmd = "SELECT Id, Name, TaxPercent FROM Categories ORDER BY Id;";
             using var cmd = new MySqlCommand(selectCmd, connection);
             using var reader = cmd.ExecuteReader();
             while (reader.Read())

@@ -19,7 +19,7 @@ namespace FashionStore
             if (viewModel != null)
             {
                 viewModel.CallSort(e.Column);
-                
+
                 // Clear other columns' sort direction
                 foreach (var col in CustomerDataGrid.Columns)
                 {
@@ -60,8 +60,8 @@ namespace FashionStore
             while (parent != null)
             {
                 if (parent is T) return true;
-                parent = (parent is System.Windows.Media.Visual || parent is System.Windows.Media.Media3D.Visual3D) 
-                    ? System.Windows.Media.VisualTreeHelper.GetParent(parent) 
+                parent = (parent is System.Windows.Media.Visual || parent is System.Windows.Media.Media3D.Visual3D)
+                    ? System.Windows.Media.VisualTreeHelper.GetParent(parent)
                     : null;
             }
             return false;

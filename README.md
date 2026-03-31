@@ -1,99 +1,233 @@
-## Sale Management (WPF/.NET 9)
+# Fashion Store – Sale Management System
 
-Ứng dụng quản lý bán hàng xây dựng bằng WPF trên .NET 9, hỗ trợ quản lý người dùng, sản phẩm, khách hàng, hoá đơn, báo cáo và tuỳ chỉnh cài đặt hệ thống.
+Ứng dụng quản lý bán hàng thời trang xây dựng bằng **WPF** trên **.NET 9**, theo mô hình **MVVM**.  
+Hỗ trợ quản lý người dùng, sản phẩm, khách hàng, hoá đơn, voucher, báo cáo và tuỳ chỉnh cài đặt hệ thống.
 
-### Tính năng chính
-- Quản lý người dùng, phân quyền
-- Quản lý danh mục, sản phẩm, khách hàng
-- Lập hoá đơn, in hoá đơn, lịch sử giao dịch
-- Báo cáo tổng hợp, tuỳ chỉnh mẫu báo cáo
-- Cài đặt mức giá/tier, phương thức thanh toán, mã QR
+---
 
-### Yêu cầu hệ thống
-- Windows 10/11
-- .NET SDK 9.0 trở lên (để build)
-- Visual Studio 2022 (khuyến nghị) với workload .NET Desktop Development
+## ✨ Tính năng chính
 
-### Cấu trúc thư mục
+| Nhóm | Tính năng |
+|------|-----------|
+| **Người dùng** | Đăng nhập, phân quyền (Admin / Staff), quản lý tài khoản, đổi mật khẩu |
+| **Sản phẩm** | CRUD sản phẩm & danh mục, quản lý nhà cung cấp, theo dõi xuất nhập kho |
+| **Khách hàng** | Quản lý thông tin khách hàng, phân hạng tier |
+| **Hoá đơn** | Lập hoá đơn, in hoá đơn, lịch sử giao dịch |
+| **Voucher** | Tạo & quản lý mã giảm giá, áp dụng khi thanh toán |
+| **Báo cáo** | Dashboard KPI, biểu đồ doanh thu (OxyPlot), tuỳ chỉnh mẫu báo cáo |
+| **Cài đặt** | Mức giá/tier, phương thức thanh toán, mã QR, đa ngôn ngữ (🇻🇳 / 🇬🇧) |
+
+---
+
+## 📋 Yêu cầu hệ thống
+
+- **OS:** Windows 10 / 11
+- **.NET SDK:** 9.0 trở lên
+- **IDE:** Visual Studio 2022 (khuyến nghị) với workload **.NET Desktop Development**
+- **Database:** MySQL 8.0+ (qua XAMPP/WAMP hoặc standalone)
+
+---
+
+## 📁 Cấu trúc dự án
+
 ```
-Sale_management/
-  WpfApp1/                 // Mã nguồn chính của ứng dụng WPF
-    Views/                 // XAML views (cửa sổ giao diện)
-    Backend/               // Logic nghiệp vụ, truy cập dữ liệu, helpers
-    WpfApp1.csproj
-  WpfApp1.sln              // Solution
-  Class_Diagram.md         // Sơ đồ lớp (tham khảo)
+Fashion_store/
+├── FashionStore.sln                  # Solution chính
+├── database_schema.sql               # Script tạo database
+├── README.md
+│
+├── WpfApp1/                          # Ứng dụng WPF chính (FashionStore)
+│   ├── FashionStore.csproj
+│   ├── App.xaml / App.xaml.cs        # Entry point, cấu hình DI & ngôn ngữ
+│   ├── MainWindow.xaml               # Shell chính
+│   │
+│   ├── Models/                       # Data models
+│   │   ├── Account.cs
+│   │   ├── Product.cs
+│   │   ├── Supplier.cs
+│   │   ├── StockMovement.cs
+│   │   ├── Voucher.cs
+│   │   ├── TierSettings.cs
+│   │   └── UserRole.cs
+│   │
+│   ├── Views/                        # XAML views (giao diện)
+│   │   ├── DashboardWindow.xaml
+│   │   ├── ProductManagementWindow.xaml
+│   │   ├── CustomerManagementWindow.xaml
+│   │   ├── InvoiceManagementWindow.xaml
+│   │   ├── InvoicePrintWindow.xaml
+│   │   ├── VoucherManagementWindow.xaml
+│   │   ├── SupplierManagementWindow.xaml
+│   │   ├── CategoryManagementWindow.xaml
+│   │   ├── ReportsWindow.xaml
+│   │   ├── ReportsSettingsWindow.xaml
+│   │   ├── SettingsWindow.xaml
+│   │   ├── UserManagementWindow.xaml
+│   │   ├── AddEditUserWindow.xaml
+│   │   ├── ChangePasswordWindow.xaml
+│   │   ├── TierSettingsWindow.xaml
+│   │   ├── TransactionHistoryWindow.xaml
+│   │   └── CodeBehind/               # Code-behind cho các views
+│   │
+│   ├── ViewModels/                   # MVVM ViewModels
+│   │   ├── MainViewModel.cs
+│   │   ├── DashboardViewModel.cs
+│   │   ├── ProductManagementViewModel.cs
+│   │   ├── CustomerManagementViewModel.cs
+│   │   ├── InvoiceManagementViewModel.cs
+│   │   ├── VoucherManagementViewModel.cs
+│   │   ├── SupplierManagementViewModel.cs
+│   │   ├── CategoryManagementViewModel.cs
+│   │   ├── ReportsViewModel.cs
+│   │   ├── SettingsViewModel.cs
+│   │   ├── TierSettingsViewModel.cs
+│   │   └── UserManagementViewModel.cs
+│   │
+│   ├── Services/                     # Business logic & data access
+│   │   ├── CategoryService.cs
+│   │   ├── CustomerService.cs
+│   │   ├── InvoiceService.cs
+│   │   ├── ProductService.cs
+│   │   ├── SupplierService.cs
+│   │   ├── UserService.cs
+│   │   └── VoucherService.cs
+│   │
+│   ├── Data/                         # Database layer
+│   │   ├── DatabaseHelper.cs         # Kết nối & thao tác DB trung tâm
+│   │   └── DatabaseMigration.cs      # Quản lý migration
+│   │
+│   ├── Core/                         # Framework & utilities
+│   │   ├── BaseViewModel.cs          # INotifyPropertyChanged base
+│   │   ├── RelayCommand.cs           # ICommand implementation
+│   │   ├── LanguageService.cs        # Chuyển đổi ngôn ngữ
+│   │   ├── PaginationHelper.cs
+│   │   ├── PasswordHelper.cs
+│   │   ├── QRCodeHelper.cs
+│   │   ├── SettingsManager.cs
+│   │   └── PaymentSettings.cs
+│   │
+│   ├── Converters/                   # WPF value converters
+│   │   └── ValueConverters.cs
+│   │
+│   └── Resources/
+│       └── Languages/                # Đa ngôn ngữ
+│           ├── vi.xaml                # Tiếng Việt
+│           └── en.xaml                # English
+│
+└── FashionStore.Tests/               # Unit tests (xUnit)
+    ├── FashionStore.Tests.csproj
+    ├── CalculationTests.cs
+    └── VoucherTests.cs
 ```
 
-### Thiết lập & Chạy
-1) Mở solution
-- Mở `WpfApp1.sln` bằng Visual Studio 2022.
+---
 
-2) Khôi phục gói
-- Visual Studio sẽ tự khôi phục NuGet. Nếu cần, vào `Tools > NuGet Package Manager > Package Manager Console` và chạy:
+## 🚀 Thiết lập & Chạy
+
+### 1. Clone & mở solution
+
+```bash
+git clone https://github.com/singuyenvan0206/Sale_management.git
+```
+
+Mở `FashionStore.sln` bằng Visual Studio 2022.
+
+### 2. Khôi phục NuGet packages
+
+Visual Studio tự khôi phục khi mở solution. Nếu cần thủ công:
+
 ```powershell
-Update-Package -reinstall
+dotnet restore
 ```
 
-3) Cấu hình cơ sở dữ liệu (nếu áp dụng)
-- Mặc định dự án bao gồm thư viện cho SQLite và MySQL (`System.Data.SQLite`, `SQLitePCLRaw`, `MySql.Data`).
-- Kiểm tra hoặc chỉnh chuỗi kết nối, cơ chế khởi tạo DB tại `WpfApp1/Backend/DatabaseHelper.cs`.
+### 3. Cấu hình cơ sở dữ liệu
 
-**Tùy chọn 1: Sử dụng phpMyAdmin (Khuyến nghị cho người mới)**
-- Cài đặt XAMPP, WAMP, hoặc MAMP
-- Tạo database qua phpMyAdmin interface hoặc import file `database_schema.sql`
-- Cấu hình kết nối trong ứng dụng (Settings → Database Settings):
-  - Server: `localhost`
-  - Port: `3306`
-  - Database: `main`
-  - User ID: `root`
-  - Password: (để trống nếu dùng XAMPP mặc định)
+#### Tuỳ chọn 1: XAMPP / phpMyAdmin *(khuyến nghị cho người mới)*
 
+1. Cài đặt [XAMPP](https://www.apachefriends.org/) và khởi động **MySQL**
+2. Mở phpMyAdmin (`http://localhost/phpmyadmin`)
+3. Tạo database mới tên `main` và import file `database_schema.sql`
+4. Cấu hình kết nối trong ứng dụng (**Settings → Database Settings**):
 
-**Tùy chọn 2: MySQL trực tiếp**
-- Đảm bảo MySQL server hoạt động và user có quyền truy cập theo chuỗi kết nối
-- Ứng dụng sẽ tự động tạo các bảng cần thiết khi chạy lần đầu
+   | Trường | Giá trị |
+   |--------|---------|
+   | Server | `localhost` |
+   | Port | `3306` |
+   | Database | `main` |
+   | User ID | `root` |
+   | Password | *(để trống nếu XAMPP mặc định)* |
 
-**Tùy chọn 3: SQLite (Không khuyến nghị)**
-- Đảm bảo file DB (nếu có) nằm tại vị trí đã cấu hình
-- Ứng dụng có thể tự tạo khi chạy lần đầu
+#### Tuỳ chọn 2: MySQL standalone
 
-4) Chạy Debug
-- Chọn cấu hình `Debug` và `WpfApp1` làm startup project.
-- Nhấn F5 để chạy.
+- Đảm bảo MySQL server đang chạy với user có quyền truy cập
+- Ứng dụng sẽ tự tạo các bảng cần thiết khi chạy lần đầu
 
-### Build Release / Publish
-- Trong Visual Studio: `Build > Publish` để tạo gói phát hành (self-contained hoặc framework-dependent) cho `net9.0-windows`.
-- Khuyến nghị target `win-x64` và `Use WPF` đã bật trong csproj.
+### 4. Chạy ứng dụng
 
-### Các cửa sổ chính (Views)
-- `MainWindow.xaml`: điểm vào ứng dụng
-- `DashboardWindow.xaml`: bảng điều khiển
-- `ProductManagementWindow.xaml`: quản lý sản phẩm
-- `CustomerManagementWindow.xaml`: quản lý khách hàng
-- `InvoiceManagementWindow.xaml` / `InvoicePrintWindow.xaml`: hoá đơn & in hoá đơn
-- `ReportsWindow.xaml` / `ReportsSettingsWindow.xaml`: báo cáo & cấu hình báo cáo
-- `SettingsWindow.xaml`: cài đặt chung
-- `UserManagementWindow.xaml` / `AddEditUserWindow.xaml` / `ChangePasswordWindow.xaml`: người dùng & bảo mật
-- `CategoryManagementWindow.xaml`, `TransactionHistoryWindow.xaml`, `TierSettingsWindow.xaml`
+- Chọn cấu hình **Debug** và **FashionStore** làm startup project
+- Nhấn **F5** để chạy
 
-### Backend đáng chú ý
-- `Backend/DatabaseHelper.cs`: lớp truy cập dữ liệu trung tâm, tạo bảng, CRUD, truy vấn phân trang, v.v.
-- `Backend/PaginationHelper.cs`: hỗ trợ phân trang
-- `Backend/QRCodeHelper.cs`: hỗ trợ tạo mã QR
-- `Backend/SettingsManager.cs`, `PaymentSettings.cs`, `TierSettings.cs`: quản lý cấu hình
-- `Backend/UserRole.cs`: định nghĩa phân quyền
+---
 
-### Ghi chú phát triển
-- Sử dụng .NET 9: `TargetFramework` là `net9.0-windows` trong `WpfApp1.csproj`.
-- Nếu gặp lỗi thiếu native SQLite, đảm bảo `SQLitePCLRaw.provider.e_sqlite3` được copy cùng output hoặc cài đặt runtime phù hợp.
-- Khi thay đổi mô hình dữ liệu, xem lại các phương thức trong `DatabaseHelper` để đảm bảo đồng bộ tạo bảng/migration tối thiểu.
+## 📦 NuGet Packages
 
-<<<<<<< HEAD
-### Tài liệu liên quan
-- Database schema: xem `database_schema.sql`
-- Sample data: xem `sample_data.sql`
+| Package | Version | Mục đích |
+|---------|---------|----------|
+| `MySql.Data` | 9.4.0 | Kết nối MySQL |
+| `OxyPlot.Wpf` | 2.1.0 | Biểu đồ báo cáo |
+| `QRCoder` | 1.4.3 | Tạo mã QR thanh toán |
 
+---
 
+## 🏗️ Kiến trúc
+
+Dự án tuân theo mô hình **MVVM** (Model-View-ViewModel):
+
+```
+View (XAML) ──binding──▶ ViewModel ──calls──▶ Service ──queries──▶ Data (DatabaseHelper)
+                              │
+                              └── Model (data classes)
+```
+
+- **Views** — Giao diện XAML, tối thiểu code-behind
+- **ViewModels** — Logic hiển thị, binding, commands (kế thừa `BaseViewModel`, dùng `RelayCommand`)
+- **Services** — Business logic & truy vấn dữ liệu
+- **Data** — Kết nối DB & migration
+- **Core** — Utilities dùng chung (pagination, QR, ngôn ngữ, settings…)
+- **Models** — Các lớp dữ liệu (Product, Account, Voucher…)
+
+---
+
+## 🧪 Chạy Unit Tests
+
+```powershell
+dotnet test FashionStore.Tests/FashionStore.Tests.csproj
+```
+
+---
+
+## 📤 Build Release / Publish
+
+```powershell
+dotnet publish WpfApp1/FashionStore.csproj -c Release -r win-x64
+```
+
+Hoặc trong Visual Studio: **Build → Publish** (target `win-x64`, framework `net9.0-windows`).
+
+---
+
+## 🌐 Đa ngôn ngữ
+
+Ứng dụng hỗ trợ **Tiếng Việt** và **English**.  
+Chuyển đổi ngôn ngữ trong **Settings**. Các resource string nằm tại:
+
+- `Resources/Languages/vi.xaml`
+- `Resources/Languages/en.xaml`
+
+---
+
+## 📄 Tài liệu liên quan
+
+- Database schema: [`database_schema.sql`](database_schema.sql)
 
 

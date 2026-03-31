@@ -26,7 +26,11 @@ namespace FashionStore.Data
                 MigrateInvoiceItemsTable(connection);
                 CreateStockMovementsTable(connection);
                 CreateCustomerVoucherUsageTable(connection);
-                
+                CreatePromotionsTable(connection);
+                MigratePromotionsTable(connection);
+                SeedSampleData(connection);
+                BackfillBarcodes(connection);
+
                 Debug.WriteLine("All database migrations completed successfully.");
             }
             catch (Exception ex)
@@ -35,6 +39,118 @@ namespace FashionStore.Data
                 throw;
             }
         }
+
+        private static void BackfillBarcodes(MySqlConnection connection)
+        {
+            try
+            {
+                // Disable safe updates for this session to allow mass update
+                ExecuteNonQuery(connection, "SET SQL_SAFE_UPDATES = 0;");
+
+                // Generate barcodes for any products that have empty or null Code
+                // We use Id > 0 to satisfy some safe-update configurations even with safe updates off
+                // Pattern: 893 + 7-digit padded ID (Total 10 digits)
+                string sql = @"
+                    UPDATE Products 
+                    SET Code = CONCAT('893', LPAD(Id, 7, '0')) 
+                    WHERE (Code IS NULL OR TRIM(Code) = '') AND Id > 0;";
+                
+                int affected = ExecuteNonQuery(connection, sql);
+                if (affected > 0)
+                {
+                    Debug.WriteLine($"Successfully generated barcodes for {affected} products.");
+                }
+
+                // Re-enable safe updates
+                ExecuteNonQuery(connection, "SET SQL_SAFE_UPDATES = 1;");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error backfilling barcodes: {ex.Message}");
+            }
+        }
+
+        private static void SeedSampleData(MySqlConnection connection)
+        {
+            try
+            {
+                // 1. Seed Categories (using INSERT IGNORE)
+                string[] categories = { "Áo Sơ Mi", "Quần Jean", "Giày Sneaker", "Phụ Kiện" };
+                foreach (var cat in categories)
+                {
+                    ExecuteNonQuery(connection, $"INSERT IGNORE INTO Categories (Name, TaxPercent) VALUES ('{cat}', 10);");
+                }
+
+                // 2. Seed Suppliers
+                ExecuteNonQuery(connection, "INSERT IGNORE INTO Suppliers (Name, ContactPerson, PhoneNumber, Address) VALUES ('Công ty May Mặc Á Châu', 'Nguyễn Văn A', '0901234567', '123 Đường ABC, HCM');");
+
+                // Get some IDs
+                int catId = 0;
+                using (var cmd = new MySqlCommand("SELECT Id FROM Categories WHERE Name='Áo Sơ Mi' LIMIT 1", connection))
+                {
+                    var res = cmd.ExecuteScalar();
+                    if (res != null) catId = Convert.ToInt32(res);
+                }
+
+                int supId = 0;
+                using (var cmd = new MySqlCommand("SELECT Id FROM Suppliers WHERE Name='Công ty May Mặc Á Châu' LIMIT 1", connection))
+                {
+                    var res = cmd.ExecuteScalar();
+                    if (res != null) supId = Convert.ToInt32(res);
+                }
+
+                if (catId > 0)
+                {
+                    string[][] products = new[]
+                    {
+                        new[] { "Áo Sơ Mi Công Sở Nam", "8930001", "350000", "200000", "Chất liệu cotton cao cấp" },
+                        new[] { "Quần Jean Skinny Nữ", "8930002", "450000", "250000", "Co giãn 4 chiều" },
+                        new[] { "Giày Sneaker Classic", "8930003", "600000", "350000", "Phong cách trẻ trung" },
+                        new[] { "Thắt Lưng Da", "8930004", "150000", "80000", "Da bò thật 100%" }
+                    };
+
+                    foreach (var p in products)
+                    {
+                        // Use INSERT IGNORE combined with the unique index on 'Code'
+                        // This ensures we ONLY add these products if their barcode doesn't exist
+                        string sql = "INSERT IGNORE INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description, SupplierId) " +
+                                     $"VALUES ('{p[0]}', '{p[1]}', {catId}, {p[2]}, {p[3]}, 'Cái', 100, 50, '{p[4]}', {supId});";
+                        ExecuteNonQuery(connection, sql);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error seeding sample data: {ex.Message}");
+            }
+        }
+
+        private static void MigrateTransactionHistoryView(MySqlConnection connection)
+        {
+            try
+            {
+                string sql = @"
+                    CREATE OR REPLACE VIEW TransactionHistory AS
+                    SELECT 
+                        i.Id AS InvoiceId,
+                        i.InvoiceDate,
+                        i.TotalAmount,
+                        i.PaymentMethod,
+                        i.CustomerId,
+                        c.Name AS CustomerName,
+                        a.Username AS EmployeeName
+                    FROM Invoices i
+                    LEFT JOIN Customers c ON i.CustomerId = c.Id
+                    LEFT JOIN Accounts a ON i.EmployeeId = a.Id;
+                ";
+                ExecuteNonQuery(connection, sql);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error migrating TransactionHistory view: {ex.Message}");
+            }
+        }
+
 
         private static void MigrateAccountsTable(MySqlConnection connection)
         {
@@ -160,28 +276,15 @@ namespace FashionStore.Data
                     ExecuteNonQuery(connection, "ALTER TABLE Products ADD COLUMN MaxStockLevel INT DEFAULT 1000;");
                 }
 
-                // Add Barcode column
-                if (!ColumnExists(connection, "Products", "Barcode"))
+                // Cleanup: Remove redundant columns if they exist (Barcode, ImageUrl, Weight, Dimensions)
+                string[] unusedColumns = { "Barcode", "ImageUrl", "Weight", "Dimensions" };
+                foreach (var col in unusedColumns)
                 {
-                    ExecuteNonQuery(connection, "ALTER TABLE Products ADD COLUMN Barcode VARCHAR(100) NULL;");
-                }
-
-                // Add ImageUrl column
-                if (!ColumnExists(connection, "Products", "ImageUrl"))
-                {
-                    ExecuteNonQuery(connection, "ALTER TABLE Products ADD COLUMN ImageUrl VARCHAR(500) NULL;");
-                }
-
-                // Add Weight column
-                if (!ColumnExists(connection, "Products", "Weight"))
-                {
-                    ExecuteNonQuery(connection, "ALTER TABLE Products ADD COLUMN Weight DECIMAL(10,2) NULL;");
-                }
-
-                // Add Dimensions column
-                if (!ColumnExists(connection, "Products", "Dimensions"))
-                {
-                    ExecuteNonQuery(connection, "ALTER TABLE Products ADD COLUMN Dimensions VARCHAR(100) NULL;");
+                    if (ColumnExists(connection, "Products", col))
+                    {
+                        try { ExecuteNonQuery(connection, $"ALTER TABLE Products DROP COLUMN {col};"); }
+                        catch (Exception ex) { Debug.WriteLine($"Error dropping column {col}: {ex.Message}"); }
+                    }
                 }
 
                 // Add IsActive column
@@ -455,7 +558,7 @@ namespace FashionStore.Data
                     INDEX idx_created_date (CreatedDate),
                     INDEX idx_movement_type (MovementType)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
-                
+
                 ExecuteNonQuery(connection, createTableCmd);
             }
             catch (Exception ex)
@@ -482,12 +585,68 @@ namespace FashionStore.Data
                     INDEX idx_voucher (VoucherId),
                     INDEX idx_used_date (UsedDate)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
-                
+
                 ExecuteNonQuery(connection, createTableCmd);
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error creating CustomerVoucherUsage table: {ex.Message}");
+            }
+        }
+
+        private static void CreatePromotionsTable(MySqlConnection connection)
+        {
+            try
+            {
+                string createTableCmd = @"CREATE TABLE IF NOT EXISTS Promotions (
+                    Id INT AUTO_INCREMENT PRIMARY KEY,
+                    Name VARCHAR(255) NOT NULL,
+                    Type VARCHAR(50) NOT NULL COMMENT 'FlashSale, BOGO, Combo',
+                    StartDate DATETIME NOT NULL,
+                    EndDate DATETIME NOT NULL,
+                    
+                    DiscountPercent DECIMAL(5,2) DEFAULT 0,
+                    DiscountAmount DECIMAL(12,2) DEFAULT 0,
+                    
+                    RequiredQuantity INT DEFAULT 0,
+                    RewardProductId INT NULL,
+                    RewardQuantity INT DEFAULT 0,
+                    TargetCategoryId INT NULL,
+                    
+                    IsActive BOOLEAN DEFAULT TRUE,
+                    CreatedDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    
+                    FOREIGN KEY (RequiredProductId) REFERENCES Products(Id) ON DELETE SET NULL,
+                    FOREIGN KEY (RewardProductId) REFERENCES Products(Id) ON DELETE SET NULL,
+                    FOREIGN KEY (TargetCategoryId) REFERENCES Categories(Id) ON DELETE SET NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
+
+                ExecuteNonQuery(connection, createTableCmd);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error creating Promotions table: {ex.Message}");
+            }
+        }
+
+
+        private static void MigratePromotionsTable(MySqlConnection connection)
+        {
+            try
+            {
+                if (!ColumnExists(connection, "Promotions", "TargetCategoryId"))
+                {
+                    ExecuteNonQuery(connection, "ALTER TABLE Promotions ADD COLUMN TargetCategoryId INT NULL AFTER RewardQuantity;");
+                    try
+                    {
+                        ExecuteNonQuery(connection, "ALTER TABLE Promotions ADD FOREIGN KEY (TargetCategoryId) REFERENCES Categories(Id) ON DELETE SET NULL;");
+                    }
+                    catch { }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error migrating Promotions table: {ex.Message}");
             }
         }
 
@@ -506,10 +665,10 @@ namespace FashionStore.Data
             }
         }
 
-        private static void ExecuteNonQuery(MySqlConnection connection, string sql)
+        private static int ExecuteNonQuery(MySqlConnection connection, string sql)
         {
             using var cmd = new MySqlCommand(sql, connection);
-            cmd.ExecuteNonQuery();
+            return cmd.ExecuteNonQuery();
         }
     }
 }

@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
@@ -14,52 +12,55 @@ namespace FashionStore.ViewModels
     {
         private int _id;
         public int Id { get => _id; set => SetProperty(ref _id, value); }
-        
+
         private string _name = "";
         public string Name { get => _name; set => SetProperty(ref _name, value); }
-        
+
         private string _code = "";
         public string Code { get => _code; set => SetProperty(ref _code, value); }
-        
+
         private int _categoryId;
         public int CategoryId { get => _categoryId; set => SetProperty(ref _categoryId, value); }
-        
+
         private string _categoryName = "";
         public string CategoryName { get => _categoryName; set => SetProperty(ref _categoryName, value); }
-        
+
         private decimal _salePrice;
         public decimal SalePrice { get => _salePrice; set => SetProperty(ref _salePrice, value); }
-        
+
         private decimal _promoDiscountPercent;
         public decimal PromoDiscountPercent { get => _promoDiscountPercent; set => SetProperty(ref _promoDiscountPercent, value); }
-        
+
         private DateTime? _promoStartDate;
         public DateTime? PromoStartDate { get => _promoStartDate; set => SetProperty(ref _promoStartDate, value); }
-        
+
         private DateTime? _promoEndDate;
         public DateTime? PromoEndDate { get => _promoEndDate; set => SetProperty(ref _promoEndDate, value); }
-        
+
         private decimal _purchasePrice;
         public decimal PurchasePrice { get => _purchasePrice; set => SetProperty(ref _purchasePrice, value); }
-        
+
         private string _purchaseUnit = "VND";
         public string PurchaseUnit { get => _purchaseUnit; set => SetProperty(ref _purchaseUnit, value); }
-        
+
         private int _importQuantity;
         public int ImportQuantity { get => _importQuantity; set => SetProperty(ref _importQuantity, value); }
-        
+
         private int _stockQuantity;
         public int StockQuantity { get => _stockQuantity; set => SetProperty(ref _stockQuantity, value); }
-        
+
         private string _description = "";
         public string Description { get => _description; set => SetProperty(ref _description, value); }
-        
+
         private int _supplierId;
         public int SupplierId { get => _supplierId; set => SetProperty(ref _supplierId, value); }
-        
+
         private string _supplierName = "";
         public string SupplierName { get => _supplierName; set => SetProperty(ref _supplierName, value); }
-        
+
+        private decimal _finalPrice;
+        public decimal FinalPrice { get => _finalPrice; set => SetProperty(ref _finalPrice, value); }
+
         public ProductViewModel Clone()
         {
             return (ProductViewModel)this.MemberwiseClone();
@@ -79,10 +80,10 @@ namespace FashionStore.ViewModels
         private List<ProductViewModel> _allProducts = new();
 
         public ObservableCollection<ProductViewModel> PagedProducts { get; } = new();
-        
+
         public ObservableCollection<CategoryViewModel> Categories { get; } = new();
         public ObservableCollection<CategoryViewModel> FilterCategories { get; } = new();
-        
+
         public ObservableCollection<Supplier> Suppliers { get; } = new();
         public ObservableCollection<Supplier> FilterSuppliers { get; } = new();
 
@@ -127,42 +128,42 @@ namespace FashionStore.ViewModels
         public string SearchTerm
         {
             get => _searchTerm;
-            set { if(SetProperty(ref _searchTerm, value)) ApplyFilters(); }
+            set { if (SetProperty(ref _searchTerm, value)) ApplyFilters(); }
         }
 
         private int _selectedFilterCategoryId = 0;
         public int SelectedFilterCategoryId
         {
             get => _selectedFilterCategoryId;
-            set { if(SetProperty(ref _selectedFilterCategoryId, value)) ApplyFilters(); }
+            set { if (SetProperty(ref _selectedFilterCategoryId, value)) ApplyFilters(); }
         }
 
         private int _selectedFilterSupplierId = 0;
         public int SelectedFilterSupplierId
         {
             get => _selectedFilterSupplierId;
-            set { if(SetProperty(ref _selectedFilterSupplierId, value)) ApplyFilters(); }
+            set { if (SetProperty(ref _selectedFilterSupplierId, value)) ApplyFilters(); }
         }
 
         private string _selectedFilterStock = "All";
         public string SelectedFilterStock
         {
             get => _selectedFilterStock;
-            set { if(SetProperty(ref _selectedFilterStock, value)) ApplyFilters(); }
+            set { if (SetProperty(ref _selectedFilterStock, value)) ApplyFilters(); }
         }
 
         private string _selectedFilterPromo = "All";
         public string SelectedFilterPromo
         {
             get => _selectedFilterPromo;
-            set { if(SetProperty(ref _selectedFilterPromo, value)) ApplyFilters(); }
+            set { if (SetProperty(ref _selectedFilterPromo, value)) ApplyFilters(); }
         }
 
         private string _selectedFilterPrice = "All";
         public string SelectedFilterPrice
         {
             get => _selectedFilterPrice;
-            set { if(SetProperty(ref _selectedFilterPrice, value)) ApplyFilters(); }
+            set { if (SetProperty(ref _selectedFilterPrice, value)) ApplyFilters(); }
         }
 
         private bool _isSearchMode = false;
@@ -194,18 +195,19 @@ namespace FashionStore.ViewModels
         public ICommand DeleteAllCommand { get; }
         public ICommand ImportCsvCommand { get; }
         public ICommand ExportCsvCommand { get; }
+        public ICommand LookupProductByCodeCommand { get; }
 
         public ProductManagementViewModel()
         {
             _paginationHelper.PageChanged += OnPageChanged;
-            
+
             SearchCommand = new RelayCommand(_ => ApplyFilters());
             AddCommand = new RelayCommand(_ => AddProduct());
             UpdateCommand = new RelayCommand(_ => UpdateProduct());
             DeleteCommand = new RelayCommand(_ => DeleteProduct());
             ClearCommand = new RelayCommand(_ => ClearForm());
             ResetFiltersCommand = new RelayCommand(_ => ResetFilters());
-            
+
             FirstPageCommand = new RelayCommand(_ => _paginationHelper.FirstPage());
             PrevPageCommand = new RelayCommand(_ => _paginationHelper.PreviousPage());
             NextPageCommand = new RelayCommand(_ => _paginationHelper.NextPage());
@@ -215,6 +217,7 @@ namespace FashionStore.ViewModels
             DeleteAllCommand = new RelayCommand(_ => DeleteAllProducts());
             ImportCsvCommand = new RelayCommand(_ => ImportCsv());
             ExportCsvCommand = new RelayCommand(_ => ExportCsv());
+            LookupProductByCodeCommand = new RelayCommand(_ => LookupProductByCode());
 
             LoadData();
         }
@@ -257,25 +260,67 @@ namespace FashionStore.ViewModels
 
         private void LoadProducts()
         {
+            var activePromos = PromotionService.GetActivePromotions();
             var products = ProductService.GetAllProductsWithCategories();
-            _allProducts = products.ConvertAll(p => new ProductViewModel
+            _allProducts = products.ConvertAll(p =>
             {
-                Id = p.Id,
-                Name = p.Name,
-                Code = p.Code,
-                CategoryId = p.CategoryId,
-                CategoryName = p.CategoryName,
-                SalePrice = p.SalePrice,
-                PromoDiscountPercent = p.PromoDiscountPercent,
-                PromoStartDate = p.PromoStartDate,
-                PromoEndDate = p.PromoEndDate,
-                PurchasePrice = p.PurchasePrice,
-                PurchaseUnit = p.PurchaseUnit,
-                ImportQuantity = p.ImportQuantity,
-                StockQuantity = p.StockQuantity,
-                Description = p.Description,
-                SupplierId = p.SupplierId,
-                SupplierName = p.SupplierName
+                var vm = new ProductViewModel
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Code = p.Code,
+                    CategoryId = p.CategoryId,
+                    CategoryName = p.CategoryName,
+                    SalePrice = p.SalePrice,
+                    PromoDiscountPercent = p.PromoDiscountPercent,
+                    PromoStartDate = p.PromoStartDate,
+                    PromoEndDate = p.PromoEndDate,
+                    PurchasePrice = p.PurchasePrice,
+                    PurchaseUnit = p.PurchaseUnit,
+                    ImportQuantity = p.ImportQuantity,
+                    StockQuantity = p.StockQuantity,
+                    Description = p.Description,
+                    SupplierId = p.SupplierId,
+                    SupplierName = p.SupplierName
+                };
+
+                // Calculate Final Price (Best Discount)
+                decimal basePrice = p.SalePrice;
+                decimal bestPrice = basePrice;
+
+                // 1. Base Product Discount (legacy fields)
+                if (p.PromoDiscountPercent > 0)
+                {
+                    var now = DateTime.Now;
+                    var startDate = p.PromoStartDate ?? DateTime.MinValue;
+                    var endDate = p.PromoEndDate ?? DateTime.MaxValue;
+
+                    if (now >= startDate && now <= endDate)
+                    {
+                        var discounted = basePrice * (1 - (p.PromoDiscountPercent / 100m));
+                        if (discounted < bestPrice) bestPrice = discounted;
+                    }
+                }
+
+                // 2. Flash Sales (Product or Category based)
+                var relevantPromos = activePromos.Where(promo =>
+                    promo.Type == Promotion.TypeFlashSale &&
+                    (promo.RequiredProductId == p.Id || promo.TargetCategoryId == p.CategoryId || promo.TargetCategoryId == null && promo.RequiredProductId == null)
+                );
+
+                foreach (var promo in relevantPromos)
+                {
+                    decimal promoPrice = basePrice;
+                    if (promo.DiscountPercent > 0)
+                        promoPrice = basePrice * (1 - (promo.DiscountPercent / 100m));
+                    else if (promo.DiscountAmount > 0)
+                        promoPrice = Math.Max(0, basePrice - promo.DiscountAmount);
+
+                    if (promoPrice < bestPrice) bestPrice = promoPrice;
+                }
+
+                vm.FinalPrice = Math.Round(bestPrice, 2);
+                return vm;
             });
             _paginationHelper.SetData(_allProducts);
             UpdateDisplay();
@@ -305,14 +350,41 @@ namespace FashionStore.ViewModels
             SelectedProduct = null;
         }
 
+        private void LookupProductByCode()
+        {
+            if (string.IsNullOrWhiteSpace(EditingProduct.Code)) return;
+
+            var product = ProductService.GetProductByCode(EditingProduct.Code);
+            if (product != null)
+            {
+                var p = product.Value;
+                
+                // Switch to edit mode for this product if found
+                EditingProduct.Id = p.Id;
+                EditingProduct.Name = p.Name;
+                EditingProduct.CategoryId = p.CategoryId;
+                EditingProduct.SalePrice = p.SalePrice;
+                EditingProduct.PurchasePrice = p.PurchasePrice;
+                EditingProduct.PurchaseUnit = p.PurchaseUnit;
+                EditingProduct.StockQuantity = p.StockQuantity;
+                EditingProduct.Description = p.Description;
+                EditingProduct.PromoDiscountPercent = p.PromoDiscountPercent;
+                EditingProduct.PromoStartDate = p.PromoStartDate;
+                EditingProduct.PromoEndDate = p.PromoEndDate;
+                EditingProduct.SupplierId = p.SupplierId;
+                
+                StatusText = $"🔍 Tìm thấy sản phẩm: {p.Name}. Đã tự động điền thông tin.";
+            }
+        }
+
         private void AddProduct()
         {
             if (!ValidateInput()) return;
 
-            if (ProductService.AddProduct(EditingProduct.Name, EditingProduct.Code, EditingProduct.CategoryId, 
-                EditingProduct.SalePrice, EditingProduct.PurchasePrice, EditingProduct.PurchaseUnit, 
-                EditingProduct.ImportQuantity, EditingProduct.StockQuantity, EditingProduct.Description, 
-                EditingProduct.PromoDiscountPercent, EditingProduct.PromoStartDate, EditingProduct.PromoEndDate, 
+            if (ProductService.AddProduct(EditingProduct.Name, EditingProduct.Code, EditingProduct.CategoryId,
+                EditingProduct.SalePrice, EditingProduct.PurchasePrice, EditingProduct.PurchaseUnit,
+                EditingProduct.ImportQuantity, EditingProduct.StockQuantity, EditingProduct.Description,
+                EditingProduct.PromoDiscountPercent, EditingProduct.PromoStartDate, EditingProduct.PromoEndDate,
                 EditingProduct.SupplierId))
             {
                 LoadProducts();
@@ -336,10 +408,10 @@ namespace FashionStore.ViewModels
 
             if (!ValidateInput()) return;
 
-            if (ProductService.UpdateProduct(EditingProduct.Id, EditingProduct.Name, EditingProduct.Code, 
-                EditingProduct.CategoryId, EditingProduct.SalePrice, EditingProduct.PurchasePrice, 
-                EditingProduct.PurchaseUnit, EditingProduct.ImportQuantity, EditingProduct.StockQuantity, 
-                EditingProduct.Description, EditingProduct.PromoDiscountPercent, EditingProduct.PromoStartDate, 
+            if (ProductService.UpdateProduct(EditingProduct.Id, EditingProduct.Name, EditingProduct.Code,
+                EditingProduct.CategoryId, EditingProduct.SalePrice, EditingProduct.PurchasePrice,
+                EditingProduct.PurchaseUnit, EditingProduct.ImportQuantity, EditingProduct.StockQuantity,
+                EditingProduct.Description, EditingProduct.PromoDiscountPercent, EditingProduct.PromoStartDate,
                 EditingProduct.PromoEndDate, EditingProduct.SupplierId))
             {
                 LoadProducts();
@@ -377,7 +449,7 @@ namespace FashionStore.ViewModels
                 }
             }
         }
-        
+
         private void DeleteAllProducts()
         {
             if (_allProducts.Count == 0) return;
@@ -519,18 +591,18 @@ namespace FashionStore.ViewModels
                 CurrentPageBox = _paginationHelper.CurrentPage;
             }
         }
-        
+
         public void CallSort(System.Windows.Controls.DataGridColumn column)
         {
             var propertyName = column.SortMemberPath;
             if (string.IsNullOrEmpty(propertyName)) return;
-            
-            var direction = column.SortDirection != System.ComponentModel.ListSortDirection.Ascending 
-                ? System.ComponentModel.ListSortDirection.Ascending 
+
+            var direction = column.SortDirection != System.ComponentModel.ListSortDirection.Ascending
+                ? System.ComponentModel.ListSortDirection.Ascending
                 : System.ComponentModel.ListSortDirection.Descending;
-            
+
             Func<IEnumerable<ProductViewModel>, IOrderedEnumerable<ProductViewModel>>? sortFunc = null;
-            
+
             switch (propertyName.ToLower())
             {
                 case "id": sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(p => p.Id) : items => items.OrderByDescending(p => p.Id); break;
@@ -540,7 +612,7 @@ namespace FashionStore.ViewModels
                 case "saleprice": sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(p => p.SalePrice) : items => items.OrderByDescending(p => p.SalePrice); break;
                 case "stockquantity": sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(p => p.StockQuantity) : items => items.OrderByDescending(p => p.StockQuantity); break;
             }
-            
+
             if (sortFunc != null)
             {
                 _paginationHelper.SetSort(sortFunc);

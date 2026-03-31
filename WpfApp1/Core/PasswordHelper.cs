@@ -55,7 +55,7 @@ namespace FashionStore.Core
             {
                 // Giải mã Base64 để lấy salt và hash
                 byte[] storedBytes = Convert.FromBase64String(hashedPassword);
-                
+
                 // Lấy salt (16 bytes đầu tiên)
                 byte[] salt = new byte[16];
                 Buffer.BlockCopy(storedBytes, 0, salt, 0, 16);

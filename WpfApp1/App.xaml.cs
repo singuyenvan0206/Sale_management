@@ -14,15 +14,15 @@ namespace FashionStore
 
             var cultureTag = settings.Language.ToLower() == "en" ? "en-US" : "vi-VN";
             var cultureInfo = new System.Globalization.CultureInfo(cultureTag);
-            
+
             if (settings.Language.ToLower() == "vi")
                 cultureInfo.NumberFormat.CurrencySymbol = "đ";
-            
+
             System.Threading.Thread.CurrentThread.CurrentCulture = cultureInfo;
             System.Threading.Thread.CurrentThread.CurrentUICulture = cultureInfo;
             System.Globalization.CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
             System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
-            
+
             FrameworkElement.LanguageProperty.OverrideMetadata(
                 typeof(FrameworkElement),
                 new FrameworkPropertyMetadata(

@@ -77,7 +77,7 @@ namespace FashionStore
                     // Láº¥y EmployeeId cá»§a ngÆ°á»i Ä‘ang Ä‘Äƒng nháº­p (hoáº·c sá»­ dá»¥ng ID máº·c Ä‘á»‹nh)
                     string currentUser = Application.Current.Resources["CurrentUser"]?.ToString() ?? "admin";
                     var employeeId = UserService.GetEmployeeIdByUsername(currentUser);
-                    
+
                     // Sử dụng constructor từ database để đảm bảo dữ liệu chính xác
                     var printWindow = new InvoicePrintWindow(selectedInvoice.InvoiceId, employeeId);
                     printWindow.ShowDialog();

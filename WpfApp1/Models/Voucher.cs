@@ -41,12 +41,12 @@ namespace FashionStore
             if (!IsActive) return false;
             var now = DateTime.Now;
             if (now < StartDate || now > EndDate) return false;
-            
+
             // Global usage limit
             if (UsageLimit > 0 && UsedCount >= UsageLimit) return false;
-            
+
             // Per customer usage limit (if customer usage count is provided)
-            if (UsageLimitPerCustomer > 0 && currentCustomerUsage >= 0 && currentCustomerUsage >= UsageLimitPerCustomer) 
+            if (UsageLimitPerCustomer > 0 && currentCustomerUsage >= 0 && currentCustomerUsage >= UsageLimitPerCustomer)
                 return false;
 
             // Minimum invoice amount check

@@ -1,0 +1,73 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: fashion-db-prod
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-02062003}
+      MYSQL_DATABASE: main
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./prisma/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - fashion-network
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fashion-web-prod
+    restart: always
+    environment:
+      - DATABASE_URL=mysql://root:${DB_PASSWORD:-02062003}@db:3306/main
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=https://${DOMAIN}
+      - NODE_ENV=production
+      - VIRTUAL_HOST=${DOMAIN}
+      - LETSENCRYPT_HOST=${DOMAIN}
+      - LETSENCRYPT_EMAIL=${EMAIL}
+    depends_on:
+      - db
+    networks:
+      - fashion-network
+
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy
+    container_name: nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - certs:/etc/nginx/certs
+      - vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+    networks:
+      - fashion-network
+
+  acme-companion:
+    image: nginxproxy/acme-companion
+    container_name: acme-companion
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - certs:/etc/nginx/certs
+      - vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - acme:/etc/acme.sh
+    depends_on:
+      - nginx-proxy
+    networks:
+      - fashion-network
+
+networks:
+  fashion-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  certs:
+  vhost:
+  html:
+  acme:

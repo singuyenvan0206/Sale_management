@@ -32,7 +32,7 @@ namespace FashionStore.Core
 
                 // Build URL safely using string interpolation of escaped segments
                 var baseUrl = "https://vietqr.co/api/generate";
-                
+
                 // VietQR API format: /{bankCode}/{bankAccount}/{accountHolder}/{amount}/{description}
                 // If account holder is provided, include it; otherwise skip it
                 string url;
@@ -54,7 +54,7 @@ namespace FashionStore.Core
                     "style=2",
                     "bg=61"
                 };
-                
+
                 if (includeQueryDownload)
                     queryParts.Add("download=1");
 

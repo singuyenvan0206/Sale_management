@@ -19,7 +19,7 @@ namespace FashionStore.Core
             {
                 return false;
             }
-            
+
             storage = value;
             OnPropertyChanged(propertyName);
             return true;

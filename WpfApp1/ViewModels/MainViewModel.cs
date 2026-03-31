@@ -56,12 +56,12 @@ namespace FashionStore.ViewModels
             if (roleStatus == "true")
             {
                 var userRole = UserService.GetUserRoleEnum(Username);
-                
+
                 // Mở Dashboard
                 Window dashboard = new DashboardWindow(Username, userRole.ToString());
                 Application.Current.MainWindow = dashboard;
                 dashboard.Show();
-                
+
                 // Đóng Window đăng nhập
                 if (parameter is System.Windows.Controls.PasswordBox pb)
                 {

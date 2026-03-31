@@ -162,15 +162,15 @@ namespace FashionStore.ViewModels
 
         private void SaveGeneralSettings(string password)
         {
-            var cfg = new SettingsConfig 
-            { 
-                Server = Server, 
-                Database = Database, 
-                UserId = UserId, 
+            var cfg = new SettingsConfig
+            {
+                Server = Server,
+                Database = Database,
+                UserId = UserId,
                 Password = password,
                 Language = SelectedLanguage
             };
-            
+
             if (SettingsManager.Save(cfg, out string error))
             {
                 StatusText = "Cài đặt chung đã được lưu.";

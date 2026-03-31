@@ -63,7 +63,7 @@ namespace FashionStore.Services
                                FROM Products p 
                                LEFT JOIN Categories c ON p.CategoryId = c.Id 
                                LEFT JOIN Suppliers s ON p.SupplierId = s.Id
-                               ORDER BY p.Name
+                               ORDER BY p.Id
                                LIMIT 10000;";
             using var cmd = new MySqlCommand(cmdText, connection);
             using var reader = cmd.ExecuteReader();
@@ -246,6 +246,49 @@ namespace FashionStore.Services
             return Convert.ToInt32(val ?? 0);
         }
 
+        public static (int Id, string Name, string Code, int CategoryId, string CategoryName, decimal SalePrice, decimal PromoDiscountPercent, DateTime? PromoStartDate, DateTime? PromoEndDate, decimal PurchasePrice, string PurchaseUnit, int ImportQuantity, int StockQuantity, string Description, decimal CategoryTaxPercent, int SupplierId, string SupplierName)? GetProductByCode(string code)
+        {
+            if (string.IsNullOrWhiteSpace(code)) return null;
+            using var connection = new MySqlConnection(ConnectionString);
+            connection.Open();
+            string sql = @"SELECT p.Id, p.Name, p.Code, p.CategoryId, c.Name as CategoryName, p.SalePrice,
+                                  IFNULL(p.PromoDiscountPercent, 0) AS PromoDiscountPercent,
+                                  p.PromoStartDate, p.PromoEndDate,
+                                  p.PurchasePrice, p.PurchaseUnit, p.ImportQuantity, p.StockQuantity, p.Description,
+                                  IFNULL(c.TaxPercent, 0) AS CategoryTaxPercent,
+                                  p.SupplierId, IFNULL(s.Name, '') as SupplierName
+                           FROM Products p
+                           LEFT JOIN Categories c ON p.CategoryId = c.Id
+                           LEFT JOIN Suppliers s ON p.SupplierId = s.Id
+                           WHERE p.Code = @code LIMIT 1";
+            using var cmd = new MySqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@code", code);
+            using var r = cmd.ExecuteReader();
+            if (r.Read())
+            {
+                return (
+                    r.GetInt32(0),
+                    r.GetString(1),
+                    r.IsDBNull(2) ? "" : r.GetString(2),
+                    r.IsDBNull(3) ? 0 : r.GetInt32(3),
+                    r.IsDBNull(4) ? "Uncategorized" : r.GetString(4),
+                    r.GetDecimal(5),
+                    r.IsDBNull(6) ? 0m : r.GetDecimal(6),
+                    r.IsDBNull(7) ? (DateTime?)null : r.GetDateTime(7),
+                    r.IsDBNull(8) ? (DateTime?)null : r.GetDateTime(8),
+                    r.IsDBNull(9) ? 0m : r.GetDecimal(9),
+                    r.IsDBNull(10) ? "" : r.GetString(10),
+                    r.IsDBNull(11) ? 0 : r.GetInt32(11),
+                    r.GetInt32(12),
+                    r.IsDBNull(13) ? "" : r.GetString(13),
+                    r.IsDBNull(14) ? 0m : r.GetDecimal(14),
+                    r.IsDBNull(15) ? 0 : r.GetInt32(15),
+                    r.IsDBNull(16) ? "" : r.GetString(16)
+                );
+            }
+            return null;
+        }
+
         public static int FindProductIdByName(string productName)
         {
             try
@@ -292,7 +335,7 @@ namespace FashionStore.Services
             while (r.Read())
             {
                 list.Add((
-                    r.IsDBNull(0) ? "(Unknown)" : r.GetString(0), 
+                    r.IsDBNull(0) ? "(Unknown)" : r.GetString(0),
                     r.IsDBNull(1) ? 0 : r.GetInt32(1),
                     r.IsDBNull(2) ? 0m : r.GetDecimal(2)
                 ));
@@ -333,7 +376,7 @@ namespace FashionStore.Services
                     var cols = SplitCsvLine(raw);
                     string name = SafeGet(cols, idxName);
                     if (string.IsNullOrWhiteSpace(name)) continue;
-                    
+
                     string code = SafeGet(cols, idxCode);
                     string catName = SafeGet(cols, idxCategoryName);
                     string priceStr = SafeGet(cols, idxPrice);
@@ -353,11 +396,11 @@ namespace FashionStore.Services
                     {
                         purchasePrice = price * 0.8m;
                     }
-                    
+
                     int.TryParse(stockStr, out int stock);
                     int.TryParse(importQuantityStr, out int importQuantity);
                     decimal.TryParse(promoDiscountStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal promoDiscountPercent);
-                    
+
                     DateTime? promoStartDate = null;
                     if (DateTime.TryParse(promoStartStr, out var ps)) promoStartDate = ps;
                     DateTime? promoEndDate = null;

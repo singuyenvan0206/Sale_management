@@ -17,11 +17,12 @@ namespace FashionStore.ViewModels
     {
         private List<CustomerListItem> _allCustomerItems = new();
         private List<ProductListItem> _allProducts = new();
-        
+
         public ObservableCollection<CustomerListItem> FilteredCustomers { get; } = new();
         public ObservableCollection<ProductListItem> Products { get; } = new();
         public ObservableCollection<InvoiceItemViewModel> InvoiceItems { get; } = new();
         public ObservableCollection<Voucher> Vouchers { get; } = new();
+        public List<Promotion> ActivePromotions { get; set; } = new();
 
         public List<string> DiscountModes { get; } = new() { "VND", "%" };
         public List<string> PaymentMethods { get; } = new() { "💵 Tiền mặt", "💳 Thẻ", "🏦 Chuyển khoản" };
@@ -29,7 +30,7 @@ namespace FashionStore.ViewModels
         private bool _isInternalUpdate = false;
 
         #region Properties
-        
+
         private string _customerSearchText = "";
         public string CustomerSearchText
         {
@@ -204,15 +205,24 @@ namespace FashionStore.ViewModels
 
             InitializeData();
         }
-
         private void InitializeData()
         {
             LoadCustomers();
             LoadProducts();
             LoadVouchers();
+            LoadPromotions();
             ClearInvoice();
             try { PaymentSettingsManager.Load(); } catch { }
             UpdateTotals();
+        }
+
+        private void LoadPromotions()
+        {
+            try
+            {
+                ActivePromotions = PromotionService.GetActivePromotions();
+            }
+            catch { }
         }
 
         #region Customer Logic
@@ -291,7 +301,8 @@ namespace FashionStore.ViewModels
                     PromoStartDate = p.PromoStartDate,
                     PromoEndDate = p.PromoEndDate,
                     StockQuantity = p.StockQuantity,
-                    CategoryTaxPercent = p.CategoryTaxPercent
+                    CategoryTaxPercent = p.CategoryTaxPercent,
+                    CategoryId = p.CategoryId
                 });
 
                 Products.Clear();
@@ -304,21 +315,48 @@ namespace FashionStore.ViewModels
         {
             if (SelectedProduct != null)
             {
-                var promoPercent = GetActivePromoPercent(SelectedProduct);
-                var discounted = ApplyPercentDiscount(SelectedProduct.UnitPrice, promoPercent);
-                UnitPriceText = discounted.ToString("F2");
+                var finalPrice = GetFinalPromoPrice(SelectedProduct);
+                UnitPriceText = finalPrice.ToString("F2");
                 if (string.IsNullOrWhiteSpace(QuantityText)) QuantityText = "1";
             }
             UpdateTotals();
         }
-        
-        private decimal GetActivePromoPercent(ProductListItem product)
+
+        private decimal GetFinalPromoPrice(ProductListItem product)
         {
-            if (product.PromoDiscountPercent <= 0) return 0m;
-            var now = DateTime.Now;
-            if (product.PromoStartDate.HasValue && now < product.PromoStartDate.Value) return 0m;
-            if (product.PromoEndDate.HasValue && now > product.PromoEndDate.Value) return 0m;
-            return product.PromoDiscountPercent;
+            decimal basePrice = product.UnitPrice;
+            decimal bestDiscountPrice = basePrice;
+
+            // 1. Base Product Discount (Percentage-based)
+            if (product.PromoDiscountPercent > 0)
+            {
+                var now = DateTime.Now;
+                if ((!product.PromoStartDate.HasValue || now >= product.PromoStartDate.Value) &&
+                    (!product.PromoEndDate.HasValue || now <= product.PromoEndDate.Value))
+                {
+                    decimal discounted = ApplyPercentDiscount(basePrice, product.PromoDiscountPercent);
+                    if (discounted < bestDiscountPrice) bestDiscountPrice = discounted;
+                }
+            }
+
+            // 2. Active Promotions (Flash Sales)
+            var flashSales = ActivePromotions.Where(p => p.Type == Promotion.TypeFlashSale && (p.RequiredProductId == product.Id || p.TargetCategoryId == product.CategoryId || (p.RequiredProductId == null && p.TargetCategoryId == null)));
+            foreach (var fs in flashSales)
+            {
+                decimal promoPrice = basePrice;
+                if (fs.DiscountPercent > 0)
+                {
+                    promoPrice = ApplyPercentDiscount(basePrice, fs.DiscountPercent);
+                }
+                else if (fs.DiscountAmount > 0)
+                {
+                    promoPrice = Math.Max(0, basePrice - fs.DiscountAmount);
+                }
+
+                if (promoPrice < bestDiscountPrice) bestDiscountPrice = promoPrice;
+            }
+
+            return bestDiscountPrice;
         }
 
         private decimal ApplyPercentDiscount(decimal price, decimal percent)
@@ -355,7 +393,7 @@ namespace FashionStore.ViewModels
                 return;
             }
 
-            decimal unitPrice = decimal.TryParse(UnitPriceText, out var p) && p >= 0 ? p : ApplyPercentDiscount(SelectedProduct.UnitPrice, GetActivePromoPercent(SelectedProduct));
+            decimal unitPrice = decimal.TryParse(UnitPriceText, out var p) && p >= 0 ? p : GetFinalPromoPrice(SelectedProduct);
 
             if (existingItem != null)
             {
@@ -368,7 +406,7 @@ namespace FashionStore.ViewModels
                 {
                     ProductId = SelectedProduct.Id,
                     ProductName = SelectedProduct.Name,
-                    PromoDiscountPercent = GetActivePromoPercent(SelectedProduct),
+                    PromoDiscountPercent = 0, // No longer strictly percent-based, price is pre-calculated
                     UnitPrice = unitPrice,
                     Quantity = quantity,
                     LineTotal = unitPrice * quantity,
@@ -430,7 +468,7 @@ namespace FashionStore.ViewModels
             // Trigger refresh in UI
             var items = InvoiceItems.ToList();
             InvoiceItems.Clear();
-            foreach(var item in items) InvoiceItems.Add(item);
+            foreach (var item in items) InvoiceItems.Add(item);
 
             ItemCountText = $"{InvoiceItems.Count} mục";
         }
@@ -481,13 +519,17 @@ namespace FashionStore.ViewModels
         private void UpdateTotals()
         {
             if (_isInternalUpdate) return;
-
+            _isInternalUpdate = true;
             try
             {
+                ApplyBOGOPromotions();
+
                 var subtotal = InvoiceItems.Sum(item => item.LineTotal);
                 SubtotalText = subtotal.ToString("N0") + "₫";
 
+                _isInternalUpdate = false;
                 ApplyBestVoucher(subtotal);
+                _isInternalUpdate = true;
 
                 var discountVal = decimal.TryParse(DiscountValueText, out var dv) ? dv : 0m;
                 var discount = SelectedDiscountMode == "%" ? Math.Round(subtotal * (discountVal / 100m), 2) : discountVal;
@@ -506,7 +548,7 @@ namespace FashionStore.ViewModels
 
                 decimal discountRatio = subtotal > 0 ? totalDiscount / subtotal : 0;
                 var taxAmount = InvoiceItems.Sum(item => (item.LineTotal * (1 - discountRatio)) * (item.CategoryTaxPercent / 100m));
-                
+
                 var total = Math.Max(0, subtotal + taxAmount - totalDiscount);
 
                 TaxAmountText = taxAmount.ToString("N0") + "₫";
@@ -518,7 +560,55 @@ namespace FashionStore.ViewModels
 
                 UpdateQRCode(total);
             }
-            catch { }
+            catch { _isInternalUpdate = false; }
+            finally { _isInternalUpdate = false; }
+        }
+
+        private void ApplyBOGOPromotions()
+        {
+            // Remove existing rewards first to recalculate cleanly
+            var existingRewards = InvoiceItems.Where(i => i.IsReward).ToList();
+            foreach (var r in existingRewards) InvoiceItems.Remove(r);
+
+            var bogoPromos = ActivePromotions.Where(p => p.Type == Promotion.TypeBOGO && p.RequiredProductId.HasValue && p.RewardProductId.HasValue);
+
+            foreach (var bogo in bogoPromos)
+            {
+                var requiredItem = InvoiceItems.FirstOrDefault(i => i.ProductId == bogo.RequiredProductId.Value && !i.IsReward);
+                if (requiredItem != null && bogo.RequiredQuantity > 0)
+                {
+                    int sets = requiredItem.Quantity / bogo.RequiredQuantity;
+                    if (sets > 0)
+                    {
+                        int rewardQty = sets * bogo.RewardQuantity;
+                        var rewardProduct = Products.FirstOrDefault(p => p.Id == bogo.RewardProductId.Value);
+                        if (rewardProduct != null)
+                        {
+                            // Check stock
+                            int rewardStock = ProductService.GetProductStockQuantity(rewardProduct.Id);
+                            int actualRewardQty = Math.Min(rewardQty, rewardStock);
+
+                            if (actualRewardQty > 0)
+                            {
+                                InvoiceItems.Add(new InvoiceItemViewModel
+                                {
+                                    ProductId = rewardProduct.Id,
+                                    ProductName = rewardProduct.Name + " (Quà tặng BOGO)",
+                                    UnitPrice = rewardProduct.UnitPrice,
+                                    PromoDiscountPercent = 100, // 100% OFF for Reward
+                                    LineTotal = 0,
+                                    Quantity = actualRewardQty,
+                                    CategoryTaxPercent = 0,
+                                    IsReward = true
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Re-sequence rows
+            for (int i = 0; i < InvoiceItems.Count; i++) InvoiceItems[i].RowNumber = i + 1;
         }
 
         private void ApplyBestVoucher(decimal subtotal)
@@ -526,7 +616,8 @@ namespace FashionStore.ViewModels
             if (SelectedCustomer == null || Vouchers.Count == 0 || _isInternalUpdate) return;
             var bestVoucher = Vouchers
                 .Where(v => v.IsValid(subtotal, VoucherService.GetVoucherUsageCountForCustomer(v.Id, SelectedCustomer.Id)))
-                .OrderByDescending(v => {
+                .OrderByDescending(v =>
+                {
                     if (v.DiscountType == Voucher.TypePercentage || v.DiscountType == "%")
                     {
                         var val = subtotal * (v.DiscountValue / 100m);
@@ -652,7 +743,7 @@ namespace FashionStore.ViewModels
             try
             {
                 var subtotal = InvoiceItems.Sum(item => item.LineTotal);
-                
+
                 var discountVal = decimal.TryParse(DiscountValueText, out var dv) ? dv : 0m;
                 var manualDiscount = SelectedDiscountMode == "%" ? Math.Round(subtotal * (discountVal / 100m), 2) : discountVal;
                 var (tier, currentPoints) = CustomerService.GetCustomerLoyalty(SelectedCustomer.Id);
@@ -668,8 +759,8 @@ namespace FashionStore.ViewModels
 
                 var currentUser = Application.Current.Resources["CurrentUser"]?.ToString() ?? "admin";
                 var employeeId = 1;
-                try { employeeId = UserService.GetEmployeeIdByUsername(currentUser); } catch {}
-                
+                try { employeeId = UserService.GetEmployeeIdByUsername(currentUser); } catch { }
+
                 var result = InvoiceService.SaveInvoice(SelectedCustomer.Id, employeeId, subtotal, 0, taxAmount, discount, total, paid, itemsForSave, voucherId: SelectedVoucher?.Id);
 
                 if (!result)
@@ -734,8 +825,10 @@ namespace FashionStore.ViewModels
 
         private decimal _lineTotal;
         public decimal LineTotal { get => _lineTotal; set => SetProperty(ref _lineTotal, value); }
-        
+
         public decimal CategoryTaxPercent { get; set; }
+
+        public bool IsReward { get; set; } = false;
     }
 
     public class ProductListItem
@@ -748,6 +841,7 @@ namespace FashionStore.ViewModels
         public DateTime? PromoEndDate { get; set; }
         public int StockQuantity { get; set; }
         public decimal CategoryTaxPercent { get; set; }
+        public int CategoryId { get; set; }
     }
 
     public class CustomerListItem

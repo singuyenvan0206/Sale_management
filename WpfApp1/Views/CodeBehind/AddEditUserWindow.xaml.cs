@@ -35,11 +35,11 @@ namespace FashionStore
                 UsernameTextBox.Text = _user.Username;
                 EmployeeNameTextBox.Text = _user.EmployeeName ?? "";
                 UsernameTextBox.IsEnabled = false; // Cannot change username when editing
-                
+
                 // Set role
                 for (int i = 0; i < RoleComboBox.Items.Count; i++)
                 {
-                    if (RoleComboBox.Items[i] is ComboBoxItem item && 
+                    if (RoleComboBox.Items[i] is ComboBoxItem item &&
                     item.Tag?.ToString() == _user.Role.ToString())
                     {
                         RoleComboBox.SelectedIndex = i;
@@ -63,7 +63,7 @@ namespace FashionStore
                     return;
                 }
 
-                if(!_isEditMode && string.IsNullOrWhiteSpace(EmployeeNameTextBox.Text))
+                if (!_isEditMode && string.IsNullOrWhiteSpace(EmployeeNameTextBox.Text))
                 {
                     ShowErrorMessage("Vui lĂ²ng nháº­p há» tĂªn nhĂ¢n viĂªn.");
                     EmployeeNameTextBox.Focus();

@@ -15,7 +15,7 @@ namespace FashionStore.Services
             var vouchers = new List<Voucher>();
             using var connection = new MySqlConnection(ConnectionString);
             connection.Open();
-            string sql = "SELECT * FROM Vouchers ORDER BY Id DESC";
+            string sql = "SELECT * FROM Vouchers ORDER BY Id";
             using var cmd = new MySqlCommand(sql, connection);
             using var reader = cmd.ExecuteReader();
             while (reader.Read())

@@ -31,10 +31,10 @@ namespace FashionStore.Services
             using var cmd = new MySqlCommand("SELECT Password FROM Accounts WHERE Username=@username;", connection);
             cmd.Parameters.AddWithValue("@username", username);
             var storedPassword = cmd.ExecuteScalar()?.ToString();
-            
+
             if (string.IsNullOrEmpty(storedPassword))
                 return "false";
-            
+
             bool isValid = PasswordHelper.VerifyPassword(password, storedPassword);
             return isValid ? "true" : "false";
         }

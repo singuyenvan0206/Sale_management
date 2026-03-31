@@ -138,7 +138,7 @@ namespace FashionStore
                 {
                     var loyalty = CustomerService.GetCustomerLoyalty(customer.Id);
                     var newTier = DetermineTierByPoints(loyalty.Points);
-                    
+
                     // Only update if tier has changed
                     if (loyalty.Tier != newTier)
                     {

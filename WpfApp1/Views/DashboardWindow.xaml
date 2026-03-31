@@ -185,6 +185,7 @@
                                 <ListBoxItem x:Name="CategoriesNavItem" Content="{DynamicResource MenuCategories}"/>
                                 <ListBoxItem x:Name="SuppliersNavItem" Content="{DynamicResource MenuSuppliers}"/>
                                 <ListBoxItem x:Name="VouchersNavItem" Content="{DynamicResource MenuVouchers}"/>
+                                <ListBoxItem x:Name="PromotionsNavItem" Content="{DynamicResource MenuPromotions}"/>
                                 <ListBoxItem x:Name="ProductSearchNavItem" Content="{DynamicResource MenuSearch}" Visibility="Visible"/>
                                 <ListBoxItem x:Name="CustomersNavItem" Content="{DynamicResource MenuCustomers}"/>
                                 <ListBoxItem x:Name="InvoicesNavItem" Content="{DynamicResource MenuInvoices}"/>

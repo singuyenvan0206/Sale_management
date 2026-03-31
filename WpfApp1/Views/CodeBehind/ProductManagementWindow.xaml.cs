@@ -45,8 +45,8 @@ namespace FashionStore
             while (parent != null)
             {
                 if (parent is T) return true;
-                parent = (parent is System.Windows.Media.Visual || parent is System.Windows.Media.Media3D.Visual3D) 
-                    ? System.Windows.Media.VisualTreeHelper.GetParent(parent) 
+                parent = (parent is System.Windows.Media.Visual || parent is System.Windows.Media.Media3D.Visual3D)
+                    ? System.Windows.Media.VisualTreeHelper.GetParent(parent)
                     : null;
             }
             return false;
@@ -68,6 +68,14 @@ namespace FashionStore
         {
             e.Handled = true;
             _viewModel.CallSort(e.Column);
+        }
+
+        private void BarcodeTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (_viewModel.LookupProductByCodeCommand.CanExecute(null))
+            {
+                _viewModel.LookupProductByCodeCommand.Execute(null);
+            }
         }
     }
 }

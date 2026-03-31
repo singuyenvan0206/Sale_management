@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 210 20% 96%; /* #F5F5F5 */
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary: 193 78% 49%; /* #1CB5E0 */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 221 83% 53%; /* #2563EB */
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 0 0% 0% / 0; /* REMOVE BORDERS */
+  --input: 214.3 31.8% 91.4%;
+  --ring: 193 78% 49%;
+  --radius: 10px;
+  
+  --wpf-header: 193 78% 49%;
+  --wpf-sidebar: 217 33% 17%;
+  --wpf-sidebar-header: 222 47% 11%;
+}
+
+@layer base {
+  * {
+    @apply border-0; /* GLOBAL BORDER REMOVAL */
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-slate-800 rounded-full;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-700;
+}
+
+.glass-card {
+  @apply bg-white shadow-sm rounded-[10px];
+}
+
+.amber-gradient-text {
+  @apply text-amber-600 font-bold; 
+}
+
+@media print {
+  body {
+    background-color: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  .glass-card {
+    border: none !important;
+    box-shadow: none !important;
+    background: none !important;
+    padding: 0 !important;
+  }
+
+  /* Optimized for 80mm thermal printer */
+  .receipt-container {
+    width: 80mm;
+    margin: 0 auto;
+    font-size: 11px;
+    font-family: 'Courier New', Courier, monospace;
+    color: black;
+  }
+
+  .receipt-container * {
+     color: black !important;
+     border-color: black !important;
+  }
+}

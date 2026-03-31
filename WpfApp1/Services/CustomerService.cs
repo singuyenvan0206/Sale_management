@@ -14,7 +14,7 @@ namespace FashionStore.Services
             var customers = new List<(int, string, string, string, string, string)>();
             using var connection = new MySqlConnection(ConnectionString);
             connection.Open();
-            string selectCmd = "SELECT Id, Name, Phone, Email, Address, CustomerType FROM Customers ORDER BY Name LIMIT 10000;";
+            string selectCmd = "SELECT Id, Name, Phone, Email, Address, CustomerType FROM Customers ORDER BY Id LIMIT 10000;";
             using var cmd = new MySqlCommand(selectCmd, connection);
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
@@ -175,7 +175,7 @@ namespace FashionStore.Services
                 insertCmd.Parameters.AddWithValue("@Phone", phone ?? "");
                 insertCmd.Parameters.AddWithValue("@Email", email ?? "");
                 insertCmd.Parameters.AddWithValue("@Address", address ?? "");
-                
+
                 return Convert.ToInt32(insertCmd.ExecuteScalar());
             }
             catch
