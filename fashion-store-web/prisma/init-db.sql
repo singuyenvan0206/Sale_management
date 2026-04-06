@@ -185,7 +185,3 @@ CREATE TABLE IF NOT EXISTS featureflags (
   UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Default Admin Account (password is 'admin' hashed by bcrypt)
--- Using a dummy hash for now, you should update it after first login
-INSERT IGNORE INTO accounts (Username, Password, Role, employeeName) 
-VALUES ('admin', '$2b$10$EpjXWzO28OuS7lW5RkM8DeR5M.O5O2D3yO5O2D3yO5O2D3yO5O2D', 'Admin', 'Root Admin');

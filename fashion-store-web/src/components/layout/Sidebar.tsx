@@ -3,77 +3,126 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { signOut } from "next-auth/react";
+import { 
+  LayoutDashboard, 
+  ShoppingBag, 
+  Package, 
+  Users, 
+  History, 
+  Settings, 
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  Database,
+  BarChart3,
+  Ticket,
+  Zap,
+  Tag,
+  Warehouse,
+  Briefcase
+} from "lucide-react";
+import { useState } from "react";
 
 const menuItems = [
-  { name: "🏠 Trang Chủ", href: "/" },
-  { name: "📦 Sản Phẩm", href: "/products" },
-  { name: "📂 Danh Mục", href: "/categories" },
-  { name: "🏭 Nhà Cung Cấp", href: "/suppliers" },
-  { name: "🎟️ Mã Giảm Giá", href: "/vouchers" },
-  { name: "🎁 Chương Trình KM", href: "/promotions" },
-  { name: "🔎 Tìm Kiếm Sản Phẩm", href: "/search" },
-  { name: "👥 Khách Hàng", href: "/customers" },
-  { name: "🧾 Hóa Đơn", href: "/history" },
-  { name: "📊 Báo Cáo", href: "/stats" },
-  { name: "👤 Quản Lý Người Dùng", href: "/employees" },
-  { name: "⚙️ Cài Đặt", href: "/settings" },
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, href: "/stats" },
+  { id: "pos", label: "Point of Sale", icon: ShoppingBag, href: "/pos" },
+  { id: "products", label: "Product Management", icon: Package, href: "/products" },
+  { id: "inventory", label: "Warehouse & Stock", icon: Warehouse, href: "/inventory" },
+  { id: "categories", label: "Product Categories", icon: Tag, href: "/categories" },
+  { id: "history", label: "Transaction History", icon: History, href: "/history" },
+  { id: "customers", label: "CRM (Customers)", icon: Users, href: "/customers" },
+  { id: "vouchers", label: "Discount Vouchers", icon: Ticket, href: "/vouchers" },
+  { id: "promotions", label: "Active Promotions", icon: Zap, href: "/promotions" },
+  { id: "team", label: "Team Management", icon: Briefcase, href: "/employees" },
+  { id: "settings", label: "System Config", icon: Settings, href: "/settings" },
 ];
 
-export function Sidebar() {
+export default function Sidebar() {
   const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <aside className="w-[240px] h-full bg-[#1E293B] flex flex-col no-print shrink-0 overflow-hidden shadow-2xl relative z-40">
-      {/* Sidebar Header - WPF Accent */}
-      <div className="bg-[#0F172A] p-6 pb-8 flex flex-col items-center justify-center border-b border-white/5 rounded-tr-[20px]">
-        <div className="text-[24px] mb-2 drop-shadow-lg">🎛️</div>
-        <h2 className="text-[#F8FAFC] font-bold text-[18px] uppercase tracking-tight text-center">
-          QUẢN LÝ
-        </h2>
-        <p className="text-[#94A3B8] text-[12px] font-medium uppercase tracking-widest mt-1 opacity-80">
-          Hệ thống POS
-        </p>
+    <aside className={cn(
+      "h-screen bg-[#F0F0F0] border-r border-[#D1D1D1] flex flex-col transition-all duration-200 z-50 no-select sticky top-0",
+      collapsed ? "w-[64px]" : "w-[260px]"
+    )}>
+      {/* Title Bar / Header Area */}
+      <div className="h-[48px] flex items-center justify-between px-4 border-b border-[#D1D1D1] bg-white group hover:bg-[#F3F9FF]">
+        {!collapsed && (
+          <div className="flex items-center gap-3">
+             <div className="w-6 h-6 bg-[#0078D4] rounded-sm flex items-center justify-center text-white font-black text-xs">F</div>
+             <span className="text-[14px] font-bold text-[#333] tracking-tight uppercase tracking-[0.1em]">Fusion Store</span>
+          </div>
+        )}
+        <button 
+          onClick={() => setCollapsed(!collapsed)}
+          className="p-1.5 hover:bg-[#E5F1FB] rounded-sm transition-colors text-slate-500"
+        >
+          {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+        </button>
       </div>
 
-      <nav className="flex-1 mt-5 overflow-y-auto custom-scrollbar-dark pb-20">
-        <ul className="space-y-[2px]">
+      {/* Navigation Groups */}
+      <div className="flex-1 py-4 overflow-y-auto custom-scrollbar">
+        {!collapsed && (
+           <p className="px-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 italic">Navigation Menu</p>
+        )}
+        <nav className="px-2 space-y-0.5">
           {menuItems.map((item) => {
             const isActive = pathname === item.href;
             return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-0 py-[10px] transition-all duration-150 group relative",
-                    isActive 
-                      ? "bg-[#2563EB] text-white font-bold" 
-                      : "text-[#F8FAFC] hover:bg-[#263445]"
-                  )}
-                >
-                  {/* Left accent bar - WPF ListBoxItem Style */}
-                  <div className={cn(
-                    "absolute left-0 w-[6px] h-full rounded-r-[3px] transition-all",
-                    isActive ? "bg-[#60A5FA]" : "bg-transparent group-hover:bg-slate-600"
-                  )} />
-                  
-                  <div className="ml-[14px] flex items-center justify-start w-full px-[14px]">
-                    <span className="text-[15px] font-semibold tracking-tight">
-                      {item.name}
-                    </span>
-                  </div>
-                </Link>
-              </li>
+              <Link
+                key={item.id}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 text-[13px] font-medium transition-all group rounded-sm border border-transparent",
+                  isActive 
+                    ? "bg-[#DDEBFA] text-[#0078D4] border-[#CCE4F7] shadow-sm font-semibold" 
+                    : "text-slate-600 hover:bg-[#E5F1FB] hover:text-[#0078D4] hover:border-[#D1D1D1]"
+                )}
+              >
+                <item.icon className={cn(
+                  "w-5 h-5 flex-shrink-0",
+                  isActive ? "text-[#0078D4]" : "text-slate-400 group-hover:text-[#0078D4]"
+                )} />
+                {!collapsed && <span>{item.label}</span>}
+                {isActive && !collapsed && <div className="ml-auto w-1 h-4 bg-[#0078D4] rounded-full" />}
+              </Link>
             );
           })}
-        </ul>
-      </nav>
-
-      {/* Footer Branding */}
-      <div className="p-4 bg-[#0F172A] text-center border-t border-white/5">
-        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest opacity-40 hover:opacity-100 transition-opacity">
-          © 2026 FASHION STORE v2.4.0
-        </span>
+        </nav>
       </div>
+
+      {/* Footer / Logout Section */}
+      <div className="p-2 border-t border-[#D1D1D1] bg-[#F5F5F5]">
+        <button 
+          onClick={() => signOut()}
+          className="w-full flex items-center gap-3 px-3 py-2 text-[13px] font-medium text-rose-600 hover:bg-rose-50 rounded-sm transition-colors group"
+        >
+          <LogOut size={18} className="text-rose-500 group-hover:rotate-12 transition-transform" />
+          {!collapsed && <span>Đăng xuất Hệ thống</span>}
+        </button>
+        {!collapsed && (
+          <div className="mt-2 px-3 py-2 bg-white/50 border border-slate-200 rounded-sm">
+             <p className="text-[9px] font-bold text-slate-400 uppercase">Version Control</p>
+             <p className="text-[10px] font-black text-slate-500 italic uppercase">Enterprise v2.5.0</p>
+          </div>
+        )}
+      </div>
+
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #D1D1D1;
+          border-radius: 10px;
+        }
+      `}</style>
     </aside>
   );
 }

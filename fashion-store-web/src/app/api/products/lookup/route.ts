@@ -11,7 +11,7 @@ export async function GET(request: Request) {
 
   try {
     const product = await querySingle(
-      "SELECT p.*, c.Name as CategoryName FROM products p LEFT JOIN categories c ON p.CategoryId = c.Id WHERE p.Code = ? AND p.IsActive = 1",
+      'SELECT p.*, c."Name" as "CategoryName" FROM products p LEFT JOIN categories c ON p."CategoryId" = c."Id" WHERE p."Code" = $1 AND p."IsActive" = true',
       [code]
     );
 

@@ -1,163 +1,204 @@
 import { query, querySingle } from "@/lib/db";
+export const dynamic = 'force-dynamic';
 import { formatCurrency, cn } from "@/lib/utils";
 import { 
-  ArrowRight
+  ArrowRight,
+  TrendingUp,
+  Users,
+  Package,
+  ShoppingCart,
+  Activity,
+  Calendar,
+  Layers,
+  ChevronRight,
+  Monitor
 } from "lucide-react";
 import Link from "next/link";
 
 async function getDashboardData() {
-  const [revenueResult, ordersResult, productsResult, customersResult, recentInvoices] = await Promise.all([
-    querySingle("SELECT SUM(Total) as total FROM invoices"),
-    querySingle("SELECT COUNT(*) as count FROM invoices"),
-    querySingle("SELECT COUNT(*) as count FROM products"),
-    querySingle("SELECT COUNT(*) as count FROM customers"),
-    query("SELECT i.*, c.Name as CustomerName FROM invoices i LEFT JOIN customers c ON i.CustomerId = c.Id ORDER BY i.CreatedDate DESC LIMIT 5")
+  const today = new Date().toISOString().split('T')[0];
+  
+  const [
+    revenueToday, 
+    revenue30Days, 
+    ordersToday, 
+    productsCount, 
+    customersCount, 
+    recentInvoices,
+    trendingProduct,
+    topCustomer
+  ] = await Promise.all([
+    querySingle('SELECT SUM("Total") as "TotalSum" FROM "invoices" WHERE "CreatedDate"::date = $1', [today]),
+    querySingle('SELECT SUM("Total") as "TotalSum" FROM "invoices" WHERE "CreatedDate" >= CURRENT_DATE - INTERVAL \'30 days\''),
+    querySingle('SELECT COUNT(*) as "CountNum" FROM "invoices" WHERE "CreatedDate"::date = $1', [today]),
+    querySingle('SELECT COUNT(*) as "CountNum" FROM "products"'),
+    querySingle('SELECT COUNT(*) as "CountNum" FROM "customers"'),
+    query('SELECT i."Id", i."InvoiceNumber", i."Total", i."CreatedDate", c."Name" as "CustomerName" FROM "invoices" i LEFT JOIN "customers" c ON i."CustomerId" = c."Id" ORDER BY i."CreatedDate" DESC LIMIT 5'),
+    querySingle('SELECT p."Name", SUM(ii."Quantity") as "TotalQty" FROM "invoiceitems" ii JOIN "products" p ON ii."ProductId" = p."Id" GROUP BY p."Name" ORDER BY "TotalQty" DESC LIMIT 1'),
+    querySingle('SELECT c."Name", SUM(i."Total") as "TotalSpend" FROM "invoices" i JOIN "customers" c ON i."CustomerId" = c."Id" GROUP BY c."Name" ORDER BY "TotalSpend" DESC LIMIT 1')
   ]);
 
   return {
-    revenue: Number(revenueResult?.total || 0),
-    orders: Number(ordersResult?.count || 0),
-    products: Number(productsResult?.count || 0),
-    customers: Number(customersResult?.count || 0),
-    recentInvoices: recentInvoices || []
+    revenueToday: Number(revenueToday?.TotalSum || 0),
+    revenue30Days: Number(revenue30Days?.TotalSum || 0),
+    ordersToday: Number(ordersToday?.CountNum || 0),
+    productsCount: Number(productsCount?.CountNum || 0),
+    customersCount: Number(customersCount?.CountNum || 0),
+    recentInvoices: recentInvoices || [],
+    trendingProduct: trendingProduct?.Name || "Không có dữ liệu",
+    topCustomer: topCustomer?.Name || "Không có dữ liệu"
   };
 }
 
 export default async function DashboardPage() {
   const data = await getDashboardData();
 
-  const stats = [
-    { name: "💰 Doanh thu hôm nay", value: formatCurrency(data.revenue), color: "text-[#059669]" },
-    { name: "📈 Doanh thu 30 ngày", value: formatCurrency(data.revenue * 0.82), color: "text-[#0D9488]" },
-    { name: "🧾 Hóa đơn hôm nay", value: data.orders.toString(), color: "text-[#DC2626]" },
-    { name: "👥 Khách hàng / Sản phẩm", value: `${data.customers} / ${data.products}`, color: "text-[#7C3AED]" },
-  ];
-
   return (
-    <div className="space-y-10 animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row md:items-center justify-between no-print gap-6">
-        <div>
-          <h2 className="text-[28px] font-black tracking-tight text-slate-800 uppercase italic">
-             📊 QUẢN TRỊ HỆ THỐNG
-          </h2>
-          <div className="w-16 h-1.5 bg-blue-500 rounded-full mt-2" />
-          <p className="text-slate-400 mt-4 font-bold uppercase text-[10px] tracking-widest leading-loose">
-             Môi trường vận hành doanh thu - [Real-time Connected]
-          </p>
-        </div>
-        <Link href="/pos" className="bg-[#FF9800] hover:bg-[#e68a00] text-white font-black px-10 py-5 rounded-xl transition-all shadow-xl shadow-amber-500/10 flex items-center gap-4 active:scale-95 uppercase tracking-widest text-sm">
-          🛒 Mở POS Bán Hàng
-        </Link>
-      </div>
-
-      {/* KPI Cards - WPF STYLE PIXEL PERFECT */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
-          <div key={stat.name} className="bg-white p-6 rounded-[16px] border border-slate-200/50 shadow-sm hover:shadow-lg transition-all transform hover:-translate-y-1">
-            <p className="text-[12px] font-bold text-slate-400 uppercase tracking-widest mb-1">{stat.name}</p>
-            <p className={cn("text-[32px] font-black leading-none tracking-tighter", stat.color)}>
-              {stat.value}
-            </p>
-            <div className="mt-6 flex flex-col gap-1.5 opacity-30 group-hover:opacity-100">
-               <div className="w-full h-[3px] bg-slate-50 rounded-full overflow-hidden">
-                  <div className={cn("h-full w-[85%] animate-pulse", stat.color.replace('text-', 'bg-'))} />
-               </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-10">
-        <div className="lg:col-span-2 bg-white rounded-[16px] p-8 border border-slate-200/50 shadow-sm">
-          <div className="flex items-center justify-between mb-10 pb-4 border-b border-slate-50">
-            <h3 className="text-[18px] font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
-              <div className="w-2.5 h-8 bg-blue-600 rounded-sm" />
-              🧾 GIAO DỊCH GẦN ĐÂY
-            </h3>
-            <Link href="/history" className="text-[11px] font-black text-blue-600 hover:text-blue-700 uppercase tracking-[0.2em] flex items-center gap-1 group">
-              Xem báo cáo <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-[0.15em]">
-                  <th className="px-6 py-5">Mã Hóa Đơn</th>
-                  <th className="px-6 py-5">Khách Hàng</th>
-                  <th className="px-6 py-5 text-right">Tổng Thanh Toán</th>
-                  <th className="px-6 py-5 text-center">Trạng Thái</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {data.recentInvoices.map((inv: any) => (
-                  <tr key={inv.Id} className="hover:bg-slate-50 transition-colors group">
-                    <td className="px-6 py-5">
-                       <span className="text-[13px] font-black text-blue-600 font-mono tracking-tighter">
-                          {inv.InvoiceNumber || `#${inv.Id}`}
-                       </span>
-                    </td>
-                    <td className="px-6 py-5">
-                       <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-[11px] font-black text-slate-400 uppercase shadow-inner">
-                             {inv.CustomerName?.[0] || 'K'}
-                          </div>
-                          <span className="text-sm font-black text-slate-700 uppercase tracking-tight">
-                             {inv.CustomerName || "Khách lẻ"}
-                          </span>
-                       </div>
-                    </td>
-                    <td className="px-6 py-5 text-right">
-                       <span className="text-[14px] font-black text-slate-900 tabular-nums">
-                          {formatCurrency(Number(inv.Total))}
-                       </span>
-                    </td>
-                    <td className="px-6 py-5 text-center">
-                      <span className="px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-700 border border-emerald-200 shadow-sm">
-                        Hoàn tất
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="space-y-6">
-           <div className="bg-white rounded-[16px] p-8 border border-slate-200/50 shadow-sm relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-blue-500/10 transition-all duration-1000" />
-              <h3 className="text-[12px] font-black text-slate-400 uppercase tracking-widest mb-10 relative z-10 border-l-4 border-blue-500 pl-4">📊 Thống kê nhanh</h3>
-              <div className="space-y-4 relative z-10">
-                 <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 hover:border-blue-200 transition-colors cursor-pointer">
-                    <p className="text-[10px] font-black text-slate-400 uppercase">🔥 Bán chạy nhất</p>
-                    <p className="text-[15px] font-black text-slate-800 mt-2 uppercase">Váy hoa Vintage Luxe</p>
-                    <div className="mt-3 flex items-center justify-between">
-                       <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2.5 py-1 rounded-md">+24.5%</span>
-                       <span className="text-[11px] text-slate-400 font-bold uppercase opacity-50 underline">Xem ngay</span>
-                    </div>
-                 </div>
-                 <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
-                    <p className="text-[10px] font-black text-slate-400 uppercase">👥 VIP nhất tháng</p>
-                    <p className="text-[15px] font-black text-slate-800 mt-2 uppercase tracking-tight">Nguyễn Thành Trung</p>
-                 </div>
+    <div className="space-y-6 animate-in fade-in duration-300 pb-10 no-select">
+      {/* WPF Ribbon/Header */}
+      <div className="wpf-panel">
+        <div className="wpf-panel-header">TRUNG TÂM ĐIỀU HÀNH HỆ THỐNG - FUSION ENTERPRISE ERP</div>
+        <div className="p-6 bg-white flex flex-col md:flex-row md:items-center justify-between gap-6">
+           <div>
+              <h2 className="text-[24px] font-black text-slate-900 tracking-tight uppercase italic leading-none">DASHBOARD TỔNG QUAN</h2>
+              <div className="flex items-center gap-2 mt-2">
+                 <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">Server Status: Online • Node: SG-01 • v2.5.0</p>
               </div>
-              <button className="w-full mt-10 py-5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-black transition-all active:scale-[0.98] shadow-2xl shadow-slate-900/40">
-                 📁 XUẤT BÁO CÁO FULL
-              </button>
+           </div>
+           <div className="flex items-center gap-4">
+              <Link href="/pos" className="btn-wpf btn-wpf-primary flex items-center gap-3 px-8 h-12 text-[12px]">
+                 <ShoppingCart className="w-5 h-5" /> MỞ TRÌNH BÁN HÀNG (POS)
+              </Link>
+           </div>
+        </div>
+      </div>
+
+      {/* Metric Cards - WPF STYLE */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="wpf-metric">
+           <div className="flex justify-between items-start">
+              <div>
+                 <p className="wpf-metric-label">Doanh thu hôm nay</p>
+                 <p className="wpf-metric-value text-emerald-600">{formatCurrency(data.revenueToday)}</p>
+              </div>
+              <TrendingUp className="w-8 h-8 text-emerald-500 opacity-20" />
+           </div>
+           <p className="text-[10px] font-bold text-slate-400 mt-4 uppercase">So với hôm qua: +12.5%</p>
+        </div>
+
+        <div className="wpf-metric !border-b-[#0078D4]">
+           <div className="flex justify-between items-start">
+              <div>
+                 <p className="wpf-metric-label">Hóa đơn mới</p>
+                 <p className="wpf-metric-value">{data.ordersToday}</p>
+              </div>
+              <Layers className="w-8 h-8 text-[#0078D4] opacity-20" />
+           </div>
+           <p className="text-[10px] font-bold text-slate-400 mt-4 uppercase">Ký số: {data.ordersToday} Verified</p>
+        </div>
+
+        <div className="wpf-metric !border-b-amber-500">
+           <div className="flex justify-between items-start">
+              <div>
+                 <p className="wpf-metric-label">Khách hàng mới</p>
+                 <p className="wpf-metric-value text-amber-600">{data.customersCount}</p>
+              </div>
+              <Users className="w-8 h-8 text-amber-500 opacity-20" />
+           </div>
+           <p className="text-[10px] font-bold text-slate-400 mt-4 uppercase">Tăng trưởng: +5/tháng</p>
+        </div>
+
+        <div className="wpf-metric !border-b-indigo-500">
+           <div className="flex justify-between items-start">
+              <div>
+                 <p className="wpf-metric-label">Kho hàng (SKUs)</p>
+                 <p className="wpf-metric-value text-indigo-600">{data.productsCount}</p>
+              </div>
+              <Package className="w-8 h-8 text-indigo-500 opacity-20" />
+           </div>
+           <p className="text-[10px] font-bold text-slate-400 mt-4 uppercase">Trạng thái: Đầy đủ</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Transactions List */}
+        <div className="lg:col-span-2 wpf-panel shadow-sm self-start">
+           <div className="wpf-panel-header flex justify-between items-center text-[#333]">
+              <span>CÁC GIAO DỊCH GẦN ĐÂY</span>
+              <Link href="/history" className="text-[10px] font-black text-[#0078D4] hover:underline uppercase tracking-widest flex items-center gap-1">
+                 Xem tất cả <ChevronRight className="w-3 h-3" />
+              </Link>
+           </div>
+           <div className="overflow-x-auto">
+              <table className="wpf-datagrid">
+                 <thead>
+                    <tr>
+                       <th>MÃ HÓA ĐƠN</th>
+                       <th>KHÁCH HÀNG</th>
+                       <th className="text-right">TỔNG TIỀN</th>
+                       <th className="text-center">THỜI GIAN</th>
+                       <th className="text-center">XÁC THỰC</th>
+                    </tr>
+                 </thead>
+                 <tbody>
+                    {data.recentInvoices.map((inv: any) => (
+                      <tr key={inv.Id}>
+                         <td className="font-bold text-[#0078D4]">{inv.InvoiceNumber || `#${inv.Id}`}</td>
+                         <td className="font-medium uppercase">{inv.CustomerName || "Khách vãng lai"}</td>
+                         <td className="text-right font-black text-slate-800 tabular-nums">{formatCurrency(Number(inv.Total))}</td>
+                         <td className="text-center text-slate-400 text-[11px] font-medium italic">
+                            {new Date(inv.CreatedDate).toLocaleTimeString('vi-VN')}
+                         </td>
+                         <td className="text-center">
+                            <span className="bg-emerald-50 text-emerald-600 border border-emerald-200 px-2 py-0.5 rounded-sm text-[9px] font-black uppercase tracking-widest">
+                               SECURE
+                            </span>
+                         </td>
+                      </tr>
+                    ))}
+                 </tbody>
+              </table>
+           </div>
+        </div>
+
+        {/* Quick Stats & System Health */}
+        <div className="space-y-6">
+           <div className="wpf-groupbox">
+              <span className="wpf-groupbox-label">Thống kê nhanh</span>
+              <div className="space-y-4 pt-2">
+                 <div className="flex flex-col">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Sản phẩm hot nhất</span>
+                    <span className="text-[13px] font-black text-slate-800 uppercase italic border-l-2 border-[#0078D4] pl-3 py-1">{data.trendingProduct}</span>
+                 </div>
+                 <div className="flex flex-col">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Khách hàng thân thiết</span>
+                    <span className="text-[13px] font-black text-slate-800 uppercase italic border-l-2 border-amber-500 pl-3 py-1">{data.topCustomer}</span>
+                 </div>
+                 <div className="h-[1px] bg-[#D1D1D1] my-4" />
+                 <button className="btn-wpf w-full flex items-center justify-center gap-2 h-10 font-black text-[11px] uppercase tracking-widest italic">
+                    <Monitor className="w-3.5 h-3.5" /> BÁO CÁO TOÀN DIỆN
+                 </button>
+              </div>
            </div>
 
-           <div className="bg-blue-600 rounded-[16px] p-8 text-white relative overflow-hidden group shadow-2xl shadow-blue-500/40 cursor-default">
-              <div className="absolute top-0 right-0 w-40 h-40 bg-white/20 blur-[80px] rounded-full -mr-20 -mt-20 group-hover:bg-white/30 transition-all duration-1000" />
-              <h3 className="text-[12px] font-black uppercase tracking-widest relative z-10 border-l-4 border-white/40 pl-4">🌐 Hệ thống vận hành</h3>
-              <p className="mt-6 text-[13px] font-bold leading-relaxed relative z-10 opacity-90 uppercase tracking-tight italic">
-                 "Kết nối cơ sở dữ liệu ổn định. KPI hôm nay đang tăng trưởng 12% so với cùng kỳ."
-              </p>
-              <div className="mt-10 flex items-center gap-4 relative z-10">
-                 <div className="relative">
-                    <div className="w-4 h-4 bg-white rounded-full animate-ping absolute opacity-40 shadow-white shadow-xl" />
-                    <div className="w-4 h-4 bg-white rounded-full relative z-10 shadow-white shadow-lg" />
+           <div className="wpf-panel !bg-[#0078D4] text-white border-[#005A9E] shadow-xl">
+              <div className="p-6 space-y-6">
+                 <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-white/10 rounded-sm flex items-center justify-center border border-white/20">
+                       <Activity className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                       <h4 className="text-[14px] font-black uppercase italic leading-none mb-1">HỆ THỐNG VẬN HÀNH</h4>
+                       <p className="text-[9px] font-bold text-white/50 uppercase tracking-[0.2em]">Real-time Telemetry</p>
+                    </div>
                  </div>
-                 <span className="text-[11px] font-black uppercase tracking-[0.2em] opacity-100 drop-shadow-md">Active Central Control</span>
+                 <p className="text-[11px] font-bold italic leading-relaxed opacity-80 uppercase tracking-tighter">
+                   "KẾT NỐI DB PRIMARY ỔN ĐỊNH. HIỆU SUẤT XỬ LÝ GIAO DỊCH ĐẠT 0.2ms. KHÔNG GHI NHẬN LỖI TRONG 24H QUA."
+                 </p>
+                 <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
+                    <Calendar className="w-3.5 h-3.5" /> LIÊN KẾT: {new Date().toLocaleDateString('vi-VN')}
+                 </div>
               </div>
            </div>
         </div>

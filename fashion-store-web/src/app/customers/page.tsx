@@ -12,61 +12,150 @@ import {
   Phone,
   Mail,
   MapPin,
-  Star
+  Star,
+  Save,
+  CheckCircle2,
+  AlertCircle,
+  Archive,
+  ArrowUpDown,
+  Filter,
+  Plus,
+  History,
+  FileText,
+  User,
+  ChevronRight,
 } from "lucide-react";
 
-export default function CustomersPage() {
-  const [customers, setCustomers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+interface Customer {
+  Id: number;
+  Name: string;
+  Phone: string;
+  Email: string;
+  Address: string;
+  CustomerType: string;
+  Points: number;
+  TotalSpent: number;
+  CreatedDate: string;
+}
 
-  // Form State
-  const [editingCustomer, setEditingCustomer] = useState<any>({
+export default function CustomersPage() {
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' | null }>({ text: "", type: null });
+
+  const [editingCustomer, setEditingCustomer] = useState<Customer>({
     Id: 0,
     Name: "",
     Phone: "",
     Email: "",
     Address: "",
     CustomerType: "Regular",
-    TotalSpended: 0
+    Points: 0,
+    TotalSpent: 0,
+    CreatedDate: new Date().toISOString()
   });
 
-  // Filter State
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState("All");
+  const [typeFilter, setTypeFilter] = useState("All");
+  const [sortCol, setSortCol] = useState<'Name' | 'TotalSpent' | 'Points'>('TotalSpent');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  const [statusText, setStatusText] = useState("Sẵn sàng");
+  const loadCustomers = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/customers");
+      const json = await res.json();
+      if (json.success) setCustomers(json.data);
+    } catch (e) {
+      showMsg("Lỗi: Không thể truy xuất cơ sở dữ liệu khách hàng", 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await fetch("/api/customers");
-        const data = await res.json();
-        if (Array.isArray(data)) setCustomers(data);
-      } catch (e) {
-        console.error("Failed to load customers", e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+    loadCustomers();
   }, []);
+
+  const showMsg = (text: string, type: 'success' | 'error') => {
+    setMessage({ text, type });
+    setTimeout(() => setMessage({ text: "", type: null }), 3000);
+  };
 
   const filteredCustomers = useMemo(() => {
     if (!Array.isArray(customers)) return [];
-    return customers.filter(c => {
+    let result = customers.filter(c => {
       const matchesSearch = !searchTerm || 
         c.Name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         c.Phone.includes(searchTerm);
       
-      const matchesType = filterType === "All" || c.CustomerType === filterType;
-
+      const matchesType = typeFilter === "All" || c.CustomerType === typeFilter;
       return matchesSearch && matchesType;
     });
-  }, [customers, searchTerm, filterType]);
 
-  const handleSelectCustomer = (customer: any) => {
-    setEditingCustomer({...customer});
-    setStatusText(`Đang chọn: ${customer.Name}`);
+    return result.sort((a, b) => {
+      const valA = a[sortCol];
+      const valB = b[sortCol];
+      if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [customers, searchTerm, typeFilter, sortCol, sortOrder]);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCustomer.Name.trim() || !editingCustomer.Phone.trim()) {
+      showMsg("Tên và Số điện thoại là trường dữ liệu bắt buộc", 'error');
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      const isNew = editingCustomer.Id === 0;
+      const res = await fetch("/api/customers", {
+        method: isNew ? "POST" : "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editingCustomer)
+      });
+      
+      const json = await res.json();
+      if (json.success) {
+        showMsg(isNew ? "Đăng ký khách hàng thành công" : "Cập nhật hồ sơ thành công", 'success');
+        if (isNew) handleClear();
+        loadCustomers();
+      } else {
+        showMsg(json.error || "Lỗi hệ thống", 'error');
+      }
+    } catch (e) {
+      showMsg("Lỗi kết nối máy chủ", 'error');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (editingCustomer.Id === 0) return;
+    if (!confirm(`Xác nhận lưu trữ/xóa hồ sơ khách hàng: "${editingCustomer.Name}"?`)) return;
+
+    setActionLoading(true);
+    try {
+      const res = await fetch(`/api/customers?id=${editingCustomer.Id}`, {
+        method: "DELETE"
+      });
+      const json = await res.json();
+      if (json.success) {
+        showMsg("Đã xóa hồ sơ khách hàng", 'success');
+        handleClear();
+        loadCustomers();
+      } else {
+        showMsg(json.error || "Thao tác thất bại", 'error');
+      }
+    } catch (e) {
+      showMsg("Lỗi mạng", 'error');
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleClear = () => {
@@ -77,210 +166,328 @@ export default function CustomersPage() {
       Email: "",
       Address: "",
       CustomerType: "Regular",
-      TotalSpended: 0
+      Points: 0,
+      TotalSpent: 0,
+      CreatedDate: new Date().toISOString()
     });
-    setStatusText("Mới");
   };
 
-  if (loading) return <div className="p-20 text-center font-black animate-pulse">ĐANG TẢI DỮ LIỆU KHÁCH HÀNG...</div>;
+  const toggleSort = (col: typeof sortCol) => {
+    if (sortCol === col) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortCol(col);
+      setSortOrder('desc');
+    }
+  };
+
+  const formatCurrency = (val: number) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
+  };
+
+  if (loading && customers.length === 0) return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 no-select uppercase italic font-black text-slate-400">
+      <div className="w-12 h-12 border-4 border-[#0078D4] border-t-transparent rounded-full animate-spin" />
+      <p className="text-[11px] tracking-widest">Đang kết nối cơ sở dữ liệu CRM...</p>
+    </div>
+  );
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 pb-20">
-      {/* Header Bar - WPF style */}
-      <div className="bg-[#1CB5E0] p-6 -mx-8 -mt-8 mb-8 shadow-lg">
-        <h2 className="text-[24px] font-bold text-white text-center tracking-tight">
-           👥 Quản Lý Khách Hàng
-        </h2>
+    <div className="space-y-6 animate-in fade-in duration-300 pb-20 no-select">
+      {/* WPF Header / Ribbon */}
+      <div className="wpf-panel">
+         <div className="wpf-panel-header uppercase">HỆ THỐNG QUẢN LÝ QUAN HỆ KHÁCH HÀNG (CRM SUBSYSTEM)</div>
+         <div className="p-6 bg-white flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+               <div className="w-10 h-10 bg-[#0078D4] rounded-sm flex items-center justify-center text-white shadow-md">
+                  <Users className="w-6 h-6" />
+               </div>
+               <div>
+                  <h2 className="text-[20px] font-black text-slate-900 tracking-tight uppercase italic leading-none">HỒ SƠ KHÁCH HÀNG</h2>
+                  <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest italic tracking-tighter">Fusion ERP Client Registry Shell v2.5</p>
+               </div>
+            </div>
+            
+            {message.type && (
+               <div className={cn(
+                 "px-6 py-3 border rounded-sm flex items-center gap-3 animate-in fade-in zoom-in duration-300 shadow-sm",
+                 message.type === 'success' ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-rose-50 text-rose-600 border-rose-200"
+               )}>
+                  {message.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                  <span className="text-[10px] font-black uppercase tracking-widest leading-none">{message.text}</span>
+               </div>
+            )}
+         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        {/* Left Panel - Input Form */}
-        <div className="lg:col-span-1">
-           <div className="bg-white p-6 rounded-[10px] shadow-sm space-y-6 sticky top-4 border-t-4 border-emerald-500">
-              <div className="flex items-center justify-between border-b pb-3">
-                 <h3 className="text-[14px] font-black text-slate-800 uppercase italic tracking-tight">Thông tin chi tiết</h3>
-                 <span className="text-[10px] font-bold text-emerald-500 px-2 py-0.5 bg-emerald-50 rounded">
-                    {editingCustomer.Id === 0 ? "Khách mới" : `ID: ${editingCustomer.Id}`}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Editor Panel */}
+        <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-6">
+           <div className="wpf-panel shadow-md">
+              <div className="wpf-panel-header flex justify-between items-center text-[#333]">
+                 <span className="flex items-center gap-2">
+                    <UserPlus className="w-4 h-4" /> BIÊN TẬP HỒ SƠ
+                 </span>
+                 <span className={cn(
+                    "text-[9px] font-black px-2 py-0.5 rounded-sm border",
+                    editingCustomer.Id === 0 ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-emerald-50 text-emerald-600 border-emerald-200"
+                 )}>
+                    {editingCustomer.Id === 0 ? "NEW ENTRY" : `ID: CUS-${editingCustomer.Id}`}
                  </span>
               </div>
-              
-              <div className="space-y-4">
-                 <div className="space-y-1.5">
-                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Họ và tên *</label>
-                    <input 
-                      type="text" 
-                      value={editingCustomer.Name}
-                      onChange={(e) => setEditingCustomer({...editingCustomer, Name: e.target.value})}
-                      className="w-full bg-[#f8f9fa] rounded-md py-2 px-3 text-sm font-bold focus:bg-white focus:ring-2 focus:ring-emerald-100 outline-none transition-all" 
-                      placeholder="Nguyễn Văn A..." 
-                    />
-                 </div>
-                 <div className="space-y-1.5">
-                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Số điện thoại *</label>
-                    <div className="relative">
-                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                       <input 
-                        type="text" 
-                        value={editingCustomer.Phone}
-                        onChange={(e) => setEditingCustomer({...editingCustomer, Phone: e.target.value})}
-                        className="w-full bg-[#f8f9fa] rounded-md py-2 pl-10 pr-3 text-sm font-bold focus:bg-white outline-none" 
-                        placeholder="0901..." 
-                       />
+              <form onSubmit={handleSave} className="p-6 bg-white space-y-5">
+                 <div className="wpf-groupbox !mt-0">
+                    <span className="wpf-groupbox-label">Thông tin cơ bản</span>
+                    <div className="space-y-4 pt-2">
+                       <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Họ và tên khách hàng:</label>
+                          <input 
+                            type="text" 
+                            required
+                            value={editingCustomer.Name}
+                            onChange={(e) => setEditingCustomer({...editingCustomer, Name: e.target.value})}
+                            className="w-full h-10 border border-[#D1D1D1] px-4 text-[13px] font-bold bg-[#F9F9F9] focus:bg-white focus:border-[#0078D4] outline-none rounded-sm uppercase italic"
+                            placeholder="NHẬP TÊN..." 
+                          />
+                       </div>
+                       <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Số điện thoại:</label>
+                             <input 
+                               type="text" 
+                               required
+                               value={editingCustomer.Phone}
+                               onChange={(e) => setEditingCustomer({...editingCustomer, Phone: e.target.value})}
+                               className="w-full h-10 border border-[#D1D1D1] px-4 text-[13px] font-black bg-[#F9F9F9] focus:bg-white focus:border-[#0078D4] outline-none rounded-sm tabular-nums"
+                               placeholder="09..." 
+                             />
+                          </div>
+                          <div className="space-y-1">
+                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Phân loại:</label>
+                             <select 
+                               value={editingCustomer.CustomerType}
+                               onChange={(e) => setEditingCustomer({...editingCustomer, CustomerType: e.target.value})}
+                               className="w-full h-10 border border-[#D1D1D1] px-3 text-[11px] font-black bg-white focus:border-[#0078D4] outline-none rounded-sm cursor-pointer uppercase"
+                             >
+                                <option value="Regular">KHÁCH THƯỜNG</option>
+                                <option value="VIP">KHÁCH VIP</option>
+                                <option value="Loyal">LOYALTY</option>
+                             </select>
+                          </div>
+                       </div>
                     </div>
                  </div>
-                 <div className="space-y-1.5">
-                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Email</label>
-                    <div className="relative">
-                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                       <input 
-                        type="email" 
-                        value={editingCustomer.Email}
-                        onChange={(e) => setEditingCustomer({...editingCustomer, Email: e.target.value})}
-                        className="w-full bg-[#f8f9fa] rounded-md py-2 pl-10 pr-3 text-sm font-bold focus:bg-white outline-none" 
-                        placeholder="example@mail.com" 
-                       />
-                    </div>
-                 </div>
-                 <div className="space-y-1.5">
-                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Địa chỉ</label>
-                    <div className="relative">
-                       <MapPin className="absolute left-3 top-3 w-3.5 h-3.5 text-slate-400" />
-                       <textarea 
-                        rows={2}
-                        value={editingCustomer.Address}
-                        onChange={(e) => setEditingCustomer({...editingCustomer, Address: e.target.value})}
-                        className="w-full bg-[#f8f9fa] rounded-md py-2 pl-10 pr-3 text-sm font-bold focus:bg-white outline-none transition-all resize-none" 
-                        placeholder="Số nhà, đường, quận..." 
-                       />
-                    </div>
-                 </div>
-                 <div className="space-y-1.5">
-                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Loại khách hàng</label>
-                    <select 
-                      value={editingCustomer.CustomerType}
-                      onChange={(e) => setEditingCustomer({...editingCustomer, CustomerType: e.target.value})}
-                      className="w-full bg-[#f8f9fa] rounded-md py-2 px-3 text-sm font-bold cursor-pointer"
-                    >
-                       <option value="Regular">Khách thường</option>
-                       <option value="VIP">Khách VIP</option>
-                       <option value="Loyal">Khách thân thiết</option>
-                    </select>
-                 </div>
-              </div>
 
-              <div className="grid grid-cols-3 gap-2 pt-4">
-                 <button className="bg-[#4CAF50] hover:bg-[#43a047] text-white font-black py-3 rounded-md text-[10px] uppercase tracking-tighter shadow-md active:scale-95">➕ Thêm</button>
-                 <button className="bg-[#2196F3] hover:bg-[#1e88e5] text-white font-black py-3 rounded-md text-[10px] uppercase tracking-tighter shadow-md active:scale-95">📝 Sửa</button>
-                 <button className="bg-[#F44336] hover:bg-[#e53935] text-white font-black py-3 rounded-md text-[10px] uppercase tracking-tighter shadow-md active:scale-95">🗑️ Xóa</button>
+                 <div className="wpf-groupbox">
+                    <span className="wpf-groupbox-label">Liên hệ & Địa chỉ</span>
+                    <div className="space-y-4 pt-2">
+                       <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Địa chỉ Email:</label>
+                          <input 
+                            type="email" 
+                            value={editingCustomer.Email || ""}
+                            onChange={(e) => setEditingCustomer({...editingCustomer, Email: e.target.value})}
+                            className="w-full h-10 border border-[#D1D1D1] px-4 text-[12px] font-medium bg-[#F9F9F9] focus:bg-white focus:border-[#0078D4] outline-none rounded-sm"
+                            placeholder="example@mail.com" 
+                          />
+                       </div>
+                       <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Địa chỉ thường trú:</label>
+                          <textarea 
+                            rows={3}
+                            value={editingCustomer.Address || ""}
+                            onChange={(e) => setEditingCustomer({...editingCustomer, Address: e.target.value})}
+                            className="w-full border border-[#D1D1D1] p-3 text-[12px] font-medium bg-[#F9F9F9] focus:bg-white focus:border-[#0078D4] outline-none rounded-sm resize-none italic"
+                            placeholder="Dữ liệu địa chỉ..." 
+                          />
+                       </div>
+                    </div>
+                 </div>
+
+                 <div className="flex flex-col gap-3 pt-4">
+                    <button 
+                      type="submit"
+                      disabled={actionLoading}
+                      className={cn(
+                        "btn-wpf h-12 flex items-center justify-center gap-3 uppercase font-black text-[11px] border-b-4",
+                        editingCustomer.Id === 0 ? "btn-wpf-primary border-[#005A9E]" : "bg-emerald-600 text-white border-emerald-800 hover:bg-emerald-700"
+                      )}
+                    >
+                       {actionLoading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : (editingCustomer.Id === 0 ? <Plus className="w-5 h-5" /> : <Save className="w-5 h-5" />)}
+                       {editingCustomer.Id === 0 ? "ĐĂNG KÝ MỚI" : "LƯU THAY ĐỔI"}
+                    </button>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                       {editingCustomer.Id !== 0 && (
+                         <button 
+                           type="button"
+                           onClick={handleDelete}
+                           disabled={actionLoading}
+                           className="btn-wpf h-10 text-rose-600 border-rose-200 hover:bg-rose-50 flex items-center justify-center gap-2 text-[10px] uppercase font-black"
+                         >
+                            <Trash2 className="w-3.5 h-3.5" /> XÓA HỒ SƠ
+                         </button>
+                       )}
+                       <button 
+                         type="button"
+                         onClick={handleClear}
+                         className={cn(
+                           "btn-wpf h-10 text-slate-500 border-slate-200 hover:bg-slate-50 flex items-center justify-center gap-2 text-[10px] uppercase font-black",
+                           editingCustomer.Id === 0 ? "col-span-2" : "col-span-1"
+                         )}
+                       >
+                          <RotateCcw className="w-3.5 h-3.5" /> {editingCustomer.Id === 0 ? "RESET FORM" : "HỦY BỎ"}
+                       </button>
+                    </div>
+                 </div>
+              </form>
+           </div>
+
+           <div className="wpf-panel !bg-slate-800 text-white border-slate-700 p-6 shadow-md">
+              <div className="flex items-center gap-4 mb-4">
+                 <div className="w-10 h-10 bg-white/10 rounded-sm flex items-center justify-center border border-white/20">
+                    <Star className="w-6 h-6 text-amber-500 fill-amber-500" />
+                 </div>
+                 <div>
+                    <h4 className="text-[14px] font-black uppercase italic leading-none mb-1 text-white">CHỈ SỐ CRM</h4>
+                    <p className="text-[9px] font-bold text-white/40 uppercase tracking-[0.2em]">Loyalty Analytics</p>
+                 </div>
               </div>
-              <button 
-                onClick={handleClear}
-                className="w-full bg-[#9E9E9E] hover:bg-[#757575] text-white font-black py-3 rounded-md text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95"
-              >
-                 <RotateCcw className="w-3.5 h-3.5" /> Làm mới
-              </button>
-              <div className="text-[10px] font-bold text-slate-400 italic text-center pt-2">
-                 Trạng thái: {statusText}
+              <div className="space-y-4">
+                 <div className="flex justify-between items-center text-[11px] font-bold text-white/60">
+                    <span>Loyalty Rate:</span>
+                    <span className="text-emerald-400">85.4%</span>
+                 </div>
+                 <div className="w-full bg-white/5 h-1.5 rounded-sm">
+                    <div className="h-full bg-emerald-500 w-[85%]" />
+                 </div>
               </div>
            </div>
         </div>
 
-        {/* Right Panel - Customer List */}
-        <div className="lg:col-span-3">
-          <div className="bg-white rounded-[10px] shadow-sm overflow-hidden min-h-[700px] flex flex-col">
-            <div className="p-6 bg-[#f8f9fa]/50">
-               <h3 className="text-[18px] font-black text-[#1CB5E0] uppercase tracking-tight mb-6">👥 Danh Sách Khách Hàng</h3>
-               
-               {/* Filter Panel */}
-               <div className="bg-[#F8F9FA] p-5 rounded-[8px] space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                     <div className="space-y-1">
-                        <span className="text-[10px] font-black text-slate-400 uppercase">Lọc Loại Khách</span>
-                        <select 
-                          value={filterType}
-                          onChange={(e) => setFilterType(e.target.value)}
-                          className="w-full h-10 bg-white rounded-md px-3 text-sm font-bold cursor-pointer outline-none shadow-sm focus:ring-2 focus:ring-blue-100"
-                        >
-                           <option value="All">Tất cả các loại</option>
-                           <option value="Regular">Khách thường</option>
-                           <option value="VIP">Khách VIP</option>
-                           <option value="Loyal">Khách thân thiết</option>
-                        </select>
-                     </div>
-                     <div className="md:col-span-3 flex items-end gap-2">
-                        <div className="flex-1 relative">
-                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                           <input 
-                            type="text" 
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full h-10 bg-white rounded-md pl-10 pr-3 text-sm font-bold outline-none shadow-sm focus:ring-2 focus:ring-blue-100" 
-                            placeholder="Tìm kiếm theo Tên hoặc Số điện thoại..." 
-                           />
-                        </div>
-                        <button className="bg-[#FF9800] hover:bg-[#f57c00] text-white font-black h-10 px-8 rounded-md text-[11px] uppercase tracking-widest whitespace-nowrap active:scale-95 shadow-md">🔍 Tìm</button>
-                     </div>
-                  </div>
-               </div>
-            </div>
+        {/* Right Column: Registry Table */}
+        <div className="lg:col-span-8 space-y-6">
+           <div className="wpf-panel shadow-md">
+              <div className="wpf-panel-header flex flex-col md:flex-row md:items-center justify-between gap-4 py-3 h-auto">
+                 <span className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" /> DANH BẠ KHÁCH HÀNG (DATABASE)
+                 </span>
+                 
+                 <div className="flex flex-wrap items-center gap-3">
+                    <div className="relative group">
+                       <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                       <select 
+                         value={typeFilter}
+                         onChange={(e) => setTypeFilter(e.target.value)}
+                         className="h-8 border border-[#D1D1D1] pl-8 pr-4 text-[9px] font-black uppercase tracking-widest text-[#0078D4] focus:border-[#0078D4] outline-none rounded-sm bg-white cursor-pointer"
+                       >
+                          <option value="All">TẤT CẢ PHÂN LOẠI</option>
+                          <option value="Regular">KHÁCH THƯỜNG</option>
+                          <option value="VIP">KHÁCH VIP</option>
+                          <option value="Loyal">LOYALTY</option>
+                       </select>
+                    </div>
 
-            <div className="flex-1 overflow-x-auto">
-              <table className="w-full text-left">
-                <thead className="bg-[#f8f9fa] sticky top-0 z-10">
-                  <tr className="text-slate-800 text-[11px] font-black uppercase tracking-tight">
-                    <th className="px-6 py-5">ID</th>
-                    <th className="px-6 py-5">👤 Khách Hàng</th>
-                    <th className="px-6 py-5">📞 Điện thoại</th>
-                    <th className="px-6 py-5">🏷️ Loại Khách</th>
-                    <th className="px-6 py-5 text-right font-mono">💰 Tổng mua</th>
-                    <th className="px-6 py-5 text-center">📅 Ngày tạo</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredCustomers.map((c: any, idx: number) => (
-                    <tr 
-                      key={c.Id} 
-                      onClick={() => handleSelectCustomer(c)}
-                      className={cn(
-                        "hover:bg-blue-600 hover:text-white transition-all cursor-pointer group",
-                        idx % 2 === 1 ? "bg-[#F8F9FA]" : "bg-white",
-                        editingCustomer.Id === c.Id ? "bg-blue-600 text-white font-black" : "text-slate-700"
-                      )}
-                    >
-                      <td className="px-6 py-5 font-bold text-[12px] opacity-40">{c.Id}</td>
-                      <td className="px-6 py-5">
-                         <div className="flex flex-col">
-                            <span className="text-[14px] font-black uppercase tracking-tight">{c.Name}</span>
-                            <span className="text-[10px] opacity-50 lowercase tracking-widest">{c.Email || "không có email"}</span>
-                         </div>
-                      </td>
-                      <td className="px-6 py-5 font-mono text-[13px]">{c.Phone}</td>
-                      <td className="px-6 py-5 text-center">
-                         <span className={cn(
-                            "px-3 py-1 rounded text-[10px] font-black uppercase",
-                            c.CustomerType === 'VIP' ? "bg-rose-100 text-rose-600" : 
-                            c.CustomerType === 'Loyal' ? "bg-amber-100 text-amber-600" : "bg-slate-100 text-slate-600"
-                         )}>
-                            {c.CustomerType}
-                         </span>
-                      </td>
-                      <td className="px-6 py-5 text-right">
-                        <span className={cn(
-                          "font-mono font-black text-[14px]",
-                          editingCustomer.Id === c.Id ? "text-white" : "text-emerald-600"
-                        )}>
-                          {new Intl.NumberFormat('vi-VN').format(c.TotalSpended || 0)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-5 text-center text-[12px]">
-                         {new Date(c.CreatedDate).toLocaleDateString('vi-VN')}
-                      </td>
+                    <div className="relative group">
+                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                       <input 
+                         type="text" 
+                         value={searchTerm}
+                         onChange={(e) => setSearchTerm(e.target.value)}
+                         className="h-8 border border-[#D1D1D1] pl-8 pr-4 text-[10px] font-bold text-slate-600 focus:border-[#0078D4] outline-none rounded-sm bg-[#F9F9F9] focus:bg-white w-[180px] uppercase"
+                         placeholder="TÌM TÊN / SĐT..." 
+                       />
+                    </div>
+                 </div>
+              </div>
+              
+              <div className="overflow-x-auto">
+                <table className="wpf-datagrid">
+                  <thead>
+                    <tr>
+                      <th className="w-[80px]">ID</th>
+                      <th className="cursor-pointer hover:bg-slate-100" onClick={() => toggleSort('Name')}>
+                         HỌ TÊN {sortCol === 'Name' && <ArrowUpDown className="w-3 h-3 inline ml-1" />}
+                      </th>
+                      <th className="w-[100px] text-center">LOẠI</th>
+                      <th className="text-right cursor-pointer hover:bg-slate-100" onClick={() => toggleSort('TotalSpent')}>
+                         TỔNG MUA {sortCol === 'TotalSpent' && <ArrowUpDown className="w-3 h-3 inline ml-1" />}
+                      </th>
+                      <th className="text-center cursor-pointer hover:bg-slate-100" onClick={() => toggleSort('Points')}>
+                         ĐIỂM {sortCol === 'Points' && <ArrowUpDown className="w-3 h-3 inline ml-1" />}
+                      </th>
+                      <th className="text-right w-[60px]">EL</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                  </thead>
+                  <tbody>
+                    {filteredCustomers.map((c: Customer) => (
+                      <tr 
+                        key={c.Id} 
+                        onClick={() => setEditingCustomer({...c})}
+                        className={cn("cursor-pointer", editingCustomer.Id === c.Id ? "bg-[#E5F1FB]" : "")}
+                      >
+                        <td className="text-center font-bold text-slate-300 tabular-nums text-[10px]">{c.Id}</td>
+                        <td>
+                           <div className="flex flex-col">
+                              <span className={cn("text-[13px] font-black uppercase italic leading-none mb-1", editingCustomer.Id === c.Id ? "text-[#0078D4]" : "text-slate-800")}>
+                                 {c.Name}
+                              </span>
+                              <span className="text-[10px] font-bold text-slate-400 tabular-nums">{c.Phone}</span>
+                           </div>
+                        </td>
+                        <td className="text-center">
+                           <span className={cn(
+                               "px-2 py-0.5 rounded-sm text-[9px] font-black uppercase border",
+                               c.CustomerType === 'VIP' ? "bg-rose-50 text-rose-500 border-rose-200" : 
+                               c.CustomerType === 'Loyal' ? "bg-amber-50 text-amber-500 border-amber-200" : "bg-slate-50 text-slate-400 border-slate-200"
+                           )}>
+                              {c.CustomerType}
+                           </span>
+                        </td>
+                        <td className="text-right font-black text-slate-800 tabular-nums">
+                           {formatCurrency(c.TotalSpent || 0)}
+                        </td>
+                        <td className="text-center">
+                          <div className="flex items-center justify-center gap-1">
+                             <Star className={cn("w-3 h-3", c.Points > 0 ? "text-amber-500 fill-amber-500" : "text-slate-200")} />
+                             <span className="text-[11px] font-black text-slate-700 tabular-nums">{c.Points}</span>
+                          </div>
+                        </td>
+                        <td className="text-right">
+                           {editingCustomer.Id === c.Id ? <div className="w-1.5 h-6 bg-[#0078D4] rounded-sm ml-auto" /> : <ChevronRight className="w-4 h-4 text-slate-100 ml-auto" />}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                
+                {filteredCustomers.length === 0 && (
+                  <div className="py-32 text-center bg-white">
+                     <Users className="w-12 h-12 text-slate-100 mx-auto mb-4" />
+                     <p className="text-[11px] font-black text-slate-300 uppercase tracking-widest italic">DATABASE: Không tìm thấy dữ liệu phù hợp.</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="p-4 bg-[#F0F0F0] border-t border-[#D1D1D1] flex items-center justify-between no-print">
+                 <div className="flex items-center gap-6">
+                    <div className="text-right">
+                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Tổng doanh số nhóm</p>
+                       <p className="text-[15px] font-black text-slate-700 italic tabular-nums leading-none">
+                          {formatCurrency(customers.reduce((a, b) => a + (b.TotalSpent || 0), 0))}
+                       </p>
+                    </div>
+                    <div className="h-8 w-[1px] bg-slate-300" />
+                    <div className="flex flex-col">
+                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Phiên làm việc</p>
+                       <span className="text-[11px] font-black text-[#0078D4] uppercase italic">VERIFIED REGISTRY</span>
+                    </div>
+                 </div>
+                 <div className="flex items-center gap-2 text-emerald-600 bg-white px-4 py-2 border border-slate-200 rounded-sm italic text-[11px] font-black">
+                    <History className="w-3.5 h-3.5" /> {customers.length} RECORDS SYNCED
+                 </div>
+              </div>
+           </div>
         </div>
       </div>
     </div>

@@ -16,17 +16,18 @@ const handler = NextAuth({
 
         // Using mysql2 query instead of Prisma
         const user = await querySingle(
-          "SELECT * FROM accounts WHERE Username = ?", 
+          'SELECT * FROM accounts WHERE username = $1', 
           [credentials.username]
         );
 
-        if (user && verifyPassword(credentials.password, user.Password)) {
+        if (user && verifyPassword(credentials.password, user.password)) {
           return {
-            id: user.Id.toString(),
-            name: user.Username,
-            role: user.Role,
+            id: user.id.toString(),
+            name: user.username,
+            role: user.role,
           };
         }
+
         return null;
       }
     })

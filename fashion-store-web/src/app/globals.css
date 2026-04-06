@@ -3,104 +3,176 @@
 @tailwind utilities;
 
 :root {
-  --background: 210 20% 96%; /* #F5F5F5 */
-  --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --primary: 193 78% 49%; /* #1CB5E0 */
-  --primary-foreground: 0 0% 100%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 221 83% 53%; /* #2563EB */
-  --accent-foreground: 222.2 47.4% 11.2%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 0 0% 0% / 0; /* REMOVE BORDERS */
-  --input: 214.3 31.8% 91.4%;
-  --ring: 193 78% 49%;
-  --radius: 10px;
-  
-  --wpf-header: 193 78% 49%;
-  --wpf-sidebar: 217 33% 17%;
-  --wpf-sidebar-header: 222 47% 11%;
+  --background: #FFFFFF;
+  --foreground: #171717;
+  --wpf-blue: #0078D4; /* Standard Windows Blue */
+  --wpf-blue-hover: #005A9E;
+  --wpf-gray-bg: #F3F3F3; /* System Gray */
+  --wpf-gray-border: #E5E5E5;
+  --wpf-sidebar-bg: #F9F9F9;
+  --wpf-selected: #CCE4F7;
+  --wpf-header-height: 48px;
 }
 
 @layer base {
-  * {
-    @apply border-0; /* GLOBAL BORDER REMOVAL */
-  }
   body {
-    @apply bg-background text-foreground;
+    @apply text-slate-900 antialiased;
+    background-color: var(--wpf-gray-bg);
+    font-family: "Segoe UI", "Inter", "Roboto", system-ui, sans-serif;
   }
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  @apply bg-transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  @apply bg-slate-800 rounded-full;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-700;
-}
-
-.glass-card {
-  @apply bg-white shadow-sm rounded-[10px];
-}
-
-.amber-gradient-text {
-  @apply text-amber-600 font-bold; 
-}
-
-@media print {
-  body {
-    background-color: white !important;
-    padding: 0 !important;
-    margin: 0 !important;
+@layer components {
+  /* WPF Style DataGrid - Desktop Grid System */
+  .wpf-datagrid {
+    @apply w-full bg-white border border-[#D1D1D1] text-[13px];
+    border-collapse: separate;
+    border-spacing: 0;
   }
   
-  .no-print {
-    display: none !important;
+  .wpf-datagrid thead th {
+    @apply px-4 py-2 bg-[#F9F9F9] border-b border-r border-[#D1D1D1] font-semibold text-slate-600 text-left;
   }
   
-  .print-only {
-    display: block !important;
+  .wpf-datagrid tbody td {
+    @apply px-4 py-2 border-b border-r border-[#EEEEEE] text-slate-800;
+  }
+  
+  .wpf-datagrid tbody tr:nth-child(even) {
+    background-color: #FAFAFA;
+  }
+  
+  .wpf-datagrid tbody tr:hover {
+    background-color: #F0F6FA;
+  }
+  
+  .wpf-datagrid tr.selected {
+    background-color: var(--wpf-selected) !important;
   }
 
-  main {
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
+  /* WPF Style Button - Standard Desktop Interaction */
+  .btn-wpf {
+    @apply px-6 py-1.5 bg-white border border-[#ACACAC] text-[12px] font-medium transition-all duration-100;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+  
+  .btn-wpf:hover {
+    @apply bg-[#E5F1FB] border-[#0078D4];
+  }
+  
+  .btn-wpf:active {
+    @apply bg-[#CCE4F7] border-[#005499];
+  }
+  
+  .btn-wpf-primary {
+    @apply bg-[#0078D4] border-[#005499] text-white;
+  }
+  
+  .btn-wpf-primary:hover {
+    @apply bg-[#005A9E] border-[#004578];
   }
 
-  .glass-card {
-    border: none !important;
-    box-shadow: none !important;
-    background: none !important;
-    padding: 0 !important;
+  /* WPF Content Panel - GroupBox style */
+  .wpf-panel {
+    @apply bg-white border border-[#D1D1D1] rounded-[2px] shadow-sm overflow-hidden;
+  }
+  
+  .wpf-panel-header {
+    @apply bg-[#F0F0F0] px-4 py-2 border-b border-[#D1D1D1] text-[11px] font-bold uppercase text-slate-500 tracking-wider;
   }
 
-  /* Optimized for 80mm thermal printer */
-  .receipt-container {
-    width: 80mm;
-    margin: 0 auto;
-    font-size: 11px;
-    font-family: 'Courier New', Courier, monospace;
-    color: black;
+  /* Ribbon/ToolBar Item */
+  .wpf-toolbar-btn {
+    @apply flex flex-col items-center justify-center p-2 rounded-sm hover:bg-[#E5F1FB] transition-colors text-slate-600 hover:text-[#0078D4];
   }
-
-  .receipt-container * {
-     color: black !important;
-     border-color: black !important;
+  
+  .wpf-toolbar-btn span {
+    @apply text-[10px] mt-1 font-medium;
   }
 }
+
+/* Custom Scrollbar for Desktop feel */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F1F1F1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C1C1C1;
+  border: 3px solid #F1F1F1;
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #A1A1A1;
+}
+
+.no-select {
+  user-select: none;
+}
+
+/* WPF Metric Card (Formal Reporting) */
+.wpf-metric {
+  background: white;
+  border: 1px solid #D1D1D1;
+  padding: 1.5rem;
+  box-shadow: 2px 2px 0px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-bottom: 3px solid #0078D4;
+}
+
+.wpf-metric-label {
+  font-size: 10px;
+  font-weight: 900;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+}
+
+.wpf-metric-value {
+  font-size: 28px;
+  font-weight: 900;
+  color: #333;
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+
+/* WPF GroupBox (System Layout) */
+.wpf-groupbox {
+  border: 1px solid #D1D1D1;
+  padding: 1.5rem;
+  position: relative;
+  background: white;
+  margin-top: 1rem;
+}
+
+.wpf-groupbox-label {
+  position: absolute;
+  top: -10px;
+  left: 15px;
+  background: white;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 900;
+  color: #0078D4;
+  text-transform: uppercase;
+}
+
+/* WPF ToolBar (Management Utility) */
+.wpf-toolbar {
+  background: #F0F0F0;
+  border: 1px solid #D1D1D1;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+

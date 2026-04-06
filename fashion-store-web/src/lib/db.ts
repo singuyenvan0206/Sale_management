@@ -1,9 +1,9 @@
-import mysql from 'mysql2/promise';
+import { Pool, PoolConfig } from 'pg';
 
-// Helper to parse DATABASE_URL
+// Helper to parse DATABASE_URL (supports postgres:// and postgresql:// formats)
 const parseDatabaseUrl = (url: string) => {
   try {
-    const regex = /mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/;
+    const regex = /(?:postgres|postgresql):\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/;
     const match = url.match(regex);
     if (!match) throw new Error("Invalid DATABASE_URL format");
     
@@ -16,60 +16,40 @@ const parseDatabaseUrl = (url: string) => {
     };
   } catch (error) {
     console.error("Error parsing DATABASE_URL:", error);
-    // Fallback to defaults or environment variables if parsing fails
+    // Fallback to local Postgres as requested
     return {
       host: 'localhost',
-      user: 'root',
-      password: '',
-      database: 'main',
-      port: 3306
+      user: 'postgres',
+      password: '02062003',
+      database: 'Sale',
+      port: 5432
     };
   }
 };
 
 const dbConfig = parseDatabaseUrl(process.env.DATABASE_URL || "");
 
-// Aggressive singleton for Next.js HMR
-const poolConfig: mysql.PoolOptions = {
+const poolConfig: PoolConfig = {
   ...dbConfig,
-  waitForConnections: true,
-  connectionLimit: 5, // Keep it very low to avoid server-side exhaustion
-  maxIdle: 0, // Close idle connections immediately
-  idleTimeout: 10000, // 10 seconds
-  queueLimit: 0,
-  enableKeepAlive: true,
-  keepAliveInitialDelay: 0,
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
 };
 
 declare global {
-  var mysqlPool: mysql.Pool | undefined;
+  var pgPool: Pool | undefined;
 }
 
-let pool: mysql.Pool;
-
-if (process.env.NODE_ENV === 'production') {
-  pool = mysql.createPool(poolConfig);
-} else {
-  if (!global.mysqlPool) {
-    console.log("🛠️ Creating NEW MySQL Connection Pool...");
-    global.mysqlPool = mysql.createPool(poolConfig);
-  } else {
-    console.log("♻️ Reusing EXISTING MySQL Connection Pool.");
-  }
-  pool = global.mysqlPool;
-}
+const pool = global.pgPool || new Pool(poolConfig);
+if (process.env.NODE_ENV !== 'production') global.pgPool = pool;
 
 // Helper for row-based results
 export async function query<T = any>(sql: string, params?: any[]): Promise<T[]> {
   try {
-    const [rows] = await pool.execute(sql, params);
-    return rows as T[];
+    const result = await pool.query(sql, params);
+    return result.rows as T[];
   } catch (error) {
     console.error(`Database Query Error: ${sql}`, error);
-    // If we get "Too many connections", try to log the process list
-    if (error instanceof Error && error.message.includes("connections")) {
-      console.warn("⚠️ DATABASE OVERLOAD DETECTED! Run 'SHOW PROCESSLIST' in your DB tool.");
-    }
     throw error;
   }
 }

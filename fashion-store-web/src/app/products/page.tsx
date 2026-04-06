@@ -1,358 +1,235 @@
-"use client";
-
-import { useState, useEffect, useMemo } from "react";
+import { query } from "@/lib/db";
+export const dynamic = 'force-dynamic';
 import { formatCurrency, cn } from "@/lib/utils";
 import { 
   Plus, 
-  Trash2,
-  Edit2,
-  Search,
-  RotateCcw,
+  Package,
   CheckCircle2,
-  AlertCircle
+  XCircle,
+  Layers,
+  FileText,
+  TrendingUp,
+  History
 } from "lucide-react";
+import Link from "next/link";
+import { ProductActions } from "./ProductActions";
+import { ProductFilterSection } from "./ProductFilterSection";
 
-async function fetchInitialData() {
-  const [productsRes, categoriesRes, suppliersRes] = await Promise.all([
-    fetch("/api/products").then(res => res.json()), // I need to make sure I have an /api/products GET
-    fetch("/api/categories").then(res => res.json()),
-    fetch("/api/suppliers").then(res => res.json())
-  ]);
-  return { products: productsRes, categories: categoriesRes, suppliers: suppliersRes };
+interface Product {
+  Id: number;
+  Name: string;
+  Code: string;
+  CategoryName: string;
+  SalePrice: number;
+  StockQuantity: number;
+  IsActive: boolean;
 }
 
-export default function ProductsPage() {
-  const [products, setProducts] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [suppliers, setSuppliers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+async function getProducts(search?: string, category?: string, status?: string, sort?: string, order?: string) {
+  let sql = `
+    SELECT p.*, c."Name" as "CategoryName" 
+    FROM "products" p 
+    LEFT JOIN "categories" c ON p."CategoryId" = c."Id"
+    WHERE 1=1
+  `;
+  const params: any[] = [];
 
-  // Form State
-  const [editingProduct, setEditingProduct] = useState<any>({
-    Id: 0,
-    Name: "",
-    Code: "",
-    CategoryId: 0,
-    SalePrice: 0,
-    PurchasePrice: 0,
-    StockQuantity: 0,
-    Description: "",
-    SupplierId: 0
-  });
+  if (search) {
+    sql += ` AND (p."Name" ILIKE $${params.length + 1} OR p."Code" ILIKE $${params.length + 1})`;
+    params.push(`%${search}%`);
+  }
 
-  // Filter State
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState("0");
-  const [filterSupplier, setFilterSupplier] = useState("0");
-  const [filterStock, setFilterStock] = useState("All");
-  const [filterPromo, setFilterPromo] = useState("All");
-  const [filterPrice, setFilterPrice] = useState("All");
+  if (category && category !== "all") {
+    sql += ` AND p."CategoryId" = $${params.length + 1}`;
+    params.push(category);
+  }
 
-  const [statusText, setStatusText] = useState("Sẵn sàng");
+  if (status && status !== "all") {
+    sql += ` AND p."IsActive" = $${params.length + 1}`;
+    params.push(status === "active");
+  }
 
-  useEffect(() => {
-    // For this demo, we'll fetch from the client
-    const load = async () => {
-      try {
-        const res = await fetch("/api/products");
-        const data = await res.json();
-        if (Array.isArray(data)) setProducts(data);
-        
-        const catRes = await fetch("/api/categories");
-        const catData = await catRes.json();
-        if (Array.isArray(catData)) setCategories(catData);
-
-        const supRes = await fetch("/api/suppliers");
-        const supData = await supRes.json();
-        if (Array.isArray(supData)) setSuppliers(supData);
-      } catch (e) {
-        console.error("Failed to load data", e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, []);
-
-  const filteredProducts = useMemo(() => {
-    if (!Array.isArray(products)) return [];
-    return products.filter(p => {
-      const matchesSearch = !searchTerm || 
-        p.Name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.Code.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesCat = filterCategory === "0" || p.CategoryId.toString() === filterCategory;
-      const matchesSup = filterSupplier === "0" || p.SupplierId?.toString() === filterSupplier;
-
-      const matchesStock = filterStock === "All" || (
-        filterStock === "OutOfStock" ? p.StockQuantity === 0 :
-        filterStock === "LowStock" ? p.StockQuantity > 0 && p.StockQuantity < 10 :
-        filterStock === "InStock" ? p.StockQuantity >= 10 : true
-      );
-
-      const matchesPrice = filterPrice === "All" || (
-        filterPrice === "Under100k" ? p.SalePrice < 100000 :
-        filterPrice === "100kTo500k" ? p.SalePrice >= 100000 && p.SalePrice < 500000 :
-        filterPrice === "500kTo1M" ? p.SalePrice >= 500000 && p.SalePrice < 1000000 :
-        filterPrice === "Over1M" ? p.SalePrice >= 1000000 : true
-      );
-
-      return matchesSearch && matchesCat && matchesSup && matchesStock && matchesPrice;
-    });
-  }, [products, searchTerm, filterCategory, filterSupplier, filterStock, filterPrice]);
-
-  const handleSelectProduct = (product: any) => {
-    setEditingProduct({...product});
-    setStatusText(`Đang chọn: ${product.Name}`);
+  const allowedSortCols: Record<string, string> = {
+    name: 'p."Name"',
+    price: 'p."SalePrice"',
+    stock: 'p."StockQuantity"',
+    date: 'p."CreatedDate"'
   };
+  const sortCol = allowedSortCols[sort || ''] || 'p."CreatedDate"';
+  const sortOrder = order?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
-  const handleLookupByCode = async () => {
-    if (!editingProduct.Code) return;
-    try {
-      const res = await fetch(`/api/products/lookup?code=${editingProduct.Code}`);
-      if (res.ok) {
-        const p = await res.json();
-        setEditingProduct({...p});
-        setStatusText(`🔍 Tìm thấy: ${p.Name}. Đã tự động điền.`);
-      }
-    } catch (e) {
-      // Not found or error
-    }
-  };
+  sql += ` ORDER BY ${sortCol} ${sortOrder}`;
+  
+  return await query<Product>(sql, params);
+}
 
-  const handleClear = () => {
-    setEditingProduct({
-      Id: 0,
-      Name: "",
-      Code: "",
-      CategoryId: 0,
-      SalePrice: 0,
-      PurchasePrice: 0,
-      StockQuantity: 0,
-      Description: "",
-      SupplierId: 0
-    });
-    setStatusText("Mới");
-  };
+async function getCategories() {
+  return await query('SELECT "Id", "Name" FROM "categories" WHERE "IsActive" = true ORDER BY "Name" ASC');
+}
 
-  if (loading) return <div className="p-20 text-center font-black animate-pulse">ĐANG TẢI DỮ LIỆU HỆ THỐNG...</div>;
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams: { q?: string; category?: string; status?: string; sort?: string; order?: string };
+}) {
+  const q = searchParams.q || "";
+  const category = searchParams.category || "all";
+  const status = searchParams.status || "all";
+  const sort = searchParams.sort || "date";
+  const order = searchParams.order || "desc";
+
+  const [products, categories] = await Promise.all([
+    getProducts(q, category, status, sort, order),
+    getCategories()
+  ]);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 pb-20">
-      {/* Header Bar - WPF style */}
-      <div className="bg-[#1CB5E0] p-6 -mx-8 -mt-8 mb-8 shadow-lg">
-        <h2 className="text-[24px] font-bold text-white text-center tracking-tight">
-           📦 Quản Lý Sản Phẩm
-        </h2>
+    <div className="space-y-6 animate-in fade-in duration-300 pb-20 no-select">
+      {/* WPF Top Header / Ribbon */}
+      <div className="wpf-panel">
+         <div className="wpf-panel-header uppercase">HỆ THỐNG QUẢN LÝ DANH MỤC SẢN PHẨM & KHO HÀNG (INVENTORY)</div>
+         <div className="p-6 bg-white flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+               <div className="w-10 h-10 bg-[#0078D4] rounded-sm flex items-center justify-center text-white">
+                  <Package className="w-6 h-6" />
+               </div>
+               <div>
+                  <h2 className="text-[20px] font-black text-slate-900 tracking-tight uppercase italic leading-none">SẢN PHẨM & TỒN KHO</h2>
+                  <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest italic">Fusion ERP Inventory Subsystem v2.5</p>
+               </div>
+            </div>
+            <div className="flex items-center gap-3">
+               <Link href="/products/new" className="btn-wpf btn-wpf-primary h-12 px-8 flex items-center gap-3 uppercase font-black text-[12px] shadow-lg border-b-4 border-[#005A9E] active:translate-y-1 active:border-b-0 transition-all">
+                  <Plus className="w-5 h-5" /> THÊM SẢN PHẨM MỚI (F2)
+               </Link>
+            </div>
+         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        {/* Left Panel - Input Form (WPF Style) */}
-        <div className="lg:col-span-1">
-           <div className="bg-white p-6 rounded-[10px] shadow-sm space-y-6 sticky top-4 border-t-4 border-blue-500">
-              <div className="flex items-center justify-between border-b pb-3">
-                 <h3 className="text-[14px] font-black text-slate-800 uppercase italic">Chi tiết sản phẩm</h3>
-                 <span className="text-[10px] font-bold text-blue-500 px-2 py-0.5 bg-blue-50 rounded">
-                    {editingProduct.Id === 0 ? "Tạo mới" : `ID: ${editingProduct.Id}`}
-                 </span>
-              </div>
-              
-              <div className="space-y-4">
-                 <div className="space-y-1.5">
-                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Tên sản phẩm *</label>
-                    <input 
-                      type="text" 
-                      value={editingProduct.Name}
-                      onChange={(e) => setEditingProduct({...editingProduct, Name: e.target.value})}
-                      className="w-full bg-[#f8f9fa] rounded-md py-2 px-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-100 outline-none transition-all font-bold" 
-                      placeholder="Nhập tên..." 
-                    />
-                 </div>
-                 <div className="space-y-1.5">
-                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Mã sản phẩm (Lookup)</label>
-                    <input 
-                      type="text" 
-                      value={editingProduct.Code}
-                      onChange={(e) => setEditingProduct({...editingProduct, Code: e.target.value})}
-                      onBlur={handleLookupByCode}
-                      onKeyDown={(e) => e.key === 'Enter' && handleLookupByCode()}
-                      className="w-full bg-[#f8f9fa] rounded-md py-2 px-3 text-sm font-mono font-bold text-blue-600 focus:bg-white outline-none" 
-                      placeholder="SP001..." 
-                    />
-                 </div>
-                 <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                       <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Giá bán *</label>
-                       <input 
-                        type="number" 
-                        value={editingProduct.SalePrice}
-                        onChange={(e) => setEditingProduct({...editingProduct, SalePrice: Number(e.target.value)})}
-                        className="w-full bg-[#f8f9fa] rounded-md py-2 px-3 text-sm font-black text-emerald-600" 
-                       />
-                    </div>
-                    <div className="space-y-1.5">
-                       <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Giá nhập</label>
-                       <input 
-                        type="number" 
-                        value={editingProduct.PurchasePrice}
-                        onChange={(e) => setEditingProduct({...editingProduct, PurchasePrice: Number(e.target.value)})}
-                        className="w-full bg-[#f8f9fa] rounded-md py-2 px-3 text-sm font-black text-slate-500" 
-                       />
-                    </div>
-                 </div>
-                 <div className="space-y-1.5">
-                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Danh mục</label>
-                    <select 
-                      value={editingProduct.CategoryId}
-                      onChange={(e) => setEditingProduct({...editingProduct, CategoryId: Number(e.target.value)})}
-                      className="w-full bg-[#f8f9fa] rounded-md py-2 px-3 text-sm font-bold"
-                    >
-                       <option value={0}>Chọn danh mục...</option>
-                       {(Array.isArray(categories) ? categories : []).map((c: any) => <option key={c.Id} value={c.Id}>{c.Name}</option>)}
-                    </select>
-                 </div>
-              </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 no-print">
+         <div className="bg-white border border-[#D1D1D1] p-4 flex items-center gap-4 shadow-sm">
+            <div className="w-10 h-10 bg-[#F0F0F0] text-[#0078D4] rounded-sm flex items-center justify-center">
+               <Layers className="w-6 h-6" />
+            </div>
+            <div>
+               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Tổng sản phẩm</p>
+               <h4 className="text-[18px] font-black text-slate-800 tabular-nums leading-none">{products.length} SKU(s)</h4>
+            </div>
+         </div>
+         <div className="bg-white border border-[#D1D1D1] p-4 flex items-center gap-4 shadow-sm">
+            <div className="w-10 h-10 bg-[#F0F0F0] text-emerald-600 rounded-sm flex items-center justify-center">
+               <TrendingUp className="w-6 h-6" />
+            </div>
+            <div>
+               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Đang kinh doanh</p>
+               <h4 className="text-[18px] font-black text-slate-800 tabular-nums leading-none">{products.filter(p => p.IsActive).length} SKUs Active</h4>
+            </div>
+         </div>
+         <div className="bg-white border border-[#D1D1D1] p-4 flex items-center gap-4 shadow-sm italic text-[11px] text-slate-400 font-medium">
+            <Info className="w-4 h-4 text-amber-500 shrink-0" />
+            Dữ liệu tồn kho được đồng bộ hóa thời gian thực (Real-time) từ hệ thống POS và Kho tổng.
+         </div>
+      </div>
 
-              <div className="grid grid-cols-3 gap-2 pt-4">
-                 <button className="bg-[#4CAF50] hover:bg-[#43a047] text-white font-black py-3 rounded-md text-[10px] uppercase tracking-tighter shadow-md active:scale-95">🌿 Thêm</button>
-                 <button className="bg-[#2196F3] hover:bg-[#1e88e5] text-white font-black py-3 rounded-md text-[10px] uppercase tracking-tighter shadow-md active:scale-95">📝 Sửa</button>
-                 <button className="bg-[#F44336] hover:bg-[#e53935] text-white font-black py-3 rounded-md text-[10px] uppercase tracking-tighter shadow-md active:scale-95">🗑️ Xóa</button>
-              </div>
-              <button 
-                onClick={handleClear}
-                className="w-full bg-[#9E9E9E] hover:bg-[#757575] text-white font-black py-3 rounded-md text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95"
-              >
-                 <RotateCcw className="w-3.5 h-3.5" /> Làm mới
-              </button>
-              <div className="text-[10px] font-bold text-slate-400 italic text-center pt-2">
-                 Trạng thái: {statusText}
-              </div>
-           </div>
+      {/* Main Content: Filter + DataGrid */}
+      <div className="wpf-panel shadow-md overflow-hidden">
+        <div className="p-4 bg-[#F0F0F0] border-b border-[#D1D1D1]">
+           <ProductFilterSection categories={categories} />
         </div>
 
-        {/* Right Panel - Product List Table */}
-        <div className="lg:col-span-3">
-          <div className="bg-white rounded-[10px] shadow-sm overflow-hidden min-h-[700px] flex flex-col">
-            <div className="p-6 bg-[#f8f9fa]/50">
-               <h3 className="text-[18px] font-black text-[#1CB5E0] uppercase tracking-tight mb-6">📦 Danh Sách Sản Phẩm</h3>
-               
-               {/* Filter Panel - EXACT WPF LOGIC */}
-               <div className="bg-[#F8F9FA] p-5 rounded-[8px] space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                     <div className="space-y-1">
-                        <span className="text-[10px] font-black text-slate-400 uppercase">Lọc Danh Mục</span>
-                        <select 
-                          value={filterCategory}
-                          onChange={(e) => setFilterCategory(e.target.value)}
-                          className="w-full h-10 bg-white rounded-md px-3 text-sm font-bold cursor-pointer outline-none shadow-sm focus:ring-2 focus:ring-blue-100"
-                        >
-                           <option value="0">Tất cả danh mục</option>
-                           {categories.map((c: any) => <option key={c.Id} value={c.Id}>{c.Name}</option>)}
-                        </select>
-                     </div>
-                     <div className="space-y-1">
-                        <span className="text-[10px] font-black text-slate-400 uppercase">Sắp hết hàng</span>
-                        <select 
-                          value={filterStock}
-                          onChange={(e) => setFilterStock(e.target.value)}
-                          className="w-full h-10 bg-white rounded-md px-3 text-sm font-bold cursor-pointer outline-none shadow-sm"
-                        >
-                           <option value="All">Tất cả</option>
-                           <option value="OutOfStock">Hết hàng (0)</option>
-                           <option value="LowStock">Sắp hết (&lt;10)</option>
-                           <option value="InStock">Còn hàng (≥10)</option>
-                        </select>
-                     </div>
-                     <div className="md:col-span-2 flex items-end gap-2">
-                        <div className="flex-1 relative">
-                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                           <input 
-                            type="text" 
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full h-10 bg-white rounded-md pl-10 pr-3 text-sm font-bold outline-none shadow-sm focus:ring-2 focus:ring-blue-100" 
-                            placeholder="Tên hoặc mã sản phẩm..." 
-                           />
-                        </div>
-                        <button className="bg-[#FF9800] hover:bg-[#f57c00] text-white font-black h-10 px-8 rounded-md text-[11px] uppercase tracking-widest whitespace-nowrap active:scale-95 shadow-md">🔍 Lọc</button>
-                     </div>
-                  </div>
-               </div>
-            </div>
-
-            <div className="flex-1 overflow-x-auto">
-              <table className="w-full text-left">
-                <thead className="bg-[#f8f9fa] sticky top-0 z-10">
-                  <tr className="text-slate-800 text-[11px] font-black uppercase tracking-tight">
-                    <th className="px-6 py-5">ID</th>
-                    <th className="px-6 py-5">📦 Tên Sản Phẩm</th>
-                    <th className="px-6 py-5 text-center">🏷️ Mã SP</th>
-                    <th className="px-6 py-5">📂 Danh Mục</th>
-                    <th className="px-6 py-5 text-right">💰 Giá Bán</th>
-                    <th className="px-6 py-5 text-center">🔥 KM%</th>
-                    <th className="px-6 py-5 text-center">📊 Tồn Kho</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 italic font-medium">
-                  {filteredProducts.map((p: any, idx: number) => (
-                    <tr 
-                      key={p.Id} 
-                      onClick={() => handleSelectProduct(p)}
-                      className={cn(
-                        "hover:bg-blue-600 hover:text-white transition-all cursor-pointer group",
-                        idx % 2 === 1 ? "bg-[#F8F9FA]" : "bg-white",
-                        editingProduct.Id === p.Id ? "bg-blue-600 text-white font-black" : "text-slate-700"
-                      )}
-                    >
-                      <td className="px-6 py-5 font-bold text-[12px] opacity-50">{p.Id}</td>
-                      <td className="px-6 py-5 text-[14px] font-black uppercase tracking-tight">{p.Name}</td>
-                      <td className="px-6 py-5 text-center font-mono text-[12px] opacity-70">{p.Code}</td>
-                      <td className="px-6 py-5 text-[13px] uppercase">{p.CategoryName}</td>
-                      <td className="px-6 py-5 text-right">
-                        <span className={cn(
-                          "font-black text-[15px]",
-                          editingProduct.Id === p.Id ? "text-white" : "text-[#4CAF50]"
-                        )}>
-                          {formatCurrency(p.SalePrice)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-5 text-center">
-                         {Number(p.PromoDiscountPercent) > 0 ? (
-                            <span className={cn(
-                              "font-black text-[12px]",
-                              editingProduct.Id === p.Id ? "text-white" : "text-rose-600"
-                            )}>-{p.PromoDiscountPercent}%</span>
-                         ) : <span className="opacity-20">-</span>}
-                      </td>
-                      <td className="px-6 py-5 text-center">
-                        <span className={cn(
-                           "font-black text-[14px]",
-                           editingProduct.Id === p.Id ? "text-white" : 
-                           p.StockQuantity <= 5 ? "text-rose-600 animate-pulse" : "text-amber-500"
-                        )}>{p.StockQuantity}</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            
-            {/* Pagination WPF Style */}
-            <div className="p-8 bg-[#F8F9FA] flex flex-col sm:flex-row items-center justify-between gap-4">
-               <span className="text-[12px] font-black text-[#1CB5E0] uppercase tracking-tighter">
-                  📊 Trang: 1 / 1 • Tổng: {filteredProducts.length} sản phẩm
-               </span>
-               <div className="flex gap-1.5 items-center">
-                  <button className="w-10 h-9 bg-[#2196F3] text-white flex items-center justify-center rounded shadow-md hover:bg-blue-600 active:scale-90 transition-all font-black text-xs">⏮️</button>
-                  <button className="w-10 h-9 bg-[#2196F3] text-white flex items-center justify-center rounded shadow-md hover:bg-blue-600 active:scale-90 transition-all font-black text-xs">◀️</button>
-                  <div className="w-14 h-9 bg-white rounded flex items-center justify-center text-sm font-black shadow-inner border border-slate-200">1</div>
-                  <button className="w-10 h-9 bg-[#2196F3] text-white flex items-center justify-center rounded shadow-md hover:bg-blue-600 active:scale-90 transition-all font-black text-xs">▶️</button>
-                  <button className="w-10 h-9 bg-[#2196F3] text-white flex items-center justify-center rounded shadow-md hover:bg-blue-600 active:scale-90 transition-all font-black text-xs">⏭️</button>
-               </div>
-            </div>
+        <div className="overflow-x-auto relative z-10">
+          <table className="wpf-datagrid">
+            <thead>
+              <tr>
+                <th className="w-[120px]">MÃ SKU</th>
+                <th>TÊN SẢN PHẨM (PRODUCT NAME)</th>
+                <th className="w-[200px]">PHÂN LOẠI (CATEGORY)</th>
+                <th className="text-right w-[150px]">GIÁ NIÊM YẾT</th>
+                <th className="text-center w-[120px]">TỒN KHO</th>
+                <th className="text-center w-[120px]">TRẠNG THÁI</th>
+                <th className="text-right w-[120px]">THAO TÁC</th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.map((product) => (
+                <tr key={product.Id}>
+                  <td className="font-bold text-[#0078D4] tabular-nums tracking-tighter uppercase">{product.Code}</td>
+                  <td className="font-black text-slate-800 uppercase italic tracking-tight">{product.Name}</td>
+                  <td className="uppercase font-bold text-slate-400 text-[11px]">
+                     <span className="bg-slate-100 px-2 py-0.5 rounded-sm border border-slate-200">{product.CategoryName || "N/A"}</span>
+                  </td>
+                  <td className="text-right font-black text-slate-900 tabular-nums">
+                    {formatCurrency(Number(product.SalePrice))}
+                  </td>
+                  <td className="text-center">
+                    <div className="flex flex-col items-center gap-1">
+                       <span className={cn(
+                         "text-[13px] font-black tabular-nums italic",
+                         Number(product.StockQuantity) > 10 ? "text-emerald-600" : 
+                         Number(product.StockQuantity) > 0 ? "text-amber-500" : 
+                         "text-rose-500"
+                       )}>
+                         {product.StockQuantity} SP
+                       </span>
+                       <div className="w-16 h-1 bg-slate-100 border border-slate-200 rounded-full overflow-hidden">
+                          <div 
+                            className={cn(
+                               "h-full transition-all duration-1000",
+                               Number(product.StockQuantity) > 10 ? "bg-emerald-500" : 
+                               Number(product.StockQuantity) > 0 ? "bg-amber-500" : 
+                               "bg-rose-500"
+                            )} 
+                            style={{ width: `${Math.min(100, (Number(product.StockQuantity) / 100) * 100)}%` }} 
+                          />
+                       </div>
+                    </div>
+                  </td>
+                  <td className="text-center">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#F9F9F9] border border-[#D1D1D1] rounded-sm">
+                       {product.IsActive ? (
+                         <>
+                            <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                            <span className="text-[9px] font-black uppercase tracking-widest text-emerald-700">ACTIVE</span>
+                         </>
+                       ) : (
+                         <>
+                            <div className="w-2 h-2 rounded-full bg-slate-300" />
+                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">IDLE</span>
+                         </>
+                       )}
+                    </div>
+                  </td>
+                  <td className="text-right">
+                    <ProductActions id={product.Id} name={product.Name} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        
+        {products.length === 0 && (
+          <div className="py-40 text-center bg-white">
+            <Package className="w-16 h-16 text-slate-100 mx-auto mb-6" />
+            <h4 className="text-[18px] font-black text-slate-300 uppercase tracking-widest italic">Hệ thống chưa ghi nhận sản phẩm phù hợp</h4>
+            <p className="text-slate-300 font-bold uppercase tracking-widest text-[9px] mt-2 italic underline underline-offset-4">Vui lòng kiểm tra lại bộ lọc tìm kiếm hoặc thêm mã sản phẩm mới.</p>
           </div>
+        )}
+
+        {/* Footer Info Strip */}
+        <div className="bg-[#F0F0F0] px-6 py-2.5 border-t border-[#D1D1D1] flex justify-between items-center text-[11px] font-bold text-slate-400">
+           <div className="flex items-center gap-6">
+              <span>TỔNG SKUs: {products.length}</span>
+              <span className="border-l border-slate-300 pl-6 uppercase italic">Product Registry Shell v2.5.0</span>
+           </div>
+           <div className="flex items-center gap-2 italic uppercase">
+              <History className="w-3.5 h-3.5" /> SYNC VERIFIED: {new Date().toLocaleTimeString()}
+           </div>
         </div>
       </div>
     </div>
   );
 }
+
+// Internal icon for help
+import { Info } from "lucide-react";
