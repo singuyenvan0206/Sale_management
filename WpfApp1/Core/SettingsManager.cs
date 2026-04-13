@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Security.Cryptography;
 using MySql.Data.MySqlClient;
 
 namespace FashionStore.Core
@@ -12,7 +13,7 @@ namespace FashionStore.Core
         public string Database { get; set; } = "main";
         public string UserId { get; set; } = "root";
         public string Password { get; set; } = "02062003";
-        public string Language { get; set; } = "vi";
+        public bool IsPasswordEncrypted { get; set; } = false;
     }
 
     public static class SettingsManager
@@ -21,6 +22,8 @@ namespace FashionStore.Core
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "FashionStore", "settings.json");
 
+        private static readonly byte[] OptionalEntropy = Encoding.UTF8.GetBytes("FashionStoreEntropy");
+
         public static SettingsConfig Load()
         {
             try
@@ -28,12 +31,19 @@ namespace FashionStore.Core
                 if (File.Exists(SettingsPath))
                 {
                     var json = File.ReadAllText(SettingsPath);
-                    return System.Text.Json.JsonSerializer.Deserialize<SettingsConfig>(json) ?? new SettingsConfig();
+                    var config = System.Text.Json.JsonSerializer.Deserialize<SettingsConfig>(json) ?? new SettingsConfig();
+                    
+                    if (config.IsPasswordEncrypted && !string.IsNullOrEmpty(config.Password))
+                    {
+                        config.Password = DecryptPassword(config.Password);
+                    }
+                    
+                    return config;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // ignore and return defaults
+                System.Diagnostics.Debug.WriteLine($"Error loading settings: {ex.Message}");
             }
             return new SettingsConfig();
         }
@@ -42,8 +52,24 @@ namespace FashionStore.Core
         {
             try
             {
+                // Create a clone to avoid encrypting the password in the live config object if needed
+                var configToSave = new SettingsConfig
+                {
+                    Server = config.Server,
+                    Port = config.Port,
+                    Database = config.Database,
+                    UserId = config.UserId,
+                    Password = config.Password
+                };
+
+                if (!string.IsNullOrEmpty(configToSave.Password))
+                {
+                    configToSave.Password = EncryptPassword(configToSave.Password);
+                    configToSave.IsPasswordEncrypted = true;
+                }
+
                 Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath)!);
-                var json = System.Text.Json.JsonSerializer.Serialize(config, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                var json = System.Text.Json.JsonSerializer.Serialize(configToSave, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(SettingsPath, json);
                 error = string.Empty;
                 return true;
@@ -52,6 +78,34 @@ namespace FashionStore.Core
             {
                 error = ex.Message;
                 return false;
+            }
+        }
+
+        private static string EncryptPassword(string password)
+        {
+            try
+            {
+                byte[] data = Encoding.UTF8.GetBytes(password);
+                byte[] encrypted = ProtectedData.Protect(data, OptionalEntropy, DataProtectionScope.CurrentUser);
+                return Convert.ToBase64String(encrypted);
+            }
+            catch
+            {
+                return password;
+            }
+        }
+
+        private static string DecryptPassword(string encryptedPassword)
+        {
+            try
+            {
+                byte[] data = Convert.FromBase64String(encryptedPassword);
+                byte[] decrypted = ProtectedData.Unprotect(data, OptionalEntropy, DataProtectionScope.CurrentUser);
+                return Encoding.UTF8.GetString(decrypted);
+            }
+            catch
+            {
+                return encryptedPassword;
             }
         }
 
@@ -68,6 +122,7 @@ namespace FashionStore.Core
                 CharacterSet = "utf8mb4",
                 AllowUserVariables = true,
                 DefaultCommandTimeout = 30,
+                ConnectionTimeout = 10,
                 AllowPublicKeyRetrieval = true,
                 SslMode = MySqlSslMode.Disabled
             };
@@ -90,12 +145,12 @@ namespace FashionStore.Core
                 };
                 using var conn = new MySqlConnection(csb.ConnectionString);
                 conn.Open();
-                message = "Connection successful.";
+                message = "Kết nối thành công.";
                 return true;
             }
             catch (Exception ex)
             {
-                message = $"Connection failed: {ex.Message}";
+                message = $"Kết nối thất bại: {ex.Message}";
                 return false;
             }
         }
@@ -126,14 +181,22 @@ namespace FashionStore.Core
                     try
                     {
                         cmd.Parameters.Clear();
-                        cmd.CommandText = $"ALTER USER '{cfg.UserId}'@'{host}' IDENTIFIED WITH mysql_native_password BY @pwd;";
+                        // identifiers (userId and host) are still interpolated but we used parameters for the password at least.
+                        // To be even safer, we should validate userId and host against a whitelist or escape them.
+                        // For this specific admin tool, it's mostly internal.
+                        cmd.CommandText = "ALTER USER @user@host IDENTIFIED WITH mysql_native_password BY @pwd;";
+                        // Note: MySQL doesn't always support parameters for identifiers in ALTER USER.
+                        // We will stick to the previous version but with parameterized password if possible, 
+                        // or just ensure cfg.UserId and host don't contain malicious chars.
+                        
+                        cmd.CommandText = $"ALTER USER '{cfg.UserId.Replace("'", "''")}'@'{host.Replace("'", "''")}' IDENTIFIED WITH mysql_native_password BY @pwd;";
                         cmd.Parameters.AddWithValue("@pwd", cfg.Password);
                         cmd.ExecuteNonQuery();
-                        log.AppendLine($"Successfully altered '{cfg.UserId}'@'{host}' to mysql_native_password.");
+                        log.AppendLine($"Đã thay đổi '{cfg.UserId}'@'{host}' thành mysql_native_password.");
                     }
                     catch (MySqlException mex)
                     {
-                        log.AppendLine($"ALTER USER failed for '{cfg.UserId}'@'{host}': {mex.Message}");
+                        log.AppendLine($"Lỗi ALTER USER cho '{cfg.UserId}'@'{host}': {mex.Message}");
                     }
                 }
 
@@ -142,7 +205,7 @@ namespace FashionStore.Core
             }
             catch (Exception ex)
             {
-                message = $"Operation failed: {ex.Message}\n{log}";
+                message = $"Thao tác thất bại: {ex.Message}\n{log}";
                 return false;
             }
         }

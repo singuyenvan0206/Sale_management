@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using FashionStore.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace FashionStore
 {
@@ -11,7 +12,7 @@ namespace FashionStore
         public InvoiceManagementWindow()
         {
             InitializeComponent();
-            this.DataContext = new InvoiceManagementViewModel();
+            this.DataContext = App.ServiceProvider?.GetRequiredService<InvoiceManagementViewModel>() ?? new InvoiceManagementViewModel();
         }
 
         private void ListBox_PreviewMouseWheel(object sender, MouseWheelEventArgs e)

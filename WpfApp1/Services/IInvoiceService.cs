@@ -1,0 +1,21 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using FashionStore.Models;
+
+namespace FashionStore.Services
+{
+    public interface IInvoiceService
+    {
+        Task<bool> SaveInvoiceAsync(Invoice invoice, int? voucherId);
+        Task<IEnumerable<Invoice>> SearchInvoicesAsync(DateTime? from, DateTime? to, int? customerId, string search);
+        Task<(Invoice Header, List<InvoiceItem> Items)> GetInvoiceDetailsAsync(int invoiceId);
+        Task<decimal> GetRevenueAsync(DateTime from, DateTime to);
+        Task<int> GetInvoiceCountAsync(DateTime from, DateTime to);
+        Task<IEnumerable<(DateTime Day, decimal Revenue)>> GetRevenueByDayAsync(DateTime from, DateTime to);
+        Task<IEnumerable<(string CategoryName, decimal Revenue)>> GetRevenueByCategoryAsync(DateTime from, DateTime to);
+        Task<bool> ExportInvoicesToCsvAsync(string filePath);
+        Task<int> ImportInvoicesFromCsvAsync(string filePath);
+        Task<bool> DeleteAllInvoicesAsync();
+    }
+}

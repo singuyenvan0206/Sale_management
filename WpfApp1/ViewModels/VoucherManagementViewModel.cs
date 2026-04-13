@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Input;
 using FashionStore.Services;
 using FashionStore.Core;
+using FashionStore.Models;
 
 namespace FashionStore.ViewModels
 {
@@ -102,9 +103,9 @@ namespace FashionStore.ViewModels
 
         public VoucherManagementViewModel()
         {
-            AddCommand = new RelayCommand(_ => AddVoucher());
-            UpdateCommand = new RelayCommand(_ => UpdateVoucher());
-            DeleteCommand = new RelayCommand(_ => DeleteVoucher());
+            AddCommand = new RelayCommand(_ => _ = AddVoucherAsync());
+            UpdateCommand = new RelayCommand(_ => _ = UpdateVoucherAsync());
+            DeleteCommand = new RelayCommand(_ => _ = DeleteVoucherAsync());
             ClearFormCommand = new RelayCommand(_ => ClearForm());
             ResetFiltersCommand = new RelayCommand(_ => ResetFilters());
             FirstPageCommand = new RelayCommand(_ => { _pagination.FirstPage(); RefreshPage(); });
@@ -115,15 +116,17 @@ namespace FashionStore.ViewModels
 
             _pagination.PageChanged += RefreshPage;
             _pagination.SetPageSize(6);
-            Load();
+            _ = LoadAsync();
         }
 
-        private void Load()
+        private async System.Threading.Tasks.Task LoadAsync()
         {
-            _allVouchers = VoucherService.GetAllVouchers();
+            _allVouchers = await System.Threading.Tasks.Task.Run(() => VoucherService.GetAllVouchers());
             _pagination.SetData(_allVouchers);
             ApplyFilters();
         }
+
+        private void Load() => _ = LoadAsync();
 
         private void ApplyFilters()
         {
@@ -255,51 +258,33 @@ namespace FashionStore.ViewModels
             return true;
         }
 
-        private void AddVoucher()
+        private async System.Threading.Tasks.Task AddVoucherAsync()
         {
             if (!ValidateAndBuild(out var voucher) || voucher == null) return;
-            if (VoucherService.AddVoucher(voucher))
-            {
-                MessageBox.Show("Thêm Voucher thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
-                Load(); ClearForm();
-            }
+            bool ok = await System.Threading.Tasks.Task.Run(() => VoucherService.AddVoucher(voucher));
+            if (ok) { MessageBox.Show("Thêm Voucher thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information); await LoadAsync(); ClearForm(); }
             else MessageBox.Show("Có lỗi xảy ra. Mã voucher có thể đã tồn tại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
-        private void UpdateVoucher()
+        private async System.Threading.Tasks.Task UpdateVoucherAsync()
         {
-            if (SelectedVoucher == null)
-            {
-                MessageBox.Show("Vui lòng chọn voucher cần sửa.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+            if (SelectedVoucher == null) { MessageBox.Show("Vui lòng chọn voucher cần sửa.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
             if (!ValidateAndBuild(out var voucher) || voucher == null) return;
             voucher.Id = SelectedVoucher.Id;
-            if (VoucherService.UpdateVoucher(voucher))
-            {
-                MessageBox.Show("Cập nhật Voucher thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
-                Load(); ClearForm();
-            }
+            bool ok = await System.Threading.Tasks.Task.Run(() => VoucherService.UpdateVoucher(voucher));
+            if (ok) { MessageBox.Show("Cập nhật Voucher thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information); await LoadAsync(); ClearForm(); }
             else MessageBox.Show("Có lỗi xảy ra khi cập nhật.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
-        private void DeleteVoucher()
+        private async System.Threading.Tasks.Task DeleteVoucherAsync()
         {
-            if (SelectedVoucher == null)
-            {
-                MessageBox.Show("Vui lòng chọn voucher cần xóa.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+            if (SelectedVoucher == null) { MessageBox.Show("Vui lòng chọn voucher cần xóa.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
             var r = MessageBox.Show($"Bạn có chắc chắn muốn xóa '{SelectedVoucher.Code}'?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (r == MessageBoxResult.Yes)
-            {
-                if (VoucherService.DeleteVoucher(SelectedVoucher.Id))
-                {
-                    MessageBox.Show("Xóa Voucher thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
-                    Load(); ClearForm();
-                }
-                else MessageBox.Show("Không thể xóa voucher này.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            if (r != MessageBoxResult.Yes) return;
+            var id = SelectedVoucher.Id;
+            bool ok = await System.Threading.Tasks.Task.Run(() => VoucherService.DeleteVoucher(id));
+            if (ok) { MessageBox.Show("Xóa Voucher thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information); await LoadAsync(); ClearForm(); }
+            else MessageBox.Show("Không thể xóa voucher này.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         private void ClearForm()

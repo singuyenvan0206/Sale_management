@@ -104,14 +104,14 @@ namespace FashionStore.ViewModels
 
         public ReportsViewModel()
         {
-            ApplyFilterCommand = new RelayCommand(_ => LoadInvoices());
-            RefreshCommand = new RelayCommand(_ => LoadInvoices());
-            TodayCommand = new RelayCommand(_ => { FromDate = ToDate = DateTime.Today; LoadInvoices(); });
-            Last7DaysCommand = new RelayCommand(_ => { FromDate = DateTime.Today.AddDays(-7); ToDate = DateTime.Today; LoadInvoices(); });
-            Last30DaysCommand = new RelayCommand(_ => { FromDate = DateTime.Today.AddDays(-30); ToDate = DateTime.Today; LoadInvoices(); });
-            ThisMonthCommand = new RelayCommand(_ => { var t = DateTime.Today; FromDate = new DateTime(t.Year, t.Month, 1); ToDate = t; LoadInvoices(); });
+            ApplyFilterCommand = new RelayCommand(_ => _ = LoadInvoicesAsync());
+            RefreshCommand = new RelayCommand(_ => _ = LoadInvoicesAsync());
+            TodayCommand = new RelayCommand(_ => { FromDate = ToDate = DateTime.Today; _ = LoadInvoicesAsync(); });
+            Last7DaysCommand = new RelayCommand(_ => { FromDate = DateTime.Today.AddDays(-7); ToDate = DateTime.Today; _ = LoadInvoicesAsync(); });
+            Last30DaysCommand = new RelayCommand(_ => { FromDate = DateTime.Today.AddDays(-30); ToDate = DateTime.Today; _ = LoadInvoicesAsync(); });
+            ThisMonthCommand = new RelayCommand(_ => { var t = DateTime.Today; FromDate = new DateTime(t.Year, t.Month, 1); ToDate = t; _ = LoadInvoicesAsync(); });
             DetailsCommand = new RelayCommand(p => ShowDetails(p as InvoiceListItem));
-            DeleteCommand = new RelayCommand(p => DeleteInvoice(p as InvoiceListItem));
+            DeleteCommand = new RelayCommand(p => _ = DeleteInvoiceAsync(p as InvoiceListItem));
             PrintCommand = new RelayCommand(p => PrintInvoice(p as InvoiceListItem));
             OpenSettingsCommand = new RelayCommand(_ => OpenSettings());
             FirstPageCommand = new RelayCommand(_ => { _pagination.FirstPage(); RefreshPage(); });
@@ -124,31 +124,42 @@ namespace FashionStore.ViewModels
             _pagination.PageChanged += RefreshPage;
             _pagination.SetPageSize(20);
 
-            LoadFilters();
-            LoadInvoices();
+            _ = LoadAllAsync();
         }
 
-        private void LoadFilters()
+        private async System.Threading.Tasks.Task LoadAllAsync()
         {
-            var (oldestDate, _) = InvoiceService.GetInvoiceDateRange();
-            FromDate = oldestDate ?? DateTime.Today.AddYears(-1);
-            ToDate = DateTime.Today;
-
-            var customers = CustomerService.GetAllCustomers();
-            Customers.Clear();
-            Customers.Add(new CustomerList { Id = 0, Name = "Tất cả khách hàng" });
-            foreach (var c in customers) Customers.Add(new CustomerList { Id = c.Id, Name = c.Name });
-            SelectedCustomer = Customers.FirstOrDefault();
+            StatusText = "Đang tải...";
+            // Load filters and invoices on thread pool
+            await System.Threading.Tasks.Task.Run(() =>
+            {
+                var (oldest, _) = InvoiceService.GetInvoiceDateRange();
+                var from = oldest ?? DateTime.Today.AddYears(-1);
+                var customers = CustomerService.GetAllCustomers();
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    FromDate = from;
+                    ToDate = DateTime.Today;
+                    Customers.Clear();
+                    Customers.Add(new CustomerList { Id = 0, Name = "Tất cả khách hàng" });
+                    foreach (var c in customers) Customers.Add(new CustomerList { Id = c.Id, Name = c.Name });
+                    SelectedCustomer = Customers.FirstOrDefault();
+                });
+            });
+            await LoadInvoicesAsync();
         }
 
-        public void LoadInvoices()
+        public async System.Threading.Tasks.Task LoadInvoicesAsync()
         {
+            StatusText = "Đang tải hóa đơn...";
             var from = FromDate;
             var to = ToDate?.AddDays(1).AddTicks(-1);
             int? customerId = SelectedCustomer?.Id == 0 ? null : SelectedCustomer?.Id;
             var search = (SearchText ?? "").Trim();
 
-            var data = InvoiceService.QueryInvoices(from, to, customerId, search);
+            var data = await System.Threading.Tasks.Task.Run(() =>
+                InvoiceService.QueryInvoices(from, to, customerId, search));
+
             _allInvoices = data.ConvertAll(i => new InvoiceListItem
             {
                 Id = i.Id,
@@ -164,10 +175,14 @@ namespace FashionStore.ViewModels
             _pagination.SetData(_allInvoices);
             RefreshPage();
             RefreshKPIs();
-
             CountText = _pagination.TotalItems.ToString();
             StatusText = _pagination.TotalItems == 0 ? "Không tìm thấy hóa đơn nào với bộ lọc đã chọn." : string.Empty;
         }
+
+        // Keep sync wrapper for compatibility
+        public void LoadInvoices() => _ = LoadInvoicesAsync();
+
+        private void LoadFilters() => _ = LoadAllAsync();
 
         private void RefreshPage()
         {
@@ -257,16 +272,18 @@ namespace FashionStore.ViewModels
             MessageBox.Show(sb.ToString(), $"Hóa đơn #{detail.Header.Id}", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private void DeleteInvoice(InvoiceListItem? row)
+        private async System.Threading.Tasks.Task DeleteInvoiceAsync(InvoiceListItem? row)
         {
             if (row == null) return;
             var confirm = MessageBox.Show($"Xóa hóa đơn #{row.Id}?\nHành động này không thể hoàn tác.", "Xác nhận xóa", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-            if (confirm == MessageBoxResult.Yes)
-            {
-                if (InvoiceService.DeleteInvoice(row.Id)) { LoadInvoices(); MessageBox.Show($"Hóa đơn #{row.Id} đã được xóa.", "Đã xóa", MessageBoxButton.OK, MessageBoxImage.Information); }
-                else MessageBox.Show("Xóa thất bại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            if (confirm != MessageBoxResult.Yes) return;
+            var id = row.Id;
+            bool ok = await System.Threading.Tasks.Task.Run(() => InvoiceService.DeleteInvoice(id));
+            if (ok) { await LoadInvoicesAsync(); MessageBox.Show($"Hóa đơn #{id} đã được xóa.", "Đã xóa", MessageBoxButton.OK, MessageBoxImage.Information); }
+            else MessageBox.Show("Xóa thất bại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+
+        private void DeleteInvoice(InvoiceListItem? row) => _ = DeleteInvoiceAsync(row);
 
         private void PrintInvoice(InvoiceListItem? row)
         {

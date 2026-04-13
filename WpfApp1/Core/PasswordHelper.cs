@@ -1,50 +1,25 @@
 using System;
-using System.Security.Cryptography;
-using System.Text;
+using BCrypt.Net;
 
 namespace FashionStore.Core
 {
     public static class PasswordHelper
     {
         /// <summary>
-        /// Mã hóa mật khẩu sử dụng SHA256 với salt
+        /// Mã hóa mật khẩu sử dụng BCrypt (an toàn hơn SHA256)
         /// </summary>
         public static string HashPassword(string password)
         {
             if (string.IsNullOrWhiteSpace(password))
                 throw new ArgumentException("Password cannot be null or empty", nameof(password));
 
-            // Tạo salt ngẫu nhiên
-            byte[] salt = new byte[16];
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(salt);
-            }
-
-            // Kết hợp password và salt
-            byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
-            byte[] saltedPassword = new byte[passwordBytes.Length + salt.Length];
-            Buffer.BlockCopy(passwordBytes, 0, saltedPassword, 0, passwordBytes.Length);
-            Buffer.BlockCopy(salt, 0, saltedPassword, passwordBytes.Length, salt.Length);
-
-            // Hash password + salt
-            byte[] hashBytes;
-            using (var sha256 = SHA256.Create())
-            {
-                hashBytes = sha256.ComputeHash(saltedPassword);
-            }
-
-            // Kết hợp salt và hash để lưu trữ (salt:hash)
-            byte[] result = new byte[salt.Length + hashBytes.Length];
-            Buffer.BlockCopy(salt, 0, result, 0, salt.Length);
-            Buffer.BlockCopy(hashBytes, 0, result, salt.Length, hashBytes.Length);
-
-            // Chuyển đổi sang Base64 để lưu trữ
-            return Convert.ToBase64String(result);
+            // Sử dụng BCrypt với work factor mặc định (11)
+            return BCrypt.Net.BCrypt.HashPassword(password);
         }
 
         /// <summary>
         /// Xác minh mật khẩu có khớp với hash đã lưu không
+        /// Hỗ trợ cả hash BCrypt mới và SHA256 cũ để migration
         /// </summary>
         public static bool VerifyPassword(string password, string hashedPassword)
         {
@@ -53,75 +28,88 @@ namespace FashionStore.Core
 
             try
             {
-                // Giải mã Base64 để lấy salt và hash
-                byte[] storedBytes = Convert.FromBase64String(hashedPassword);
-
-                // Lấy salt (16 bytes đầu tiên)
-                byte[] salt = new byte[16];
-                Buffer.BlockCopy(storedBytes, 0, salt, 0, 16);
-
-                // Lấy hash đã lưu (32 bytes tiếp theo)
-                byte[] storedHash = new byte[32];
-                Buffer.BlockCopy(storedBytes, 16, storedHash, 0, 32);
-
-                // Hash password nhập vào với salt đã lưu
-                byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
-                byte[] saltedPassword = new byte[passwordBytes.Length + salt.Length];
-                Buffer.BlockCopy(passwordBytes, 0, saltedPassword, 0, passwordBytes.Length);
-                Buffer.BlockCopy(salt, 0, saltedPassword, passwordBytes.Length, salt.Length);
-
-                byte[] computedHash;
-                using (var sha256 = SHA256.Create())
+                // Kiểm tra xem có phải là format BCrypt không ($2a$, $2b$, $2y$)
+                if (hashedPassword.StartsWith("$2"))
                 {
-                    computedHash = sha256.ComputeHash(saltedPassword);
+                    return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
                 }
 
-                // So sánh hash
-                return CompareByteArrays(storedHash, computedHash);
+                // Nếu không phải BCrypt, thử verify bằng SHA256 cũ (Legacy)
+                return VerifyLegacySha256(password, hashedPassword);
             }
             catch
             {
-                // Nếu có lỗi (ví dụ: format không đúng), thử so sánh trực tiếp để tương thích với dữ liệu cũ
+                // Fallback cuối cùng cho plain text (nếu có)
                 return password == hashedPassword;
             }
         }
 
         /// <summary>
-        /// So sánh hai mảng byte một cách an toàn
+        /// Xác minh mật khẩu sử dụng phương pháp SHA256 + Salt cũ
         /// </summary>
-        private static bool CompareByteArrays(byte[] array1, byte[] array2)
+        private static bool VerifyLegacySha256(string password, string hashedPassword)
         {
-            if (array1.Length != array2.Length)
-                return false;
-
-            int result = 0;
-            for (int i = 0; i < array1.Length; i++)
-            {
-                result |= array1[i] ^ array2[i];
-            }
-
-            return result == 0;
-        }
-
-        /// <summary>
-        /// Kiểm tra xem một chuỗi có phải là hash đã được mã hóa không
-        /// </summary>
-        public static bool IsHashed(string password)
-        {
-            if (string.IsNullOrWhiteSpace(password))
-                return false;
-
             try
             {
-                // Nếu có thể decode Base64 và có độ dài đúng (16 bytes salt + 32 bytes hash = 48 bytes)
-                byte[] bytes = Convert.FromBase64String(password);
-                return bytes.Length == 48;
+                byte[] storedBytes = Convert.FromBase64String(hashedPassword);
+                if (storedBytes.Length != 48) return false; // 16 bytes salt + 32 bytes hash
+
+                byte[] salt = new byte[16];
+                Buffer.BlockCopy(storedBytes, 0, salt, 0, 16);
+
+                byte[] storedHash = new byte[32];
+                Buffer.BlockCopy(storedBytes, 16, storedHash, 0, 32);
+
+                using (var sha256 = System.Security.Cryptography.SHA256.Create())
+                {
+                    byte[] passwordBytes = System.Text.Encoding.UTF8.GetBytes(password);
+                    byte[] saltedPassword = new byte[passwordBytes.Length + salt.Length];
+                    Buffer.BlockCopy(passwordBytes, 0, saltedPassword, 0, passwordBytes.Length);
+                    Buffer.BlockCopy(salt, 0, saltedPassword, passwordBytes.Length, salt.Length);
+
+                    byte[] computedHash = sha256.ComputeHash(saltedPassword);
+                    return CompareByteArrays(storedHash, computedHash);
+                }
             }
             catch
             {
                 return false;
             }
         }
+
+        private static bool CompareByteArrays(byte[] array1, byte[] array2)
+        {
+            if (array1.Length != array2.Length) return false;
+            int result = 0;
+            for (int i = 0; i < array1.Length; i++)
+                result |= array1[i] ^ array2[i];
+            return result == 0;
+        }
+
+        /// <summary>
+        /// Kiểm tra xem hash có cần được nâng cấp (re-hash) không
+        /// </summary>
+        public static bool NeedsUpgrade(string hashedPassword)
+        {
+            // Nếu không phải BCrypt, cần upgrade
+            return !string.IsNullOrEmpty(hashedPassword) && !hashedPassword.StartsWith("$2");
+        }
+
+        /// <summary>
+        /// Kiểm tra xem một chuỗi có vẻ là đã được hash theo bất kỳ format nào không
+        /// </summary>
+        public static bool IsHashed(string password)
+        {
+            if (string.IsNullOrWhiteSpace(password)) return false;
+            // BCrypt format
+            if (password.StartsWith("$2")) return true;
+            // Legacy SHA256 format (Base64 và độ dài 48 bytes sau decode)
+            try
+            {
+                byte[] bytes = Convert.FromBase64String(password);
+                return bytes.Length == 48;
+            }
+            catch { return false; }
+        }
     }
 }
-

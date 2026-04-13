@@ -22,22 +22,6 @@ namespace FashionStore.ViewModels
         private string _statusText = "";
         public string StatusText { get => _statusText; set => SetProperty(ref _statusText, value); }
 
-        // -------- General Settings --------
-        private string _selectedLanguage = "vi";
-        public string SelectedLanguage
-        {
-            get => _selectedLanguage;
-            set
-            {
-                if (SetProperty(ref _selectedLanguage, value))
-                {
-                    LanguageService.SetLanguage(value);
-                }
-            }
-        }
-
-        public System.Collections.Generic.List<string> AvailableLanguages => new System.Collections.Generic.List<string> { "vi", "en" };
-
         // -------- Payment Settings --------
         private bool _enableQRCode;
         public bool EnableQRCode
@@ -95,8 +79,6 @@ namespace FashionStore.ViewModels
             Server = cfg.Server;
             Database = cfg.Database;
             UserId = cfg.UserId;
-            _selectedLanguage = cfg.Language; // Use field to avoid triggering SetLanguage during load
-            OnPropertyChanged(nameof(SelectedLanguage));
             // Password loaded in code-behind via PasswordBox
         }
 
@@ -167,8 +149,7 @@ namespace FashionStore.ViewModels
                 Server = Server,
                 Database = Database,
                 UserId = UserId,
-                Password = password,
-                Language = SelectedLanguage
+                Password = password
             };
 
             if (SettingsManager.Save(cfg, out string error))

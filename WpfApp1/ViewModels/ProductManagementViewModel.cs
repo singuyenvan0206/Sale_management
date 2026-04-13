@@ -357,7 +357,7 @@ namespace FashionStore.ViewModels
             var product = ProductService.GetProductByCode(EditingProduct.Code);
             if (product != null)
             {
-                var p = product.Value;
+                var p = product;
                 
                 // Switch to edit mode for this product if found
                 EditingProduct.Id = p.Id;

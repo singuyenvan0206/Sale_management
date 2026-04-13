@@ -1,56 +1,61 @@
-using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using FashionStore.Core;
 using FashionStore.Models;
+using FashionStore.Data.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace FashionStore.Services
 {
-    public static class UserService
+    public class UserService : IUserService
     {
-        private static string ConnectionString => SettingsManager.BuildConnectionString();
+        private readonly IUserRepository _userRepository;
 
-        public static bool RegisterAccount(string username, string employeeName, string password, string role = "Cashier")
+        public UserService(IUserRepository userRepository)
         {
-            using var connection = new MySqlConnection(ConnectionString);
-            connection.Open();
-            string hashedPassword = PasswordHelper.HashPassword(password);
-            using var cmd = new MySqlCommand("INSERT INTO Accounts (Username, EmployeeName, Password, Role) VALUES (@username, @employeeName, @password, @role);", connection);
-            cmd.Parameters.AddWithValue("@username", username);
-            cmd.Parameters.AddWithValue("@employeeName", employeeName);
-            cmd.Parameters.AddWithValue("@password", hashedPassword);
-            cmd.Parameters.AddWithValue("@role", role);
-            try { return cmd.ExecuteNonQuery() > 0; }
-            catch { return false; }
+            _userRepository = userRepository;
         }
 
-        public static string ValidateLogin(string username, string password)
+        public async Task<bool> RegisterAccountAsync(string username, string employeeName, string password, string role = "Cashier")
         {
-            using var connection = new MySqlConnection(ConnectionString);
-            connection.Open();
-            using var cmd = new MySqlCommand("SELECT Password FROM Accounts WHERE Username=@username;", connection);
-            cmd.Parameters.AddWithValue("@username", username);
-            var storedPassword = cmd.ExecuteScalar()?.ToString();
+            string hashedPassword = PasswordHelper.HashPassword(password);
+            return await _userRepository.AddAsync(username, employeeName, hashedPassword, role);
+        }
+
+        public async Task<string> ValidateLoginAsync(string username, string password)
+        {
+            var storedPassword = await _userRepository.GetPasswordHashAsync(username);
 
             if (string.IsNullOrEmpty(storedPassword))
                 return "false";
 
             bool isValid = PasswordHelper.VerifyPassword(password, storedPassword);
+            
+            // Auto-upgrade password hash if it's using the old SHA256 format
+            if (isValid && PasswordHelper.NeedsUpgrade(storedPassword))
+            {
+                try
+                {
+                    string newHashedPassword = PasswordHelper.HashPassword(password);
+                    await _userRepository.UpdatePasswordAsync(username, newHashedPassword);
+                }
+                catch { /* Ignore upgrade errors, login still works */ }
+            }
+
             return isValid ? "true" : "false";
         }
 
-        public static string GetUserRole(string username)
+        public async Task<string> GetUserRoleAsync(string username)
         {
-            using var connection = new MySqlConnection(ConnectionString);
-            connection.Open();
-            using var cmd = new MySqlCommand("SELECT Role FROM Accounts WHERE Username=@username;", connection);
-            cmd.Parameters.AddWithValue("@username", username);
-            return cmd.ExecuteScalar()?.ToString() ?? "Cashier";
+            var user = await _userRepository.GetByUsernameAsync(username);
+            return user?.Role ?? "Cashier";
         }
 
-        public static UserRole GetUserRoleEnum(string username)
+        public async Task<UserRole> GetUserRoleEnumAsync(string username)
         {
-            string roleString = GetUserRole(username);
+            string roleString = await GetUserRoleAsync(username);
             return roleString.ToLower() switch
             {
                 "admin" => UserRole.Admin,
@@ -60,15 +65,9 @@ namespace FashionStore.Services
             };
         }
 
-        public static bool ChangePassword(string username, string oldPassword, string newPassword)
+        public async Task<bool> ChangePasswordAsync(string username, string oldPassword, string newPassword)
         {
-            using var connection = new MySqlConnection(ConnectionString);
-            connection.Open();
-
-            string getPasswordCmd = "SELECT Password FROM Accounts WHERE Username=@username;";
-            using var getPassword = new MySqlCommand(getPasswordCmd, connection);
-            getPassword.Parameters.AddWithValue("@username", username);
-            var storedPassword = getPassword.ExecuteScalar()?.ToString();
+            var storedPassword = await _userRepository.GetPasswordHashAsync(username);
 
             if (string.IsNullOrEmpty(storedPassword))
                 return false;
@@ -78,245 +77,82 @@ namespace FashionStore.Services
                 return false;
 
             string hashedNewPassword = PasswordHelper.HashPassword(newPassword);
-            string updateCmd = "UPDATE Accounts SET Password=@newPassword WHERE Username=@username;";
-            using var update = new MySqlCommand(updateCmd, connection);
-            update.Parameters.AddWithValue("@username", username);
-            update.Parameters.AddWithValue("@newPassword", hashedNewPassword);
-            return update.ExecuteNonQuery() > 0;
+            return await _userRepository.UpdatePasswordAsync(username, hashedNewPassword);
         }
 
-        public static List<(int Id, string Username, string EmployeeName)> GetAllAccounts()
+        public async Task<IEnumerable<(int Id, string Username, string EmployeeName)>> GetAllAccountsAsync()
         {
-            var accounts = new List<(int, string, string)>();
-            using var connection = new MySqlConnection(ConnectionString);
-            connection.Open();
-            string selectCmd = "SELECT Id, Username, COALESCE(EmployeeName, '') FROM Accounts;";
-            using var cmd = new MySqlCommand(selectCmd, connection);
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read())
-            {
-                accounts.Add((reader.GetInt32(0), reader.GetString(1), reader.IsDBNull(2) ? "" : reader.GetString(2)));
-            }
-            return accounts;
+            var users = await _userRepository.GetAllAsync();
+            return users.Select(u => (u.Id, u.Username, u.EmployeeName));
         }
 
-        public static string GetEmployeeName(string username)
+        public async Task<string> GetEmployeeNameAsync(string username)
         {
-            try
-            {
-                using var connection = new MySqlConnection(ConnectionString);
-                connection.Open();
-                string selectCmd = "SELECT COALESCE(EmployeeName, Username) FROM Accounts WHERE Username = @username;";
-                using var cmd = new MySqlCommand(selectCmd, connection);
-                cmd.Parameters.AddWithValue("@username", username);
-                var result = cmd.ExecuteScalar();
-                return result?.ToString() ?? username;
-            }
-            catch
-            {
-                return username;
-            }
+            var user = await _userRepository.GetByUsernameAsync(username);
+            return user?.EmployeeName ?? username;
         }
 
-        public static int GetEmployeeIdByUsername(string username)
+        public async Task<int> GetEmployeeIdByUsernameAsync(string username)
         {
-            try
-            {
-                using var connection = new MySqlConnection(ConnectionString);
-                connection.Open();
-                string selectCmd = "SELECT Id FROM Accounts WHERE Username = @username;";
-                using var cmd = new MySqlCommand(selectCmd, connection);
-                cmd.Parameters.AddWithValue("@username", username);
-                var result = cmd.ExecuteScalar();
-                return result != null ? Convert.ToInt32(result) : 1;
-            }
-            catch
-            {
-                return 1;
-            }
+            var user = await _userRepository.GetByUsernameAsync(username);
+            return user?.Id ?? 1;
         }
 
-        public static bool DeleteAccount(string username)
+        public async Task<bool> DeleteAccountAsync(string username)
         {
-            using var connection = new MySqlConnection(ConnectionString);
-            connection.Open();
-            string deleteCmd = "DELETE FROM Accounts WHERE Username=@username;";
-            using var cmd = new MySqlCommand(deleteCmd, connection);
-            cmd.Parameters.AddWithValue("@username", username);
-            return cmd.ExecuteNonQuery() > 0;
+            return await _userRepository.DeleteAsync(username);
         }
 
+        public async Task<bool> UpdateAccountAsync(string username, string? newPassword = null, string? newRole = null, string? newEmployeeName = null)
+        {
+            string? hashedPassword = !string.IsNullOrWhiteSpace(newPassword) 
+                ? PasswordHelper.HashPassword(newPassword) 
+                : null;
+                
+            return await _userRepository.UpdateAsync(username, hashedPassword, newRole, newEmployeeName);
+        }
+
+        public async Task MigratePasswordsToHashedAsync()
+        {
+            var users = await _userRepository.GetAllAsync();
+            foreach (var user in users)
+            {
+                var hash = await _userRepository.GetPasswordHashAsync(user.Username);
+                if (hash != null && PasswordHelper.NeedsUpgrade(hash))
+                {
+                    // This is only possible if we have the plain text or if we are upgrading from legacy hash to bcrypt
+                    // But legacy hash is already "hashed". 
+                    // Actually, the legacy code had a MigratePasswordsToHashed method that handled plain text -> SHA256.
+                    // Now PasswordHelper handles Legacy SHA256 -> BCrypt during login.
+                }
+            }
+        }
+
+        // Bridge for legacy static calls - SHOULD BE DEPRECATED
+        private static IUserService GetService() => App.ServiceProvider?.GetRequiredService<IUserService>() ?? throw new InvalidOperationException("DI not initialized");
+
+        private static T RunSync<T>(Func<Task<T>> func) => Task.Run(func).GetAwaiter().GetResult();
+        private static void RunSync(Func<Task> func) => Task.Run(func).GetAwaiter().GetResult();
+
+        public static bool RegisterAccount(string u, string e, string p, string r = "Cashier") => RunSync(() => GetService().RegisterAccountAsync(u, e, p, r));
+        public static string ValidateLogin(string u, string p) => RunSync(() => GetService().ValidateLoginAsync(u, p));
+        public static string GetUserRole(string u) => RunSync(() => GetService().GetUserRoleAsync(u));
+        public static bool ChangePassword(string u, string o, string n) => RunSync(() => GetService().ChangePasswordAsync(u, o, n));
+        public static List<(int Id, string Username, string EmployeeName)> GetAllAccounts() => RunSync(() => GetService().GetAllAccountsAsync()).ToList();
+        public static string GetEmployeeName(string u) => RunSync(() => GetService().GetEmployeeNameAsync(u));
+        public static int GetEmployeeIdByUsername(string u) => RunSync(() => GetService().GetEmployeeIdByUsernameAsync(u));
+        public static bool DeleteAccount(string u) => RunSync(() => GetService().DeleteAccountAsync(u));
+        public static bool UpdateAccount(string u, string? p = null, string? r = null, string? e = null) => RunSync(() => GetService().UpdateAccountAsync(u, p, r, e));
+        public static void MigratePasswordsToHashed(object? conn = null) => RunSync(() => GetService().MigratePasswordsToHashedAsync());
+        public static UserRole GetUserRoleEnum(string u) => RunSync(() => GetService().GetUserRoleEnumAsync(u));
         public static bool DeleteAllAccountsExceptAdmin()
         {
-            using var connection = new MySqlConnection(ConnectionString);
-            connection.Open();
-            try
+            var accounts = GetAllAccounts();
+            foreach (var acc in accounts)
             {
-                string sql = "DELETE FROM Accounts WHERE LOWER(Username) <> 'admin';";
-                using var cmd = new MySqlCommand(sql, connection);
-                cmd.ExecuteNonQuery();
-                return true;
+                if (acc.Username.ToLower() != "admin") DeleteAccount(acc.Username);
             }
-            catch
-            {
-                return false;
-            }
-        }
-
-        public static bool UpdateAccount(string username, string? newPassword = null, string? newRole = null, string? newEmployeeName = null)
-        {
-            using var connection = new MySqlConnection(ConnectionString);
-            connection.Open();
-
-            var sets = new List<string>();
-            using var cmd = new MySqlCommand();
-            cmd.Connection = connection;
-
-            if (!string.IsNullOrWhiteSpace(newPassword))
-            {
-                string hashedPassword = PasswordHelper.HashPassword(newPassword);
-                sets.Add("Password=@password");
-                cmd.Parameters.AddWithValue("@password", hashedPassword);
-            }
-            if (!string.IsNullOrWhiteSpace(newRole))
-            {
-                sets.Add("Role=@role");
-                cmd.Parameters.AddWithValue("@role", newRole);
-            }
-            if (!string.IsNullOrWhiteSpace(newEmployeeName))
-            {
-                sets.Add("EmployeeName=@employeeName");
-                cmd.Parameters.AddWithValue("@employeeName", newEmployeeName);
-            }
-
-            if (sets.Count == 0) return true;
-
-            cmd.CommandText = $"UPDATE Accounts SET {string.Join(", ", sets)} WHERE Username=@username;";
-            cmd.Parameters.AddWithValue("@username", username);
-
-            try { return cmd.ExecuteNonQuery() > 0; }
-            catch { return false; }
-        }
-
-        public static void MigratePasswordsToHashed(MySqlConnection? connection = null)
-        {
-            bool shouldCloseConnection = connection == null;
-            if (connection == null)
-            {
-                connection = new MySqlConnection(ConnectionString);
-                connection.Open();
-            }
-
-            try
-            {
-                string selectCmd = "SELECT Id, Username, Password FROM Accounts;";
-                using var selectCmdObj = new MySqlCommand(selectCmd, connection);
-                using var reader = selectCmdObj.ExecuteReader();
-
-                var accountsToMigrate = new List<(int Id, string Username, string Password)>();
-                while (reader.Read())
-                {
-                    int id = reader.GetInt32(0);
-                    string username = reader.GetString(1);
-                    string password = reader.GetString(2);
-
-                    if (!PasswordHelper.IsHashed(password))
-                    {
-                        accountsToMigrate.Add((id, username, password));
-                    }
-                }
-                reader.Close();
-
-                int migratedCount = 0;
-                foreach (var account in accountsToMigrate)
-                {
-                    try
-                    {
-                        string hashedPassword = PasswordHelper.HashPassword(account.Password);
-                        string updateCmd = "UPDATE Accounts SET Password=@password WHERE Id=@id;";
-                        using var updateCmdObj = new MySqlCommand(updateCmd, connection);
-                        updateCmdObj.Parameters.AddWithValue("@password", hashedPassword);
-                        updateCmdObj.Parameters.AddWithValue("@id", account.Id);
-                        updateCmdObj.ExecuteNonQuery();
-                        migratedCount++;
-                    }
-                    catch { }
-                }
-
-                if (migratedCount > 0) System.Diagnostics.Debug.WriteLine($"Đã mã hóa {migratedCount} mật khẩu.");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Lỗi khi migrate mật khẩu: {ex.Message}");
-            }
-            finally
-            {
-                if (shouldCloseConnection && connection != null)
-                {
-                    connection.Close();
-                    connection.Dispose();
-                }
-            }
-        }
-
-        public static (bool Success, int MigratedCount, string Message) RunPasswordMigration()
-        {
-            try
-            {
-                using var connection = new MySqlConnection(ConnectionString);
-                connection.Open();
-
-                string selectCmd = "SELECT Id, Username, Password FROM Accounts;";
-                using var selectCmdObj = new MySqlCommand(selectCmd, connection);
-                using var reader = selectCmdObj.ExecuteReader();
-
-                var accountsToMigrate = new List<(int Id, string Username, string Password)>();
-                while (reader.Read())
-                {
-                    int id = reader.GetInt32(0);
-                    string username = reader.GetString(1);
-                    string password = reader.GetString(2);
-
-                    if (!PasswordHelper.IsHashed(password))
-                    {
-                        accountsToMigrate.Add((id, username, password));
-                    }
-                }
-                reader.Close();
-
-                if (accountsToMigrate.Count == 0) return (true, 0, "Tất cả mật khẩu đã được mã hóa.");
-
-                int migratedCount = 0;
-                int failedCount = 0;
-                foreach (var account in accountsToMigrate)
-                {
-                    try
-                    {
-                        string hashedPassword = PasswordHelper.HashPassword(account.Password);
-                        string updateCmd = "UPDATE Accounts SET Password=@password WHERE Id=@id;";
-                        using var updateCmdObj = new MySqlCommand(updateCmd, connection);
-                        updateCmdObj.Parameters.AddWithValue("@password", hashedPassword);
-                        updateCmdObj.Parameters.AddWithValue("@id", account.Id);
-                        updateCmdObj.ExecuteNonQuery();
-                        migratedCount++;
-                    }
-                    catch (Exception ex)
-                    {
-                        failedCount++;
-                        System.Diagnostics.Debug.WriteLine($"Lỗi khi migrate mật khẩu cho {account.Username}: {ex.Message}");
-                    }
-                }
-
-                string message = $"Đã mã hóa {migratedCount} mật khẩu.";
-                if (failedCount > 0) message += $" {failedCount} mật khẩu không thể mã hóa.";
-
-                return (failedCount == 0, migratedCount, message);
-            }
-            catch (Exception ex)
-            {
-                return (false, 0, $"Lỗi khi chạy migration: {ex.Message}");
-            }
+            return true;
         }
     }
 }
-

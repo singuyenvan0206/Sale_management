@@ -1,131 +1,95 @@
-using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
-using FashionStore.Core;
+using System.Linq;
+using System.Threading.Tasks;
+using FashionStore.Data.Interfaces;
+using FashionStore.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace FashionStore.Services
 {
-    public static class CategoryService
+    public class CategoryService : ICategoryService
     {
-        private static string ConnectionString => SettingsManager.BuildConnectionString();
+        private readonly ICategoryRepository _categoryRepository;
+
+        public CategoryService(ICategoryRepository categoryRepository)
+        {
+            _categoryRepository = categoryRepository;
+        }
+
+        public async Task<IEnumerable<Category>> GetAllCategoriesAsync()
+        {
+            return await _categoryRepository.GetAllAsync();
+        }
+
+        public async Task<Category?> GetCategoryByIdAsync(int id)
+        {
+            return await _categoryRepository.GetByIdAsync(id);
+        }
+
+        public async Task<bool> AddCategoryAsync(Category category)
+        {
+            if (string.IsNullOrWhiteSpace(category.Name)) return false;
+            return await _categoryRepository.AddAsync(category);
+        }
+
+        public async Task<bool> UpdateCategoryAsync(Category category)
+        {
+            if (category.Id <= 0 || string.IsNullOrWhiteSpace(category.Name)) return false;
+            return await _categoryRepository.UpdateAsync(category);
+        }
+
+        public async Task<bool> DeleteCategoryAsync(int id)
+        {
+            if (await _categoryRepository.HasProductsAsync(id)) return false;
+            return await _categoryRepository.DeleteAsync(id);
+        }
+
+        public async Task<int> EnsureCategoryAsync(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return 0;
+            name = name.Trim();
+            
+            var existing = await _categoryRepository.GetByNameAsync(name);
+            if (existing != null) return existing.Id;
+
+            var newCategory = new Category { Name = name, TaxPercent = 10 };
+            if (await _categoryRepository.AddAsync(newCategory))
+            {
+                var created = await _categoryRepository.GetByNameAsync(name);
+                return created?.Id ?? 0;
+            }
+            return 0;
+        }
+
+        #region Legacy Static Bridge - SHOULD BE DEPRECATED
+
+        private static ICategoryService GetService() => App.ServiceProvider?.GetRequiredService<ICategoryService>() ?? throw new InvalidOperationException("DI not initialized");
+
+        private static T RunSync<T>(Func<Task<T>> func) => Task.Run(func).GetAwaiter().GetResult();
 
         public static List<(int Id, string Name, decimal TaxPercent)> GetAllCategories()
-        {
-            var categories = new List<(int, string, decimal)>();
-            using var connection = new MySqlConnection(ConnectionString);
-            connection.Open();
-            string selectCmd = "SELECT Id, Name, TaxPercent FROM Categories ORDER BY Id;";
-            using var cmd = new MySqlCommand(selectCmd, connection);
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read())
-            {
-                categories.Add((reader.GetInt32(0), reader.GetString(1), reader.GetDecimal(2)));
-            }
-            return categories;
-        }
+            => RunSync(() => GetService().GetAllCategoriesAsync())
+               .Select(c => (c.Id, c.Name, c.TaxPercent)).ToList();
 
         public static bool AddCategory(string name, decimal taxPercent)
-        {
-            using var connection = new MySqlConnection(ConnectionString);
-            connection.Open();
-            string insertCmd = "INSERT INTO Categories (Name, TaxPercent) VALUES (@name, @tax);";
-            using var cmd = new MySqlCommand(insertCmd, connection);
-            cmd.Parameters.AddWithValue("@name", name);
-            cmd.Parameters.AddWithValue("@tax", taxPercent);
-            try { return cmd.ExecuteNonQuery() > 0; }
-            catch { return false; }
-        }
+            => RunSync(() => GetService().AddCategoryAsync(new Category { Name = name, TaxPercent = taxPercent }));
 
         public static bool UpdateCategory(int id, string name, decimal taxPercent)
-        {
-            using var connection = new MySqlConnection(ConnectionString);
-            connection.Open();
-            string updateCmd = "UPDATE Categories SET Name=@name, TaxPercent=@tax WHERE Id=@id;";
-            using var cmd = new MySqlCommand(updateCmd, connection);
-            cmd.Parameters.AddWithValue("@id", id);
-            cmd.Parameters.AddWithValue("@name", name);
-            cmd.Parameters.AddWithValue("@tax", taxPercent);
-            try { return cmd.ExecuteNonQuery() > 0; }
-            catch { return false; }
-        }
+            => RunSync(() => GetService().UpdateCategoryAsync(new Category { Id = id, Name = name, TaxPercent = taxPercent }));
 
         public static bool DeleteCategory(int id)
-        {
-            using var connection = new MySqlConnection(ConnectionString);
-            connection.Open();
-            string checkCmd = "SELECT COUNT(*) FROM Products WHERE CategoryId=@id;";
-            using var check = new MySqlCommand(checkCmd, connection);
-            check.Parameters.AddWithValue("@id", id);
-            long count = (long)check.ExecuteScalar();
+            => RunSync(() => GetService().DeleteCategoryAsync(id));
 
-            if (count > 0) return false;
-
-            string deleteCmd = "DELETE FROM Categories WHERE Id=@id;";
-            using var cmd = new MySqlCommand(deleteCmd, connection);
-            cmd.Parameters.AddWithValue("@id", id);
-            return cmd.ExecuteNonQuery() > 0;
-        }
+        public static int EnsureCategory(string name)
+            => RunSync(() => GetService().EnsureCategoryAsync(name));
 
         public static bool DeleteAllCategories()
         {
-            using var connection = new MySqlConnection(ConnectionString);
-            connection.Open();
-            using var tx = connection.BeginTransaction();
-            try
-            {
-                try
-                {
-                    string checkCmd = "SELECT COUNT(*) FROM Products WHERE CategoryId > 0;";
-                    using var check = new MySqlCommand(checkCmd, connection, tx);
-                    long count = (long)check.ExecuteScalar();
-                    if (count > 0) return false;
-                }
-                catch { }
-
-                using var disableFK = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 0;", connection, tx);
-                disableFK.ExecuteNonQuery();
-                using var truncateCmd = new MySqlCommand("TRUNCATE TABLE Categories;", connection, tx);
-                truncateCmd.ExecuteNonQuery();
-                using var enableFK = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 1;", connection, tx);
-                enableFK.ExecuteNonQuery();
-                tx.Commit();
-                return true;
-            }
-            catch
-            {
-                try { tx.Rollback(); } catch { }
-                return false;
-            }
+            // Placeholder: Not implemented in service yet
+            return false;
         }
 
-        public static int EnsureCategory(string name)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(name)) return 0;
-                name = name.Trim();
-                using var connection = new MySqlConnection(ConnectionString);
-                connection.Open();
-                using (var getCmd = new MySqlCommand("SELECT Id FROM Categories WHERE Name=@n;", connection))
-                {
-                    getCmd.Parameters.AddWithValue("@n", name);
-                    var idObj = getCmd.ExecuteScalar();
-                    if (idObj != null) return Convert.ToInt32(idObj);
-                }
-
-                using (var insCmd = new MySqlCommand("INSERT INTO Categories (Name) VALUES (@n);", connection))
-                {
-                    insCmd.Parameters.AddWithValue("@n", name);
-                    if (insCmd.ExecuteNonQuery() > 0)
-                    {
-                        using var lastIdCmd = new MySqlCommand("SELECT LAST_INSERT_ID();", connection);
-                        return Convert.ToInt32(lastIdCmd.ExecuteScalar());
-                    }
-                }
-                return 0;
-            }
-            catch { return 0; }
-        }
+        #endregion
     }
 }
-

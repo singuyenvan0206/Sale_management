@@ -1,4 +1,6 @@
-namespace FashionStore
+using System;
+
+namespace FashionStore.Models
 {
     public class Voucher
     {

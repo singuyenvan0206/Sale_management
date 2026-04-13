@@ -1,6 +1,7 @@
 using MySql.Data.MySqlClient;
 using System;
 using System.Diagnostics;
+using Dapper;
 
 namespace FashionStore.Data
 {
@@ -82,22 +83,11 @@ namespace FashionStore.Data
                 }
 
                 // 2. Seed Suppliers
-                ExecuteNonQuery(connection, "INSERT IGNORE INTO Suppliers (Name, ContactPerson, PhoneNumber, Address) VALUES ('Công ty May Mặc Á Châu', 'Nguyễn Văn A', '0901234567', '123 Đường ABC, HCM');");
+                ExecuteNonQuery(connection, "INSERT IGNORE INTO Suppliers (Name, ContactName, Phone, Address) VALUES ('Công ty May Mặc Á Châu', 'Nguyễn Văn A', '0901234567', '123 Đường ABC, HCM');");
 
                 // Get some IDs
-                int catId = 0;
-                using (var cmd = new MySqlCommand("SELECT Id FROM Categories WHERE Name='Áo Sơ Mi' LIMIT 1", connection))
-                {
-                    var res = cmd.ExecuteScalar();
-                    if (res != null) catId = Convert.ToInt32(res);
-                }
-
-                int supId = 0;
-                using (var cmd = new MySqlCommand("SELECT Id FROM Suppliers WHERE Name='Công ty May Mặc Á Châu' LIMIT 1", connection))
-                {
-                    var res = cmd.ExecuteScalar();
-                    if (res != null) supId = Convert.ToInt32(res);
-                }
+                int catId = connection.ExecuteScalar<int>("SELECT Id FROM Categories WHERE Name='Áo Sơ Mi' LIMIT 1");
+                int supId = connection.ExecuteScalar<int>("SELECT Id FROM Suppliers WHERE Name='Công ty May Mặc Á Châu' LIMIT 1");
 
                 if (catId > 0)
                 {
@@ -655,8 +645,7 @@ namespace FashionStore.Data
             try
             {
                 string checkCmd = $"SHOW COLUMNS FROM {tableName} LIKE '{columnName}';";
-                using var cmd = new MySqlCommand(checkCmd, connection);
-                var result = cmd.ExecuteScalar();
+                var result = connection.ExecuteScalar<string>(checkCmd);
                 return result != null;
             }
             catch
@@ -667,8 +656,7 @@ namespace FashionStore.Data
 
         private static int ExecuteNonQuery(MySqlConnection connection, string sql)
         {
-            using var cmd = new MySqlCommand(sql, connection);
-            return cmd.ExecuteNonQuery();
+            return connection.Execute(sql);
         }
     }
 }
