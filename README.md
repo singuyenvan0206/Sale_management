@@ -174,27 +174,36 @@ dotnet restore
 | Package | Version | Mục đích |
 |---------|---------|----------|
 | `MySql.Data` | 9.4.0 | Kết nối MySQL |
+| `Dapper` | 2.1.35 | Tối ưu truy xuất CSDL (Micro-ORM) |
+| `Serilog` | 4.0.0+ | Ghi log hệ thống và lỗi tự động |
 | `OxyPlot.Wpf` | 2.1.0 | Biểu đồ báo cáo |
 | `QRCoder` | 1.4.3 | Tạo mã QR thanh toán |
 
 ---
 
+## 🛡️ Hệ thống Log & Giám sát lỗi
+
+Dự án áp dụng **Global Error Handling** thông qua Serilog. Nếu ứng dụng gặp sự cố (Crash/Exception), thông tin chi tiết sẽ được tự động lưu lại thay vì văng ứng dụng đột ngột.
+- Đường dẫn file log mặc định: `%AppData%\FashionStore\Logs\`
+
+---
+
 ## 🏗️ Kiến trúc
 
-Dự án tuân theo mô hình **MVVM** (Model-View-ViewModel):
+Dự án tuân theo mô hình **MVVM** (Model-View-ViewModel) kết hợp **Repository Pattern**:
 
 ```
-View (XAML) ──binding──▶ ViewModel ──calls──▶ Service ──queries──▶ Data (DatabaseHelper)
+View (XAML) ──binding──▶ ViewModel ──calls──▶ Service ──queries──▶ Repository (Dapper)
                               │
                               └── Model (data classes)
 ```
 
 - **Views** — Giao diện XAML, tối thiểu code-behind
 - **ViewModels** — Logic hiển thị, binding, commands (kế thừa `BaseViewModel`, dùng `RelayCommand`)
-- **Services** — Business logic & truy vấn dữ liệu
-- **Data** — Kết nối DB & migration
+- **Services** — Quản lý Business Logic
+- **Repositories (Data)** — Lớp trừu tượng thao tác cơ sở dữ liệu qua **Dapper** (Rollback an toàn).
 - **Core** — Utilities dùng chung (pagination, QR, ngôn ngữ, settings…)
-- **Models** — Các lớp dữ liệu (Product, Account, Voucher…)
+- **Models** — Các lớp dữ liệu thực thể (Product, Account, Voucher…)
 
 ---
 
