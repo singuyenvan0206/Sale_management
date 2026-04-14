@@ -1,0 +1,145 @@
+<Window x:Class="FashionStore.App.Views.PromotionManagementWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:FashionStore.App.ViewModels"
+        mc:Ignorable="d"
+        Title="Quản Lý Chương Trình Khuyến Mãi" Height="700" Width="1000"
+        WindowStartupLocation="CenterScreen"
+        Background="#F5F7FB"
+        FontFamily="Segoe UI">
+
+    <Window.DataContext>
+        <vm:PromotionViewModel/>
+    </Window.DataContext>
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <Style TargetType="TextBox">
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="BorderBrush" Value="#CCCCCC"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="15">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="3*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Trái: Form nhập liệu -->
+        <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="15" Margin="0,0,10,0">
+            <Border.Effect>
+                <DropShadowEffect Color="Black" Opacity="0.1" BlurRadius="5" ShadowDepth="1"/>
+            </Border.Effect>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="Thông tin Khuyến Mãi" FontSize="18" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,15"/>
+
+                    <TextBlock Text="Tên chương trình:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Padding="8" Margin="0,0,0,10" />
+
+                    <TextBlock Text="Loại hình:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <ComboBox ItemsSource="{Binding PromotionTypes}" SelectedItem="{Binding Type}" Padding="8" Margin="0,0,0,10"/>
+
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Từ ngày:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                            <DatePicker SelectedDate="{Binding StartDate}" Padding="5"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Đến ngày:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                            <DatePicker SelectedDate="{Binding EndDate}" Padding="5"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <CheckBox Content="Đang kích hoạt (Active)" IsChecked="{Binding IsActive}" Margin="0,5,0,15"/>
+
+                    <!-- Cấu hình Flash Sale -->
+                    <StackPanel Visibility="{Binding IsFlashSale, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Text="Áp dụng cho Sản phẩm cụ thể:" Margin="0,0,0,5"/>
+                        <ComboBox ItemsSource="{Binding Products}" SelectedItem="{Binding RequiredProduct}" DisplayMemberPath="Name" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="HOẶC Áp dụng cho Danh mục:" Margin="0,0,0,5"/>
+                        <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding TargetCategory}" DisplayMemberPath="Name" Margin="0,0,0,10"/>
+
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Giảm %:" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding DiscountPercent, UpdateSourceTrigger=PropertyChanged}" Padding="8" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Giảm số tiền (VND):" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding DiscountAmount, UpdateSourceTrigger=PropertyChanged}" Padding="8" />
+                            </StackPanel>
+                        </Grid>
+                        <TextBlock Text="* Lưu ý: Khi áp dụng sẽ làm giảm toàn bộ Subtotal hoá đơn hoặc tuỳ chọn sản phẩm." FontStyle="Italic" Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,15"/>
+                    </StackPanel>
+
+                    <!-- Cấu hình BOGO -->
+                    <StackPanel Visibility="{Binding IsBOGO, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Text="Cấu hình Mua X tặng Y (BOGO):" FontWeight="SemiBold" Foreground="#34495E" Margin="0,10,0,10" FontSize="14"/>
+                        
+                        <TextBlock Text="Sản phẩm YÊU CẦU MUA:" Margin="0,0,0,5"/>
+                        <ComboBox ItemsSource="{Binding Products}" SelectedItem="{Binding RequiredProduct}" DisplayMemberPath="Name" Margin="0,0,0,10"/>
+                        <TextBlock Text="Số lượng mua cần đạt:" Margin="0,0,0,5"/>
+                        <TextBox Text="{Binding RequiredQuantity, UpdateSourceTrigger=PropertyChanged}" Padding="8" Margin="0,0,0,10" />
+
+                        <TextBlock Text="Sản phẩm TẶNG KÈM:" Margin="0,0,0,5"/>
+                        <ComboBox ItemsSource="{Binding Products}" SelectedItem="{Binding RewardProduct}" DisplayMemberPath="Name" Margin="0,0,0,10"/>
+                        <TextBlock Text="Số lượng tặng:" Margin="0,0,0,5"/>
+                        <TextBox Text="{Binding RewardQuantity, UpdateSourceTrigger=PropertyChanged}" Padding="8" Margin="0,0,0,15" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                        <Button Content="Làm Mới" Command="{Binding ClearCommand}" Background="#95A5A6" Foreground="White" Padding="15,8" Margin="0,0,10,0" BorderThickness="0" Cursor="Hand"/>
+                        <Button Content="Xoá" Command="{Binding DeleteCommand}" Background="#E74C3C" Foreground="White" Padding="15,8" Margin="0,0,10,0" BorderThickness="0" Cursor="Hand"/>
+                        <Button Content="Lưu Không Đổi" Command="{Binding SaveCommand}" Background="#2ECC71" Foreground="White" Padding="20,8" BorderThickness="0" Cursor="Hand"/>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Phải: Danh sách Promotions -->
+        <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="15">
+            <Border.Effect>
+                <DropShadowEffect Color="Black" Opacity="0.1" BlurRadius="5" ShadowDepth="1"/>
+            </Border.Effect>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <TextBlock Grid.Row="0" Text="Danh sách Chiến dịch" FontSize="18" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,15"/>
+                
+                <DataGrid Grid.Row="1" ItemsSource="{Binding Promotions}" SelectedItem="{Binding SelectedPromotion}" 
+                          AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column"
+                          GridLinesVisibility="Horizontal" RowHeight="35">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                        <DataGridTextColumn Header="Tên Chiến Dịch" Binding="{Binding Name}" Width="150*"/>
+                        <DataGridTextColumn Header="Loại" Binding="{Binding Type}" Width="80"/>
+                        <DataGridTextColumn Header="Nội dung" Binding="{Binding PromotionDetails}" Width="150*"/>
+                        <DataGridTextColumn Header="Từ ngày" Binding="{Binding StartDate, StringFormat=dd/MM/yyyy}" Width="90"/>
+                        <DataGridTextColumn Header="Đến ngày" Binding="{Binding EndDate, StringFormat=dd/MM/yyyy}" Width="90"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

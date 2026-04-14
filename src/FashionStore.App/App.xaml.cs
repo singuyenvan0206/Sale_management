@@ -1,16 +1,15 @@
-using System;
-using System.IO;
-using System.Windows;
+using FashionStore.App.ViewModels;
+using FashionStore.App.Views;
+using FashionStore.Core.Interfaces;
+using FashionStore.Core.Settings;
+using FashionStore.Data;
+using FashionStore.Data.Repositories;
+using FashionStore.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using FashionStore.Services;
-using FashionStore.Data;
-using FashionStore.Core;
-using FashionStore.Data.Interfaces;
-using FashionStore.Data.Repositories;
-using FashionStore.ViewModels;
-
-namespace FashionStore
+using System.IO;
+using System.Windows;
+namespace FashionStore.App
 {
     public partial class App : Application
     {
@@ -34,6 +33,7 @@ namespace FashionStore
             var serviceCollection = new ServiceCollection();
             ConfigureServices(serviceCollection);
             ServiceProvider = serviceCollection.BuildServiceProvider();
+            ServiceLocator.ServiceProvider = ServiceProvider;
 
             // 3. Load Settings and set Vietnamese culture
             var settings = SettingsManager.Load();
@@ -66,7 +66,7 @@ namespace FashionStore
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<IVoucherRepository, VoucherRepository>();
             services.AddScoped<IInvoiceRepository, InvoiceRepository>();
-            
+
             // Services
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IProductService, ProductService>();
@@ -75,10 +75,10 @@ namespace FashionStore
             services.AddScoped<IVoucherService, VoucherService>();
             services.AddScoped<IInvoiceService, InvoiceService>();
             services.AddScoped<ICalculationService, CalculationService>();
-            
+
             // Infrastructure
             services.AddSingleton<ICacheService, InMemoryCacheService>();
-            
+
             // ViewModels
             services.AddTransient<InvoiceManagementViewModel>();
             // services.AddTransient<MainViewModel>();
@@ -95,9 +95,9 @@ namespace FashionStore
                 {
                     errorMessage += $"\n\nChi tiết: {args.Exception.InnerException.Message}";
                 }
-                
+
                 Log.Error(args.Exception, "Dispatcher Unhandled Exception");
-                
+
                 MessageBox.Show(errorMessage, "Lỗi hệ thống", MessageBoxButton.OK, MessageBoxImage.Error);
             };
 
@@ -106,7 +106,7 @@ namespace FashionStore
                 var ex = args.ExceptionObject as Exception;
                 Log.Fatal(ex, "Critical AppDomain Unhandled Exception");
             };
-            
+
             TaskScheduler.UnobservedTaskException += (sender, args) =>
             {
                 args.SetObserved();

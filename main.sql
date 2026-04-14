@@ -145,6 +145,7 @@ CREATE TABLE `invoiceitems` (
   KEY `InvoiceId` (`InvoiceId`),
   KEY `ProductId` (`ProductId`),
   KEY `EmployeeId` (`EmployeeId`),
+  KEY `idx_invoice_id` (`InvoiceId`),
   CONSTRAINT `invoiceitems_ibfk_1` FOREIGN KEY (`InvoiceId`) REFERENCES `invoices` (`Id`) ON DELETE CASCADE,
   CONSTRAINT `invoiceitems_ibfk_2` FOREIGN KEY (`ProductId`) REFERENCES `products` (`Id`),
   CONSTRAINT `invoiceitems_ibfk_3` FOREIGN KEY (`EmployeeId`) REFERENCES `accounts` (`Id`)
@@ -185,6 +186,7 @@ CREATE TABLE `invoices` (
   KEY `CustomerId` (`CustomerId`),
   KEY `EmployeeId` (`EmployeeId`),
   KEY `VoucherId` (`VoucherId`),
+  KEY `idx_created_date` (`CreatedDate`),
   CONSTRAINT `invoices_ibfk_1` FOREIGN KEY (`CustomerId`) REFERENCES `customers` (`Id`),
   CONSTRAINT `invoices_ibfk_2` FOREIGN KEY (`EmployeeId`) REFERENCES `accounts` (`Id`),
   CONSTRAINT `invoices_ibfk_3` FOREIGN KEY (`VoucherId`) REFERENCES `vouchers` (`Id`) ON DELETE SET NULL
@@ -221,6 +223,7 @@ CREATE TABLE `products` (
   PRIMARY KEY (`Id`),
   UNIQUE KEY `Code` (`Code`),
   KEY `CategoryId` (`CategoryId`),
+  KEY `idx_category` (`CategoryId`),
   CONSTRAINT `products_ibfk_1` FOREIGN KEY (`CategoryId`) REFERENCES `categories` (`Id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=201 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
