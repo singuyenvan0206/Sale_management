@@ -53,6 +53,22 @@
         <!-- Main Content -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="20">
             <StackPanel>
+                <!-- Global Settings -->
+                <Border Background="White" CornerRadius="10" Padding="20" Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="🌐 Cấu Hình Tỷ Giá Điểm" FontSize="18" FontWeight="Bold" Foreground="#4CAF50" Margin="0,0,0,15"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="200"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Số tiền bằng 1 điểm (VND):" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding SpendPerPoint, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,0"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
                 <!-- Regular Tier -->
                 <Border Background="White" CornerRadius="10" Padding="20" Margin="0,0,0,15">
                     <StackPanel>
@@ -149,10 +165,10 @@
                     </StackPanel>
                 </Border>
                 
-                <!-- Platinum Tier -->
+                <!-- VIP Tier -->
                 <Border Background="White" CornerRadius="10" Padding="20" Margin="0,0,0,15">
                     <StackPanel>
-                        <TextBlock Text="💎 PLATINUM (Bạch kim)" FontSize="18" FontWeight="Bold" Foreground="#E91E63" Margin="0,0,0,15"/>
+                        <TextBlock Text="💎 VIP (Bạch kim)" FontSize="18" FontWeight="Bold" Foreground="#E91E63" Margin="0,0,0,15"/>
                         
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -167,16 +183,16 @@
                             </Grid.RowDefinitions>
                             
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Điểm tối thiểu:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding PlatinumMinPoints, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,10"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding VIPMinPoints, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,10"/>
                             
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Giảm giá (%):" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding PlatinumDiscount, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,10"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding VIPDiscount, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,10"/>
                             
                             <TextBlock Grid.Row="2" Grid.Column="0" Text="Ưu đãi đặc biệt:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding PlatinumBenefits, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,10"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding VIPBenefits, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,10"/>
                             
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="Mô tả:" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding PlatinumDescription, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,0"/>
+                            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding VIPDescription, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,0,0"/>
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -193,12 +209,10 @@
                 
                 <!-- Auto Update Option -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <CheckBox Content="🔄 Tự động cập nhật hạng khách hàng theo ngưỡng điểm mới"
-                              IsChecked="{Binding AutoUpdateTiers, Mode=TwoWay}"
-                              FontSize="14"
-                              FontWeight="SemiBold"
-                              Foreground="#666666"
-                              VerticalAlignment="Center"/>
+                    <TextBlock Text="⚡ Điểm và Hạng sẽ luôn được cập nhật tự động cho toàn bộ khách hàng."
+                               FontStyle="Italic"
+                               Foreground="#888888"
+                               VerticalAlignment="Center"/>
                 </StackPanel>
                 
                 <!-- Action Buttons -->

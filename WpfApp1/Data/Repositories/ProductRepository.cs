@@ -23,7 +23,7 @@ namespace FashionStore.Data.Repositories
                            FROM Products p 
                            LEFT JOIN Categories c ON p.CategoryId = c.Id 
                            LEFT JOIN Suppliers s ON p.SupplierId = s.Id
-                           ORDER BY p.Id
+                           ORDER BY p.Id ASC
                            LIMIT 10000;";
             return await connection.QueryAsync<Product>(sql);
         }
@@ -139,7 +139,9 @@ namespace FashionStore.Data.Repositories
                            LIMIT @Top";
             
             var result = await connection.QueryAsync<dynamic>(sql, new { Top = topN });
-            return result.Select(r => ((string)(r.Name ?? "(Unknown)"), (int)(r.qty ?? 0), (decimal)(r.rev ?? 0m)));
+            var list = new List<(string ProductName, int Quantity, decimal Revenue)>();
+            foreach (var r in result) list.Add(((string)(r.Name ?? "(Không rõ)"), Convert.ToInt32(r.qty), Convert.ToDecimal(r.rev)));
+            return list;
         }
 
         public async Task<bool> DoesProductIdExistAsync(int productId)

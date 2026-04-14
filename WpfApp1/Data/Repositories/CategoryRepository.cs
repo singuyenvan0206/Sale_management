@@ -11,7 +11,7 @@ namespace FashionStore.Data.Repositories
         public async Task<IEnumerable<Category>> GetAllAsync()
         {
             using var connection = GetConnection();
-            string sql = "SELECT Id, Name, TaxPercent, Description, IsActive FROM Categories ORDER BY Id;";
+            string sql = "SELECT Id, Name, TaxPercent, Description, IsActive FROM Categories ORDER BY Id ASC;";
             return await connection.QueryAsync<Category>(sql);
         }
 

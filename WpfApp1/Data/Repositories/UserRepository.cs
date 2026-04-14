@@ -11,7 +11,7 @@ namespace FashionStore.Data.Repositories
         public async Task<IEnumerable<(int Id, string Username, string EmployeeName, string Role)>> GetAllAsync()
         {
             using var connection = GetConnection();
-            string sql = "SELECT Id, Username, COALESCE(EmployeeName, '') as EmployeeName, Role FROM Accounts;";
+            string sql = "SELECT Id, Username, COALESCE(EmployeeName, '') as EmployeeName, Role FROM Accounts ORDER BY Id ASC;";
             var result = await connection.QueryAsync<dynamic>(sql);
             return result.Select(r => ((int)r.Id, (string)r.Username, (string)r.EmployeeName, (string)r.Role));
         }

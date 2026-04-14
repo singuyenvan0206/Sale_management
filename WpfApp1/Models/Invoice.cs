@@ -24,6 +24,9 @@ namespace FashionStore.Models
 
         // Populated by JOIN queries
         public string CustomerName { get; set; } = string.Empty;
+        public string CustomerPhone { get; set; } = string.Empty;
+        public string CustomerEmail { get; set; } = string.Empty;
+        public string CustomerAddress { get; set; } = string.Empty;
 
         // Navigation properties
         public List<InvoiceItem> Items { get; set; } = new List<InvoiceItem>();

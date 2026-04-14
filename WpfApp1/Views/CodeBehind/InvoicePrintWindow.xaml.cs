@@ -87,7 +87,6 @@ namespace FashionStore
             SetText("OtherText", _discount.ToString("C"));
             SetText("TotalText", _total.ToString("C"));
 
-            GeneratePaymentQRCode(_invoiceId, _total);
         }
 
         private void LoadFromDatabase(int invoiceId, int employeeId)
@@ -153,7 +152,6 @@ namespace FashionStore
                 SetText("TotalText", header.Total.ToString("C"));
                 SetText("PaidText", header.Paid.ToString("C"));
 
-                GeneratePaymentQRCode(invoiceId, header.Total);
             }
             catch (Exception ex)
             {
@@ -374,79 +372,6 @@ namespace FashionStore
             return totalsGrid;
         }
 
-
-        private void GeneratePaymentQRCode(int invoiceId, decimal total)
-        {
-            try
-            {
-                var paymentSettings = PaymentSettingsManager.Load();
-
-                if (!paymentSettings.EnableQRCode)
-                {
-                    // áº¨n QR code náº¿u bá»‹ táº¯t
-                    var paymentQRCode = FindName("PaymentQRCode") as Image;
-                    if (paymentQRCode?.Parent is Border qrBorder)
-                    {
-                        qrBorder.Visibility = Visibility.Collapsed;
-                    }
-                    return;
-                }
-
-                // Sá»­ dá»¥ng VietQR API Ä‘á»ƒ táº¡o QR code thanh toĂ¡n ngĂ¢n hĂ ng
-                var qrCodeImage = FindName("PaymentQRCode") as Image;
-                if (qrCodeImage != null)
-                {
-                    // Táº¡o QR code náº¿u cĂ³ thĂ´ng tin ngĂ¢n hĂ ng Ä‘Æ°á»£c cáº¥u hĂ¬nh
-                    if (paymentSettings.BankAccount != null && paymentSettings.BankCode != null)
-                    {
-                        // Use INV prefix + invoice ID (max 5 digits) to keep it safe and clearly not an amount
-                        string invoiceIdStr = invoiceId.ToString();
-                        int invoiceDigitsToUse = Math.Min(invoiceIdStr.Length, 5);
-                        string description = "INV" + invoiceIdStr.Substring(0, invoiceDigitsToUse);
-
-                        // Äáº£m báº£o description ngáº¯n vĂ  an toĂ n, báº¯t Ä‘áº§u báº±ng chá»¯ cĂ¡i
-                        description = System.Text.RegularExpressions.Regex.Replace(description, @"[^a-zA-Z0-9]", "");
-                        if (description.Length > 8)
-                        {
-                            description = description.Substring(0, 8);
-                        }
-
-                        // Ensure it starts with letters and is safe from being confused with amounts
-                        if (string.IsNullOrWhiteSpace(description) || char.IsDigit(description[0]))
-                        {
-                            description = "INVOICE";
-                            if (invoiceIdStr.Length > 0)
-                            {
-                                description = "INV" + invoiceIdStr.Substring(0, Math.Min(5, invoiceIdStr.Length));
-                            }
-                            description = System.Text.RegularExpressions.Regex.Replace(description, @"[^a-zA-Z0-9]", "");
-                            if (description.Length > 8) description = description.Substring(0, 8);
-                        }
-
-                        qrCodeImage.Source = QRCodeHelper.GenerateVietQRCode_Safe(paymentSettings.BankCode.ToLower(), paymentSettings.BankAccount, total, description, false, 370, paymentSettings.AccountHolder);
-                    }
-                    else
-                    {
-                        qrCodeImage.Source = null;
-                        if (qrCodeImage.Parent is Border qrBorderHide)
-                        {
-                            qrBorderHide.Visibility = Visibility.Collapsed;
-                        }
-                    }
-
-                    // Hiá»ƒn thá»‹ QR code container náº¿u bá»‹ áº©n
-                    if (qrCodeImage.Parent is Border qrBorder)
-                    {
-                        qrBorder.Visibility = Visibility.Visible;
-                    }
-                }
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        // ÄĂ£ chuyá»ƒn sang sá»­ dá»¥ng QRCodeHelper.GenerateQRByMethod() thay vĂ¬ cĂ¡c method riĂªng láº»
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             this.Close();

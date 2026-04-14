@@ -7,6 +7,11 @@ namespace FashionStore.ViewModels
 {
     public class TierSettingsViewModel : BaseViewModel
     {
+        #region Global Settings
+        private string _spendPerPoint = "100000"; 
+        public string SpendPerPoint { get => _spendPerPoint; set => SetProperty(ref _spendPerPoint, value); }
+        #endregion
+
         #region Regular Tier
         private string _regularMinPoints = "0"; public string RegularMinPoints { get => _regularMinPoints; set => SetProperty(ref _regularMinPoints, value); }
         private string _regularDiscount = "0"; public string RegularDiscount { get => _regularDiscount; set => SetProperty(ref _regularDiscount, value); }
@@ -28,15 +33,13 @@ namespace FashionStore.ViewModels
         private string _goldDescription = ""; public string GoldDescription { get => _goldDescription; set => SetProperty(ref _goldDescription, value); }
         #endregion
 
-        #region Platinum Tier
-        private string _platinumMinPoints = "2000"; public string PlatinumMinPoints { get => _platinumMinPoints; set => SetProperty(ref _platinumMinPoints, value); }
-        private string _platinumDiscount = "10"; public string PlatinumDiscount { get => _platinumDiscount; set => SetProperty(ref _platinumDiscount, value); }
-        private string _platinumBenefits = ""; public string PlatinumBenefits { get => _platinumBenefits; set => SetProperty(ref _platinumBenefits, value); }
-        private string _platinumDescription = ""; public string PlatinumDescription { get => _platinumDescription; set => SetProperty(ref _platinumDescription, value); }
+        #region VIP Tier
+        private string _VIPMinPoints = "2000"; public string VIPMinPoints { get => _VIPMinPoints; set => SetProperty(ref _VIPMinPoints, value); }
+        private string _VIPDiscount = "10"; public string VIPDiscount { get => _VIPDiscount; set => SetProperty(ref _VIPDiscount, value); }
+        private string _VIPBenefits = ""; public string VIPBenefits { get => _VIPBenefits; set => SetProperty(ref _VIPBenefits, value); }
+        private string _VIPDescription = ""; public string VIPDescription { get => _VIPDescription; set => SetProperty(ref _VIPDescription, value); }
         #endregion
 
-        private bool _autoUpdateTiers = false;
-        public bool AutoUpdateTiers { get => _autoUpdateTiers; set => SetProperty(ref _autoUpdateTiers, value); }
 
         public ICommand SaveCommand { get; }
         public ICommand ResetCommand { get; }
@@ -58,6 +61,8 @@ namespace FashionStore.ViewModels
             try
             {
                 var s = TierSettingsManager.Load();
+                SpendPerPoint = s.SpendPerPoint.ToString();
+                
                 RegularMinPoints = s.RegularMinPoints.ToString();
                 RegularDiscount = s.RegularDiscountPercent.ToString();
                 RegularBenefits = s.RegularBenefits;
@@ -73,10 +78,10 @@ namespace FashionStore.ViewModels
                 GoldBenefits = s.GoldBenefits;
                 GoldDescription = s.GoldDescription;
 
-                PlatinumMinPoints = s.PlatinumMinPoints.ToString();
-                PlatinumDiscount = s.PlatinumDiscountPercent.ToString();
-                PlatinumBenefits = s.PlatinumBenefits;
-                PlatinumDescription = s.PlatinumDescription;
+                VIPMinPoints = s.VIPMinPoints.ToString();
+                VIPDiscount = s.VIPDiscountPercent.ToString();
+                VIPBenefits = s.VIPBenefits;
+                VIPDescription = s.VIPDescription;
             }
             catch (System.Exception ex)
             {
@@ -88,6 +93,8 @@ namespace FashionStore.ViewModels
         {
             var settings = new TierSettings
             {
+                SpendPerPoint = decimal.TryParse(SpendPerPoint, out decimal spp) && spp > 0 ? spp : 100000,
+                
                 RegularMinPoints = int.TryParse(RegularMinPoints, out int rMin) ? rMin : 0,
                 RegularDiscountPercent = decimal.TryParse(RegularDiscount, out decimal rDisc) ? rDisc : 0,
                 RegularBenefits = RegularBenefits.Trim(),
@@ -103,10 +110,10 @@ namespace FashionStore.ViewModels
                 GoldBenefits = GoldBenefits.Trim(),
                 GoldDescription = GoldDescription.Trim(),
 
-                PlatinumMinPoints = int.TryParse(PlatinumMinPoints, out int pMin) ? pMin : 2000,
-                PlatinumDiscountPercent = decimal.TryParse(PlatinumDiscount, out decimal pDisc) ? pDisc : 10,
-                PlatinumBenefits = PlatinumBenefits.Trim(),
-                PlatinumDescription = PlatinumDescription.Trim()
+                VIPMinPoints = int.TryParse(VIPMinPoints, out int pMin) ? pMin : 2000,
+                VIPDiscountPercent = decimal.TryParse(VIPDiscount, out decimal pDisc) ? pDisc : 10,
+                VIPBenefits = VIPBenefits.Trim(),
+                VIPDescription = VIPDescription.Trim()
             };
 
             if (!ValidateSettings(settings)) return;
@@ -114,12 +121,8 @@ namespace FashionStore.ViewModels
             if (TierSettingsManager.Save(settings))
             {
                 string message = "Cài đặt hạng thành viên đã được lưu thành công!";
-                if (AutoUpdateTiers)
-                {
-                    int updated = TierSettingsManager.UpdateAllCustomerTiers();
-                    message += updated > 0 ? $"\n\n🔄 Đã tự động cập nhật hạng cho {updated} khách hàng." : "\n\n✅ Không có khách hàng nào cần cập nhật hạng.";
-                }
-                else message += "\n\n📝 Lưu ý: Hạng khách hàng chưa được cập nhật tự động.";
+                int updated = TierSettingsManager.UpdateAllCustomerTiers();
+                message += updated >= 0 ? $"\n\n🔄 Đã tự động tính toán lại điểm và hạng cho {updated} khách hàng." : "\n\n✅ Đã lưu cấu hình, nhưng có lỗi khi tự cập nhật hạng.";
 
                 MessageBox.Show(message, "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
                 DashboardViewModel.TriggerDashboardRefresh();
@@ -130,22 +133,27 @@ namespace FashionStore.ViewModels
 
         private bool ValidateSettings(TierSettings s)
         {
+            if (s.SpendPerPoint <= 0)
+            {
+                MessageBox.Show("Tỷ giá quy đổi điểm phải lớn hơn 0.", "Lỗi xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
             if (s.RegularDiscountPercent < 0 || s.RegularDiscountPercent > 100 ||
                 s.SilverDiscountPercent < 0 || s.SilverDiscountPercent > 100 ||
                 s.GoldDiscountPercent < 0 || s.GoldDiscountPercent > 100 ||
-                s.PlatinumDiscountPercent < 0 || s.PlatinumDiscountPercent > 100)
+                s.VIPDiscountPercent < 0 || s.VIPDiscountPercent > 100)
             {
                 MessageBox.Show("Phần trăm giảm giá phải từ 0 đến 100.", "Lỗi xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
-            if (s.SilverMinPoints <= s.RegularMinPoints || s.GoldMinPoints <= s.SilverMinPoints || s.PlatinumMinPoints <= s.GoldMinPoints)
+            if (s.SilverMinPoints <= s.RegularMinPoints || s.GoldMinPoints <= s.SilverMinPoints || s.VIPMinPoints <= s.GoldMinPoints)
             {
-                MessageBox.Show("Điểm tối thiểu của các hạng phải tăng dần: Regular < Silver < Gold < Platinum.", "Lỗi xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Điểm tối thiểu của các hạng phải tăng dần: Regular < Silver < Gold < VIP.", "Lỗi xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
-            if (s.SilverDiscountPercent < s.RegularDiscountPercent || s.GoldDiscountPercent < s.SilverDiscountPercent || s.PlatinumDiscountPercent < s.GoldDiscountPercent)
+            if (s.SilverDiscountPercent < s.RegularDiscountPercent || s.GoldDiscountPercent < s.SilverDiscountPercent || s.VIPDiscountPercent < s.GoldDiscountPercent)
             {
-                MessageBox.Show("Phần trăm giảm giá của các hạng phải tăng dần: Regular ≤ Silver ≤ Gold ≤ Platinum.", "Lỗi xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Phần trăm giảm giá của các hạng phải tăng dần: Regular ≤ Silver ≤ Gold ≤ VIP.", "Lỗi xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
             return true;

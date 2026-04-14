@@ -35,11 +35,14 @@ namespace FashionStore.Core
                 }
 
                 // Nếu không phải BCrypt, thử verify bằng SHA256 cũ (Legacy)
-                return VerifyLegacySha256(password, hashedPassword);
+                bool isLegacyMatch = VerifyLegacySha256(password, hashedPassword);
+                if (isLegacyMatch) return true;
+
+                // Fallback cuối cùng cho plain text (cho các tài khoản tạo bằng SQL thuần)
+                return password == hashedPassword;
             }
             catch
             {
-                // Fallback cuối cùng cho plain text (nếu có)
                 return password == hashedPassword;
             }
         }

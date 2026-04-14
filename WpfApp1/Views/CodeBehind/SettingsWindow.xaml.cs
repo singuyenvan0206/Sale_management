@@ -6,7 +6,7 @@ namespace FashionStore
 {
     public partial class SettingsWindow : Window
     {
-        private SettingsViewModel _vm;
+        private readonly SettingsViewModel _vm;
 
         public SettingsWindow()
         {
@@ -15,7 +15,7 @@ namespace FashionStore
             DataContext = _vm;
 
             // PasswordBox cannot bind directly — load from settings
-            PasswordBox.Password = _vm.LoadPassword();
+            PasswordBox.Password = SettingsViewModel.LoadPassword();
         }
 
         // Kept in code-behind: PasswordBox bridge

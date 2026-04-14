@@ -1,4 +1,4 @@
-﻿
+
 using System.IO;
 using System.Text.Json;
 
@@ -7,29 +7,32 @@ namespace FashionStore
     using FashionStore.Services;
     public class TierSettings
     {
+        // Global Settings
+        public decimal SpendPerPoint { get; set; } = 100000;
+
         // Regular Tier
         public int RegularMinPoints { get; set; } = 0;
         public decimal RegularDiscountPercent { get; set; } = 0;
-        public string RegularBenefits { get; set; } = "KhĂ´ng cĂ³ Æ°u Ä‘Ă£i Ä‘áº·c biá»‡t";
-        public string RegularDescription { get; set; } = "Háº¡ng thĂ nh viĂªn cÆ¡ báº£n";
+        public string RegularBenefits { get; set; } = "Không có ưu đãi đặc biệt";
+        public string RegularDescription { get; set; } = "Hạng thành viên cơ bản";
 
         // Silver Tier
         public int SilverMinPoints { get; set; } = 500;
         public decimal SilverDiscountPercent { get; set; } = 3;
-        public string SilverBenefits { get; set; } = "Æ¯u tiĂªn há»— trá»£ khĂ¡ch hĂ ng";
-        public string SilverDescription { get; set; } = "Háº¡ng thĂ nh viĂªn báº¡c vá»›i Æ°u Ä‘Ă£i cÆ¡ báº£n";
+        public string SilverBenefits { get; set; } = "Ưu tiên hỗ trợ khách hàng";
+        public string SilverDescription { get; set; } = "Hạng thành viên bạc với ưu đãi cơ bản";
 
         // Gold Tier
         public int GoldMinPoints { get; set; } = 1000;
         public decimal GoldDiscountPercent { get; set; } = 7;
-        public string GoldBenefits { get; set; } = "Miá»…n phĂ­ giao hĂ ng, Æ°u tiĂªn Ä‘áº·t hĂ ng";
-        public string GoldDescription { get; set; } = "Háº¡ng thĂ nh viĂªn vĂ ng vá»›i nhiá»u Æ°u Ä‘Ă£i";
+        public string GoldBenefits { get; set; } = "Miễn phí giao hàng, ưu tiên đặt hàng";
+        public string GoldDescription { get; set; } = "Hạng thành viên vàng với nhiều ưu đãi";
 
-        // Platinum Tier
-        public int PlatinumMinPoints { get; set; } = 2000;
-        public decimal PlatinumDiscountPercent { get; set; } = 10;
-        public string PlatinumBenefits { get; set; } = "TÆ° váº¥n cĂ¡ nhĂ¢n, quĂ  táº·ng sinh nháº­t, sá»± kiá»‡n VIP";
-        public string PlatinumDescription { get; set; } = "Háº¡ng thĂ nh viĂªn cao cáº¥p nháº¥t vá»›i Ä‘áº§y Ä‘á»§ Æ°u Ä‘Ă£i";
+        // VIP Tier
+        public int VIPMinPoints { get; set; } = 2000;
+        public decimal VIPDiscountPercent { get; set; } = 10;
+        public string VIPBenefits { get; set; } = "Tư vấn cá nhân, quà tặng sinh nhật, sự kiện VIP";
+        public string VIPDescription { get; set; } = "Hạng thành viên cao cấp nhất với đầy đủ ưu đãi";
 
         // Helper methods
         public decimal GetDiscountForTier(string tier)
@@ -38,7 +41,7 @@ namespace FashionStore
             {
                 "silver" => SilverDiscountPercent,
                 "gold" => GoldDiscountPercent,
-                "platinum" => PlatinumDiscountPercent,
+                "VIP" => VIPDiscountPercent,
                 _ => RegularDiscountPercent
             };
         }
@@ -49,7 +52,7 @@ namespace FashionStore
             {
                 "silver" => SilverBenefits,
                 "gold" => GoldBenefits,
-                "platinum" => PlatinumBenefits,
+                "VIP" => VIPBenefits,
                 _ => RegularBenefits
             };
         }
@@ -60,14 +63,14 @@ namespace FashionStore
             {
                 "silver" => SilverDescription,
                 "gold" => GoldDescription,
-                "platinum" => PlatinumDescription,
+                "VIP" => VIPDescription,
                 _ => RegularDescription
             };
         }
 
         public string DetermineTierByPoints(int points)
         {
-            if (points >= PlatinumMinPoints) return "Platinum";
+            if (points >= VIPMinPoints) return "VIP";
             if (points >= GoldMinPoints) return "Gold";
             if (points >= SilverMinPoints) return "Silver";
             return "Regular";
@@ -131,25 +134,12 @@ namespace FashionStore
         {
             try
             {
-                var customers = CustomerService.GetAllCustomers();
-                int updatedCount = 0;
-
-                foreach (var customer in customers)
-                {
-                    var loyalty = CustomerService.GetCustomerLoyalty(customer.Id);
-                    var newTier = DetermineTierByPoints(loyalty.Points);
-
-                    // Only update if tier has changed
-                    if (loyalty.Tier != newTier)
-                    {
-                        if (CustomerService.UpdateCustomerLoyalty(customer.Id, loyalty.Points, newTier))
-                        {
-                            updatedCount++;
-                        }
-                    }
-                }
-
-                return updatedCount;
+                var settings = Load();
+                return CustomerService.RefreshAllLoyalty(
+                    settings.SpendPerPoint,
+                    settings.SilverMinPoints,
+                    settings.GoldMinPoints,
+                    settings.VIPMinPoints);
             }
             catch
             {

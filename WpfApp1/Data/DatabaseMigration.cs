@@ -31,6 +31,7 @@ namespace FashionStore.Data
                 MigratePromotionsTable(connection);
                 SeedSampleData(connection);
                 BackfillBarcodes(connection);
+                SyncCustomerPointsAndTotalSpent(connection);
 
                 Debug.WriteLine("All database migrations completed successfully.");
             }
@@ -68,6 +69,38 @@ namespace FashionStore.Data
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error backfilling barcodes: {ex.Message}");
+            }
+        }
+
+        private static void SyncCustomerPointsAndTotalSpent(MySqlConnection connection)
+        {
+            try
+            {
+                ExecuteNonQuery(connection, "ALTER TABLE Customers MODIFY COLUMN CustomerType VARCHAR(20) DEFAULT 'Regular';");
+                ExecuteNonQuery(connection, "UPDATE Customers SET CustomerType = 'VIP' WHERE CustomerType = 'Platinum' OR CustomerType = '';");
+
+                ExecuteNonQuery(connection, "SET SQL_SAFE_UPDATES = 0;");
+                string sqlSpent = @"
+                    UPDATE Customers c
+                    SET TotalSpent = (
+                        SELECT IFNULL(SUM(Total), 0)
+                        FROM Invoices
+                        WHERE CustomerId = c.Id
+                    );";
+                ExecuteNonQuery(connection, sqlSpent);
+
+                decimal spendPerPoint = FashionStore.TierSettingsManager.Load().SpendPerPoint;
+                if(spendPerPoint <= 0) spendPerPoint = 100000;
+                string sqlPoints = $@"
+                    UPDATE Customers c
+                    SET Points = FLOOR(TotalSpent / {spendPerPoint})
+                    WHERE TotalSpent > 0;";
+                ExecuteNonQuery(connection, sqlPoints);
+                ExecuteNonQuery(connection, "SET SQL_SAFE_UPDATES = 1;");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error syncing customer points: {ex.Message}");
             }
         }
 

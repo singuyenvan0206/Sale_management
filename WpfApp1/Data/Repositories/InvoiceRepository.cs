@@ -73,10 +73,12 @@ namespace FashionStore.Data.Repositories
         {
             using var connection = GetConnection();
             string sql = @"SELECT i.Id, i.CustomerId, i.EmployeeId, i.Subtotal, i.TaxPercent, i.TaxAmount, 
-                                  IFNULL(i.DiscountAmount, 0) AS Discount, i.Total, i.Paid, i.CreatedDate, i.VoucherId
+                                  IFNULL(i.DiscountAmount, 0) AS Discount, i.Total, i.Paid, i.CreatedDate, i.VoucherId,
+                                  IFNULL(c.Name, '') AS CustomerName
                            FROM Invoices i
+                           LEFT JOIN Customers c ON c.Id = i.CustomerId
                            WHERE i.CreatedDate BETWEEN @from AND @to 
-                           ORDER BY i.CreatedDate DESC;";
+                           ORDER BY i.Id ASC;";
             return await connection.QueryAsync<Invoice>(sql, new { from, to });
         }
 
@@ -96,7 +98,7 @@ namespace FashionStore.Data.Repositories
             if (to.HasValue) { sb.Append(" AND i.CreatedDate <= @to"); p.Add("@to", to.Value); }
             if (customerId.HasValue) { sb.Append(" AND i.CustomerId = @cust"); p.Add("@cust", customerId.Value); }
             if (!string.IsNullOrWhiteSpace(search)) { sb.Append(" AND (c.Name LIKE @q OR CAST(i.Id AS CHAR) LIKE @q)"); p.Add("@q", "%" + search + "%"); }
-            sb.Append(" ORDER BY i.CreatedDate DESC, i.Id DESC LIMIT 1000");
+            sb.Append(" ORDER BY i.Id ASC");
 
             return await connection.QueryAsync<Invoice>(sb.ToString(), p);
         }
@@ -113,12 +115,46 @@ namespace FashionStore.Data.Repositories
             return await connection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Invoices WHERE CreatedDate BETWEEN @from AND @to", new { from, to });
         }
 
+        public async Task<IEnumerable<(DateTime Day, decimal Revenue)>> GetRevenueByDayAsync(DateTime from, DateTime to)
+        {
+            using var connection = GetConnection();
+            string sql = @"SELECT DATE(CreatedDate) as Day, SUM(Total) as Revenue
+                           FROM Invoices
+                           WHERE CreatedDate BETWEEN @from AND @to
+                           GROUP BY DATE(CreatedDate)
+                           ORDER BY Day ASC;";
+            var result = await connection.QueryAsync<dynamic>(sql, new { from, to });
+            var list = new List<(DateTime Day, decimal Revenue)>();
+            foreach (var r in result) list.Add(((DateTime)r.Day, Convert.ToDecimal(r.Revenue)));
+            return list;
+        }
+
+        public async Task<IEnumerable<(string CategoryName, decimal Revenue)>> GetRevenueByCategoryAsync(DateTime from, DateTime to)
+        {
+            using var connection = GetConnection();
+            string sql = @"SELECT c.Name as CategoryName, SUM(ii.LineTotal) as Revenue
+                           FROM InvoiceItems ii
+                           JOIN Invoices i ON i.Id = ii.InvoiceId
+                           JOIN Products p ON p.Id = ii.ProductId
+                           LEFT JOIN Categories c ON c.Id = p.CategoryId
+                           WHERE i.CreatedDate BETWEEN @from AND @to
+                           GROUP BY c.Name
+                           ORDER BY Revenue DESC;";
+            var result = await connection.QueryAsync<dynamic>(sql, new { from, to });
+            var list = new List<(string CategoryName, decimal Revenue)>();
+            foreach (var r in result) list.Add(((string)(r.CategoryName ?? "Chưa phân loại"), Convert.ToDecimal(r.Revenue)));
+            return list;
+        }
+
         public async Task<(Invoice Header, List<InvoiceItem> Items)> GetInvoiceDetailsAsync(int invoiceId)
         {
             using var connection = GetConnection();
             string headerSql = @"SELECT i.Id, i.CustomerId, i.EmployeeId, i.Subtotal, i.TaxPercent, i.TaxAmount, 
                                         IFNULL(i.DiscountAmount, 0) AS Discount, i.Total, i.Paid, i.CreatedDate, i.VoucherId,
-                                        IFNULL(c.Name, '') AS CustomerName
+                                        IFNULL(c.Name, '') AS CustomerName,
+                                        IFNULL(c.Phone, '') AS CustomerPhone,
+                                        IFNULL(c.Email, '') AS CustomerEmail,
+                                        IFNULL(c.Address, '') AS CustomerAddress
                                  FROM Invoices i
                                  LEFT JOIN Customers c ON c.Id = i.CustomerId
                                  WHERE i.Id = @Id;";

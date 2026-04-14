@@ -63,7 +63,15 @@ namespace FashionStore.ViewModels
             {
                 if (SetProperty(ref _selectedCustomer, value))
                 {
-                    OnCustomerSelected();
+                    if (value != null && !_isSelectingCustomer)
+                    {
+                        _isSelectingCustomer = true;
+                        CustomerSearchText = value.Name;
+                        IsCustomerPopupOpen = false;
+                        _isSelectingCustomer = false;
+                    }
+                    try { OnCustomerSelected(); } 
+                    catch (Exception ex) { System.Windows.MessageBox.Show($"Lỗi chọn hiển thị tệp: {ex.Message}"); }
                 }
             }
         }
@@ -798,7 +806,8 @@ namespace FashionStore.ViewModels
                 // Update loyalty in background
                 _ = System.Threading.Tasks.Task.Run(() =>
                 {
-                    var earnedPoints = (int)Math.Floor((double)(InvoiceItems.Sum(i => i.LineTotal)) / 100000);
+                    var spendPerPoint = (double)(FashionStore.TierSettingsManager.Load().SpendPerPoint);
+                    var earnedPoints = spendPerPoint > 0 ? (int)Math.Floor((double)(InvoiceItems.Sum(i => i.LineTotal)) / spendPerPoint) : 0;
                     var newPoints = currentPoints + earnedPoints;
                     var newTier = TierSettingsManager.DetermineTierByPoints(newPoints);
                     CustomerService.UpdateCustomerLoyalty(customerId, newPoints, newTier);

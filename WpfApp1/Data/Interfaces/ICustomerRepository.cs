@@ -11,5 +11,6 @@ namespace FashionStore.Data.Interfaces
         Task<bool> UpdateLoyaltyAsync(int customerId, int points, string customerType);
         Task<IEnumerable<(string Name, decimal TotalSpent)>> GetTopCustomersAsync(int topN);
         Task<bool> HasInvoicesAsync(int customerId);
+        Task<int> RefreshAllLoyaltyAsync(decimal spendPerPoint, int silverMin, int goldMin, int vipMin);
     }
 }

@@ -12,31 +12,31 @@ namespace FashionStore.Data.Repositories
         public async Task<IEnumerable<Customer>> GetAllAsync()
         {
             using var connection = GetConnection();
-            string sql = @"SELECT Id, Name, Phone, Email, Address, CustomerType, Points 
-                           FROM Customers ORDER BY Id LIMIT 10000;";
+            string sql = @"SELECT Id, Name, Phone, Email, Address, CustomerType, Points, IFNULL(TotalSpent, 0) AS TotalSpent 
+                           FROM Customers ORDER BY Id ASC LIMIT 10000;";
             return await connection.QueryAsync<Customer>(sql);
         }
 
         public async Task<Customer?> GetByIdAsync(int id)
         {
             using var connection = GetConnection();
-            string sql = "SELECT Id, Name, Phone, Email, Address, CustomerType, Points FROM Customers WHERE Id = @Id;";
+            string sql = "SELECT Id, Name, Phone, Email, Address, CustomerType, Points, IFNULL(TotalSpent, 0) AS TotalSpent FROM Customers WHERE Id = @Id;";
             return await connection.QueryFirstOrDefaultAsync<Customer>(sql, new { Id = id });
         }
 
         public async Task<Customer?> GetByPhoneAsync(string phone)
         {
             using var connection = GetConnection();
-            string sql = "SELECT Id, Name, Phone, Email, Address, CustomerType, Points FROM Customers WHERE Phone = @Phone LIMIT 1;";
+            string sql = "SELECT Id, Name, Phone, Email, Address, CustomerType, Points, IFNULL(TotalSpent, 0) AS TotalSpent FROM Customers WHERE Phone = @Phone LIMIT 1;";
             return await connection.QueryFirstOrDefaultAsync<Customer>(sql, new { Phone = phone });
         }
 
         public async Task<IEnumerable<Customer>> SearchAsync(string query)
         {
             using var connection = GetConnection();
-            string sql = @"SELECT Id, Name, Phone, Email, Address, CustomerType, Points 
+            string sql = @"SELECT Id, Name, Phone, Email, Address, CustomerType, Points, IFNULL(TotalSpent, 0) AS TotalSpent 
                            FROM Customers WHERE Name LIKE @Q OR Phone LIKE @Q OR Email LIKE @Q 
-                           ORDER BY Name LIMIT 100;";
+                           ORDER BY Id ASC LIMIT 100;";
             return await connection.QueryAsync<Customer>(sql, new { Q = $"%{query}%" });
         }
 
@@ -81,7 +81,9 @@ namespace FashionStore.Data.Repositories
                            ORDER BY TotalSpent DESC
                            LIMIT @Top";
             var result = await connection.QueryAsync<dynamic>(sql, new { Top = topN });
-            return result.Select(r => ((string)(r.Name ?? "Unknown"), (decimal)(r.TotalSpent ?? 0m)));
+            var list = new List<(string Name, decimal TotalSpent)>();
+            foreach (var r in result) list.Add(((string)(r.Name ?? "Unknown"), Convert.ToDecimal(r.TotalSpent)));
+            return list;
         }
 
         public async Task<bool> HasInvoicesAsync(int customerId)
@@ -90,6 +92,23 @@ namespace FashionStore.Data.Repositories
             string sql = "SELECT COUNT(*) FROM Invoices WHERE CustomerId = @CustomerId;";
             var result = await connection.ExecuteScalarAsync<long>(sql, new { CustomerId = customerId });
             return result > 0;
+        }
+
+        public async Task<int> RefreshAllLoyaltyAsync(decimal spendPerPoint, int silverMin, int goldMin, int vipMin)
+        {
+            if (spendPerPoint <= 0) spendPerPoint = 100000;
+            using var connection = GetConnection();
+            string sql = @"
+                UPDATE Customers 
+                SET Points = FLOOR(IFNULL(TotalSpent, 0) / @Spend),
+                    CustomerType = CASE
+                        WHEN FLOOR(IFNULL(TotalSpent, 0) / @Spend) >= @VIP THEN 'VIP'
+                        WHEN FLOOR(IFNULL(TotalSpent, 0) / @Spend) >= @Gold THEN 'Gold'
+                        WHEN FLOOR(IFNULL(TotalSpent, 0) / @Spend) >= @Silver THEN 'Silver'
+                        ELSE 'Regular'
+                    END
+                WHERE Id > 0;";
+            return await connection.ExecuteAsync(sql, new { Spend = spendPerPoint, VIP = vipMin, Gold = goldMin, Silver = silverMin });
         }
     }
 }

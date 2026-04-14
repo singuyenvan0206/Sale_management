@@ -157,6 +157,7 @@ namespace FashionStore.ViewModels
             CheckUserPermissions();
 
             _paginationHelper.PageChanged += OnPageChanged;
+            DashboardViewModel.OnDashboardRefreshNeeded += HandleDashboardRefresh;
 
             AddCommand = new RelayCommand(_ => _ = AddCustomerAsync());
             UpdateCommand = new RelayCommand(_ => _ = UpdateCustomerAsync());
@@ -175,6 +176,14 @@ namespace FashionStore.ViewModels
             GoToPageCommand = new RelayCommand(_ => GoToPage());
 
             _ = LoadCustomersAsync();
+        }
+
+        private void HandleDashboardRefresh()
+        {
+            Application.Current.Dispatcher.InvokeAsync(async () =>
+            {
+                await LoadCustomersAsync();
+            });
         }
 
         private void CheckUserPermissions()
@@ -216,7 +225,7 @@ namespace FashionStore.ViewModels
                 CustomerType = c.CustomerType ?? "Regular",
                 // FIX: CustomerType IS the tier — avoid extra per-row DB call
                 Tier = c.CustomerType ?? "Regular",
-                Points = 0 // Points loaded lazily when customer selected
+                Points = c.Points
             });
             _paginationHelper.SetData(_allCustomers);
             ApplyFilters();

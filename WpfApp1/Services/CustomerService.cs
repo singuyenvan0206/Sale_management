@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FashionStore.Data.Interfaces;
 using FashionStore.Models;
+using Dapper;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FashionStore.Services
@@ -92,15 +93,25 @@ namespace FashionStore.Services
             return 1;
         }
 
+        public async Task<IEnumerable<(string Name, decimal TotalSpent)>> GetTopCustomersAsync(int topN)
+        {
+            return await _customerRepository.GetTopCustomersAsync(topN);
+        }
+
+        public async Task<int> RefreshAllLoyaltyAsync(decimal spendPerPoint, int silverMin, int goldMin, int vipMin)
+        {
+            return await _customerRepository.RefreshAllLoyaltyAsync(spendPerPoint, silverMin, goldMin, vipMin);
+        }
+
         #region Legacy Static Bridge - SHOULD BE DEPRECATED
 
         private static ICustomerService GetService() => App.ServiceProvider?.GetRequiredService<ICustomerService>() ?? throw new InvalidOperationException("DI not initialized");
 
         private static T RunSync<T>(Func<Task<T>> func) => Task.Run(func).GetAwaiter().GetResult();
 
-        public static List<(int Id, string Name, string Phone, string Email, string Address, string CustomerType)> GetAllCustomers()
+        public static List<(int Id, string Name, string Phone, string Email, string Address, string CustomerType, int Points)> GetAllCustomers()
             => RunSync(() => GetService().GetAllCustomersAsync())
-               .Select(c => (c.Id, c.Name, c.Phone ?? "", c.Email ?? "", c.Address ?? "", c.CustomerType)).ToList();
+               .Select(c => (c.Id, c.Name, c.Phone ?? "", c.Email ?? "", c.Address ?? "", c.CustomerType, c.Points)).ToList();
 
         public static (string Tier, int Points) GetCustomerLoyalty(int customerId)
         {
@@ -133,11 +144,27 @@ namespace FashionStore.Services
         public static bool DeleteAllCustomers() => false; // Placeholder
 
         public static List<(int InvoiceId, DateTime CreatedAt, int ItemCount, decimal Total)> GetCustomerPurchaseHistory(int customerId)
-            => new(); // Placeholder
+        {
+            var sql = @"
+                SELECT 
+                    i.Id AS InvoiceId, 
+                    i.CreatedDate AS CreatedAt, 
+                    CAST(COALESCE(SUM(ii.Quantity), 0) AS SIGNED) AS ItemCount, 
+                    i.Total AS Total 
+                FROM Invoices i
+                LEFT JOIN InvoiceItems ii ON i.Id = ii.InvoiceId
+                WHERE i.CustomerId = @CustomerId
+                GROUP BY i.Id, i.CreatedDate, i.Total
+                ORDER BY i.Id ASC;";
+            using var connection = new MySql.Data.MySqlClient.MySqlConnection(FashionStore.Core.SettingsManager.BuildConnectionString());
+            return connection.Query<(int InvoiceId, DateTime CreatedAt, int ItemCount, decimal Total)>(sql, new { CustomerId = customerId }).ToList();
+        }
 
         public static List<(string Name, decimal TotalSpent)> GetTopCustomers(int topN = 10)
-            => RunSync(() => GetService().GetAllCustomersAsync())
-               .Select(c => (c.Name, (decimal)0)).Take(topN).ToList();
+            => RunSync(() => GetService().GetTopCustomersAsync(topN)).ToList();
+
+        public static int RefreshAllLoyalty(decimal spendPerPoint, int silverMin, int goldMin, int vipMin)
+            => RunSync(() => GetService().RefreshAllLoyaltyAsync(spendPerPoint, silverMin, goldMin, vipMin));
 
         #endregion
     }

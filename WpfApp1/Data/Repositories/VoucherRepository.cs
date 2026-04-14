@@ -28,7 +28,7 @@ namespace FashionStore.Data.Repositories
         public async Task<IEnumerable<Voucher>> GetAllAsync()
         {
             using var connection = GetConnection();
-            string sql = $"SELECT {SelectColumns} FROM Vouchers ORDER BY EndDate DESC;";
+            string sql = $"SELECT {SelectColumns} FROM Vouchers ORDER BY Id ASC;";
             return await connection.QueryAsync<Voucher>(sql);
         }
 

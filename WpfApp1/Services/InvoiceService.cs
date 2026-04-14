@@ -48,17 +48,36 @@ namespace FashionStore.Services
 
         public async Task<IEnumerable<(DateTime Day, decimal Revenue)>> GetRevenueByDayAsync(DateTime from, DateTime to)
         {
-            return new List<(DateTime, decimal)>();
+            return await _invoiceRepository.GetRevenueByDayAsync(from, to);
         }
 
         public async Task<IEnumerable<(string CategoryName, decimal Revenue)>> GetRevenueByCategoryAsync(DateTime from, DateTime to)
         {
-            return new List<(string, decimal)>();
+            return await _invoiceRepository.GetRevenueByCategoryAsync(from, to);
         }
 
         public async Task<bool> ExportInvoicesToCsvAsync(string filePath)
         {
-            return false;
+            try
+            {
+                var invoices = await _invoiceRepository.SearchInvoicesAsync(null, null, null, "");
+                var lines = new System.Collections.Generic.List<string>
+                {
+                    "Mã HĐ,Ngày tạo,Tên khách hàng,Tiền hàng,Thuế,Giảm giá,Tổng tiền,Đã trả"
+                };
+                foreach (var inv in invoices)
+                {
+                    string date = inv.CreatedDate.ToString("dd/MM/yyyy HH:mm");
+                    string custName = (inv.CustomerName ?? "").Replace(",", " ");
+                    lines.Add($"{inv.Id},{date},{custName},{inv.Subtotal},{inv.TaxAmount},{inv.Discount},{inv.Total},{inv.Paid}");
+                }
+                await System.IO.File.WriteAllLinesAsync(filePath, lines, System.Text.Encoding.UTF8);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public async Task<int> ImportInvoicesFromCsvAsync(string filePath)
@@ -102,7 +121,9 @@ namespace FashionStore.Services
                     EmployeeId = employeeId
                 }).ToList()
             };
-            return RunSync(() => GetService().SaveInvoiceAsync(invoice, voucherId));
+            bool success = RunSync(() => GetService().SaveInvoiceAsync(invoice, voucherId));
+            if (success) LastSavedInvoiceId = invoice.Id;
+            return success;
         }
 
         public static decimal GetRevenueBetween(DateTime from, DateTime to)
@@ -114,7 +135,7 @@ namespace FashionStore.Services
         public static List<(int Id, DateTime CreatedDate, string CustomerName, decimal Subtotal, decimal TaxAmount, decimal Discount, decimal Total, decimal Paid)>
             QueryInvoices(DateTime? from, DateTime? to, int? customerId, string search)
             => RunSync(() => GetService().SearchInvoicesAsync(from, to, customerId, search))
-               .Select(i => (i.Id, i.CreatedDate, "", i.Subtotal, i.TaxAmount, i.Discount, i.Total, i.Paid)).ToList();
+               .Select(i => (i.Id, i.CreatedDate, i.CustomerName, i.Subtotal, i.TaxAmount, i.Discount, i.Total, i.Paid)).ToList();
 
         public static int GetTotalInvoices()
             => RunSync(() => GetService().GetInvoiceCountAsync(DateTime.MinValue, DateTime.MaxValue));
@@ -164,12 +185,17 @@ namespace FashionStore.Services
                 DiscountAmount = res.Header.Discount,
                 Total = res.Header.Total,
                 Paid = res.Header.Paid,
-                EmployeeId = res.Header.EmployeeId
+                EmployeeId = res.Header.EmployeeId,
+                CustomerName = res.Header.CustomerName,
+                CustomerPhone = res.Header.CustomerPhone,
+                CustomerEmail = res.Header.CustomerEmail,
+                CustomerAddress = res.Header.CustomerAddress
             };
 
             var invoiceItems = res.Items?.Select(i => new InvoiceItemDetail
             {
                 ProductId = i.ProductId,
+                ProductName = i.ProductName,
                 UnitPrice = i.UnitPrice,
                 Quantity = i.Quantity,
                 LineTotal = i.LineTotal

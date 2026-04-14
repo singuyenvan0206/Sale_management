@@ -161,7 +161,7 @@ namespace FashionStore.ViewModels
                 MessageBox.Show(error, "Lưu thất bại", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
-        private void OpenTierSettings()
+        private static void OpenTierSettings()
         {
             try
             {
@@ -173,7 +173,7 @@ namespace FashionStore.ViewModels
 
 
 
-        public string LoadPassword()
+        public static string LoadPassword()
         {
             var cfg = SettingsManager.Load();
             return cfg.Password;

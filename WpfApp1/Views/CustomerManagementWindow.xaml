@@ -71,7 +71,7 @@
                             <ComboBoxItem Content="Regular"/>
                             <ComboBoxItem Content="Silver"/>
                             <ComboBoxItem Content="Gold"/>
-                            <ComboBoxItem Content="Platinum"/>
+                            <ComboBoxItem Content="VIP"/>
                         </ComboBox>
                         <TextBlock Text="Điểm tích lũy" FontWeight="SemiBold" Margin="0,0,0,5"/>
                         <TextBox IsEnabled="{Binding IsAdminOrManager}" Text="{Binding EditingCustomer.Points, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,15"/>
@@ -149,7 +149,7 @@
                                                     <ComboBoxItem Content="Regular" Tag="Regular"/>
                                                     <ComboBoxItem Content="Silver" Tag="Silver"/>
                                                     <ComboBoxItem Content="Gold" Tag="Gold"/>
-                                                    <ComboBoxItem Content="Platinum" Tag="Platinum"/>
+                                                    <ComboBoxItem Content="VIP" Tag="VIP"/>
                                                 </ComboBox>
                                             </StackPanel>
                                             
