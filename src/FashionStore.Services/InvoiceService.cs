@@ -54,6 +54,16 @@ namespace FashionStore.Services
             return await _invoiceRepository.GetRevenueByCategoryAsync(from, to);
         }
 
+        public async Task<bool> DeleteInvoiceAsync(int invoiceId)
+        {
+            return await _invoiceRepository.DeleteInvoiceAsync(invoiceId);
+        }
+
+        public async Task<bool> RefundInvoiceAsync(int invoiceId)
+        {
+            return await _invoiceRepository.RefundInvoiceAsync(invoiceId);
+        }
+
         public async Task<bool> ExportInvoicesToCsvAsync(string filePath)
         {
             try
@@ -301,7 +311,8 @@ namespace FashionStore.Services
         public static List<(string Name, int Qty)> GetTopProducts(int limit = 10)
             => new(); // Placeholder
 
-        public static bool DeleteInvoice(int id) => false; // Placeholder
+        public static bool DeleteInvoice(int id)
+            => RunSync(() => GetService().DeleteInvoiceAsync(id));
 
         public static bool DeleteAllInvoices()
             => RunSync(() => GetService().DeleteAllInvoicesAsync());
@@ -327,7 +338,8 @@ namespace FashionStore.Services
                 CustomerName = res.Header.CustomerName,
                 CustomerPhone = res.Header.CustomerPhone,
                 CustomerEmail = res.Header.CustomerEmail,
-                CustomerAddress = res.Header.CustomerAddress
+                CustomerAddress = res.Header.CustomerAddress,
+                PaymentMethod = res.Header.PaymentMethod
             };
 
             var invoiceItems = res.Items?.Select(i => new InvoiceItemDetail
@@ -357,6 +369,7 @@ namespace FashionStore.Services
             public string CustomerEmail { get; set; } = string.Empty;
             public string CustomerAddress { get; set; } = string.Empty;
             public int EmployeeId { get; set; }
+            public string PaymentMethod { get; set; } = "Cash";
         }
 
         public class InvoiceItemDetail

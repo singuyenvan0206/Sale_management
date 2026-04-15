@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace FashionStore.Services
 {
-    public class ProductService : IProductService
+    public class ProductService : FashionStore.Core.Interfaces.IProductService
     {
         private readonly IProductRepository _productRepository;
         private readonly ICacheService _cacheService;
@@ -18,9 +18,6 @@ namespace FashionStore.Services
 
         public async Task<IEnumerable<Product>> GetAllProductsWithCategoriesAsync()
         {
-            var cached = _cacheService.Get<IEnumerable<Product>>(CacheKey);
-            if (cached != null) return cached;
-
             var products = await _productRepository.GetAllWithCategoriesAsync();
             _cacheService.Set(CacheKey, products, TimeSpan.FromMinutes(5));
             return products;
@@ -60,6 +57,23 @@ namespace FashionStore.Services
         public async Task<IEnumerable<(string ProductName, int StockQuantity, string CategoryName)>> GetLowStockProductsAsync(int threshold = 10)
         {
             return await _productRepository.GetLowStockProductsAsync(threshold);
+        }
+
+        public async Task<bool> UpdateProductStockAsync(int productId, int newQuantity)
+        {
+            var product = await GetProductByIdAsync(productId);
+            if (product == null) return false;
+            product.StockQuantity = newQuantity;
+            bool success = await _productRepository.UpdateAsync(product);
+            if (success) _cacheService.Remove(CacheKey);
+            return success;
+        }
+
+        public async Task<Product?> GetProductByIdAsync(int id)
+        {
+            // If GetAllWithCategoriesAsync returns all products, filter by id
+            var products = await _productRepository.GetAllWithCategoriesAsync();
+            return products.FirstOrDefault(p => p.Id == id);
         }
 
         public async Task<int> GetTotalProductsAsync()
@@ -131,6 +145,7 @@ namespace FashionStore.Services
         public static bool DeleteAllProducts() => RunSync(() => GetService().DeleteAllProductsAsync());
         public static int GetTotalProducts() => RunSync(() => GetService().GetTotalProductsAsync());
         public static List<(string ProductName, int StockQuantity, string CategoryName)> GetLowStockProducts(int threshold = 10) => RunSync(() => GetService().GetLowStockProductsAsync(threshold)).ToList();
+        // Add this method to the IProductService interface
 
         public async Task<IEnumerable<(string ProductName, int Quantity, decimal Revenue)>> GetTopProductsAsync(int topN = 10) => await _productRepository.GetTopProductsAsync(topN);
         public static List<(string ProductName, int Quantity, decimal Revenue)> GetTopProducts(int topN = 10) => RunSync(() => GetService().GetTopProductsAsync(topN)).ToList();
@@ -142,6 +157,9 @@ namespace FashionStore.Services
         public static int FindProductIdByName(string productName) => RunSync(() => GetService().FindProductIdByNameAsync(productName));
 
         public static Product? GetProductByCode(string code) => RunSync(() => GetService().GetProductByCodeAsync(code));
+
+        public static bool UpdateProductStock(int id, int qty) => RunSync(() => GetService().UpdateProductStockAsync(id, qty));
+        public static Product? GetProductById(int id) => RunSync(() => GetService().GetProductByIdAsync(id));
 
         // Note: CSV Import/Export methods left as-is for now (static) or moved to another service if needed.
         // To keep this refactoring manageable, I'm focusing on the DB interaction layer.

@@ -6,10 +6,12 @@ using FashionStore.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+
 
 namespace FashionStore.App.ViewModels
 {
@@ -20,6 +22,8 @@ namespace FashionStore.App.ViewModels
 
         public ObservableCollection<CustomerListItem> FilteredCustomers { get; } = new();
         public ObservableCollection<ProductListItem> Products { get; } = new();
+        public ObservableCollection<ProductListItem> FilteredProducts { get; } = new();
+        public ObservableCollection<Category> Categories { get; } = new();
         public ObservableCollection<InvoiceItemViewModel> InvoiceItems { get; } = new();
         public ObservableCollection<Voucher> Vouchers { get; } = new();
         public List<Promotion> ActivePromotions { get; set; } = new();
@@ -28,7 +32,11 @@ namespace FashionStore.App.ViewModels
         public List<string> PaymentMethods { get; } = new() { "💵 Tiền mặt", "💳 Thẻ", "🏦 Chuyển khoản" };
 
         private bool _isInternalUpdate = false;
+        private int _invoiceDetailsLoadVersion = 0;
         private readonly ICalculationService _calculationService;
+        private readonly IInvoiceService _invoiceService;
+        private readonly ICustomerService _customerService;
+        private readonly IUserService _userService;
 
         #region Properties
 
@@ -145,6 +153,16 @@ namespace FashionStore.App.ViewModels
         private string _taxAmountText = "0₫";
         public string TaxAmountText { get => _taxAmountText; set => SetProperty(ref _taxAmountText, value); }
 
+        private bool _isRedeemingPoints = false;
+        public bool IsRedeemingPoints
+        {
+            get => _isRedeemingPoints;
+            set
+            {
+                if (SetProperty(ref _isRedeemingPoints, value)) UpdateTotals();
+            }
+        }
+
         private string _totalText = "0₫";
         public string TotalText { get => _totalText; set => SetProperty(ref _totalText, value); }
 
@@ -183,11 +201,95 @@ namespace FashionStore.App.ViewModels
         private bool _isQRPlaceholderVisible = true;
         public bool IsQRPlaceholderVisible { get => _isQRPlaceholderVisible; set => SetProperty(ref _isQRPlaceholderVisible, value); }
 
+        #region POS Properties
+        private string _productSearchText = "";
+        public string ProductSearchText
+        {
+            get => _productSearchText;
+            set
+            {
+                if (SetProperty(ref _productSearchText, value))
+                {
+                    // Barcode logic: if exactly 1 product matches and text looks like a code (optional check)
+                    var exactMatch = _allProducts.FirstOrDefault(p => p.Name.EndsWith($"({value})", StringComparison.OrdinalIgnoreCase) || p.Id.ToString() == value);
+                    if (exactMatch != null && value.Length >= 3)
+                    {
+                        AddProductDirectly(exactMatch);
+                        _productSearchText = ""; // Reset search after adding
+                        OnPropertyChanged(nameof(ProductSearchText));
+                    }
+                    else
+                    {
+                        FilterProducts(value, SelectedCategory?.Id);
+                    }
+                }
+            }
+        }
+
+        private Category? _selectedCategory;
+        public Category? SelectedCategory
+        {
+            get => _selectedCategory;
+            set
+            {
+                if (SetProperty(ref _selectedCategory, value))
+                {
+                    FilterProducts(ProductSearchText, value?.Id);
+                }
+            }
+        }
+        #endregion
+
+        #region Order Management Properties
+        public ObservableCollection<Invoice> FilteredInvoices { get; } = new();
+        private List<Invoice> _allInvoices = new();
+
+        private string _orderSearchText = "";
+        public string OrderSearchText
+        {
+            get => _orderSearchText;
+            set
+            {
+                if (SetProperty(ref _orderSearchText, value)) FilterOrders();
+            }
+        }
+
+        private DateTime? _selectedOrderDate = DateTime.Today;
+        public DateTime? SelectedOrderDate
+        {
+            get => _selectedOrderDate;
+            set
+            {
+                if (SetProperty(ref _selectedOrderDate, value)) FilterOrders();
+            }
+        }
+
+        private Invoice? _selectedInvoice;
+        public Invoice? SelectedInvoice
+        {
+            get => _selectedInvoice;
+            set
+            {
+                if (SetProperty(ref _selectedInvoice, value)) _ = LoadSelectedInvoiceDetailsSafeAsync(value);
+            }
+        }
+
+        public ObservableCollection<InvoiceItem> SelectedInvoiceItems { get; } = new();
+        #endregion
+
+        #region Operational Properties
+        private string _invoiceNote = "";
+        public string InvoiceNote { get => _invoiceNote; set => SetProperty(ref _invoiceNote, value); }
+
+        public static ObservableCollection<SuspendedOrder> SuspendedOrders { get; } = new();
+
+        private bool _isPendingOrdersPopupOpen;
+        public bool IsPendingOrdersPopupOpen { get => _isPendingOrdersPopupOpen; set => SetProperty(ref _isPendingOrdersPopupOpen, value); }
         #endregion
 
         #region Commands
-
         public ICommand SelectCustomerCommand { get; }
+        public ICommand AddCustomerCommand { get; }
         public ICommand AddItemCommand { get; }
         public ICommand IncreaseQtyCommand { get; }
         public ICommand DecreaseQtyCommand { get; }
@@ -195,15 +297,38 @@ namespace FashionStore.App.ViewModels
         public ICommand ClearInvoiceCommand { get; }
         public ICommand SaveInvoiceCommand { get; }
         public ICommand OpenHistoryCommand { get; }
-
+        public ICommand AddProductDirectlyCommand { get; }
+        public ICommand FilterByCategoryCommand { get; }
+        public ICommand ClearVoucherCommand { get; }
+        
+        // NEW COMMANDS
+        public ICommand SuspendOrderCommand { get; }
+        public ICommand ResumeOrderCommand { get; }
+        public ICommand TogglePendingOrdersCommand { get; }
+        public ICommand EditItemNoteCommand { get; }
+        public ICommand RefreshOrdersCommand { get; }
+        public ICommand ReprintInvoiceCommand { get; }
+        public ICommand RefundInvoiceCommand { get; }
         #endregion
 
         public InvoiceManagementViewModel() : this(null!) { }
 
-        public InvoiceManagementViewModel(ICalculationService? calculationService = null)
+        public InvoiceManagementViewModel(ICalculationService? calculationService = null, 
+                                         IInvoiceService? invoiceService = null,
+                                         ICustomerService? customerService = null,
+                                         IUserService? userService = null)
         {
             _calculationService = calculationService ??
                                  (App.ServiceProvider?.GetService<ICalculationService>() ?? new CalculationService());
+            
+            _invoiceService = invoiceService ?? 
+                             (App.ServiceProvider?.GetService<IInvoiceService>() ?? ServiceLocator.ServiceProvider?.GetService<IInvoiceService>()!);
+            
+            _customerService = customerService ?? 
+                              (App.ServiceProvider?.GetService<ICustomerService>() ?? ServiceLocator.ServiceProvider?.GetService<ICustomerService>()!);
+
+            _userService = userService ??
+                           (App.ServiceProvider?.GetService<IUserService>() ?? ServiceLocator.ServiceProvider?.GetService<IUserService>()!);
 
             SelectCustomerCommand = new RelayCommand(p =>
             {
@@ -216,6 +341,19 @@ namespace FashionStore.App.ViewModels
             ClearInvoiceCommand = new RelayCommand(_ => { ClearInvoice(); UpdateTotals(); });
             SaveInvoiceCommand = new RelayCommand(_ => _ = SaveInvoiceAsync());
             OpenHistoryCommand = new RelayCommand(_ => OpenHistory());
+            AddProductDirectlyCommand = new RelayCommand(p => AddProductDirectly(p as ProductListItem));
+            FilterByCategoryCommand = new RelayCommand(p => SelectedCategory = p as Category);
+            ClearVoucherCommand = new RelayCommand(_ => SelectedVoucher = null);
+
+            // NEW COMMANDS
+            AddCustomerCommand = new RelayCommand(_ => _ = AddNewCustomerAsync());
+            SuspendOrderCommand = new RelayCommand(_ => SuspendCurrentOrder());
+            TogglePendingOrdersCommand = new RelayCommand(_ => IsPendingOrdersPopupOpen = !IsPendingOrdersPopupOpen);
+            ResumeOrderCommand = new RelayCommand(p => ResumeOrder(p as SuspendedOrder));
+            EditItemNoteCommand = new RelayCommand(p => EditItemNote(p as InvoiceItemViewModel));
+            RefreshOrdersCommand = new RelayCommand(_ => _ = LoadInvoicesAsync());
+            ReprintInvoiceCommand = new RelayCommand(_ => ReprintSelectedInvoice());
+            RefundInvoiceCommand = new RelayCommand(_ => _ = RefundSelectedInvoiceAsync());
 
             _ = InitializeDataAsync();
         }
@@ -250,6 +388,17 @@ namespace FashionStore.App.ViewModels
             });
             Products.Clear();
             foreach (var p in list) Products.Add(p);
+            _allProducts = list;
+
+            var categories = await System.Threading.Tasks.Task.Run(() => CategoryService.GetAllCategories());
+            Categories.Clear();
+            Categories.Add(new Category { Id = 0, Name = "Tất cả" });
+            foreach (var cat in categories)
+            {
+                Categories.Add(new Category { Id = cat.Id, Name = cat.Name, TaxPercent = cat.TaxPercent });
+            }
+
+            FilterProducts("", null);
 
             var vouchers = t3.Result;
             Vouchers.Clear();
@@ -257,7 +406,7 @@ namespace FashionStore.App.ViewModels
 
             ActivePromotions = t4.Result;
 
-            try { PaymentSettingsManager.Load(); } catch { }
+            try { PaymentSettingsManager.Load(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Payment settings load failed: {ex.Message}"); }
             ClearInvoice();
             UpdateTotals();
         }
@@ -267,7 +416,7 @@ namespace FashionStore.App.ViewModels
         private void LoadPromotions()
         {
             try { ActivePromotions = PromotionService.GetActivePromotions(); }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Load promotions failed: {ex.Message}"); }
         }
 
         #region Customer Logic
@@ -290,7 +439,7 @@ namespace FashionStore.App.ViewModels
                     SelectCustomer(_allCustomerItems[0]);
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Load customers failed: {ex.Message}"); }
         }
 
         private void FilterCustomers(string text)
@@ -332,11 +481,11 @@ namespace FashionStore.App.ViewModels
         #endregion
 
         #region Product Logic
-        private void LoadProducts()
+        private async Task ReloadProductsAsync()
         {
             try
             {
-                var products = ProductService.GetAllProductsWithCategories();
+                var products = await Task.Run(() => ProductService.GetAllProductsWithCategories());
                 var list = products.ConvertAll(p => new ProductListItem
                 {
                     Id = p.Id,
@@ -352,9 +501,13 @@ namespace FashionStore.App.ViewModels
 
                 Products.Clear();
                 foreach (var p in list) Products.Add(p);
+                _allProducts = list;
+                FilterProducts(ProductSearchText, SelectedCategory?.Id);
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Reload products failed: {ex.Message}"); }
         }
+
+        private void LoadProducts() => _ = ReloadProductsAsync();
 
         private void OnProductSelected()
         {
@@ -402,6 +555,31 @@ namespace FashionStore.App.ViewModels
             }
 
             return bestDiscountPrice;
+        }
+        private void FilterProducts(string searchText, int? categoryId)
+        {
+            FilteredProducts.Clear();
+            var query = _allProducts.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                query = query.Where(p => p.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (categoryId.HasValue && categoryId.Value != 0)
+            {
+                query = query.Where(p => p.CategoryId == categoryId.Value);
+            }
+
+            foreach (var p in query) FilteredProducts.Add(p);
+        }
+
+        private void AddProductDirectly(ProductListItem? product)
+        {
+            if (product == null) return;
+            SelectedProduct = product;
+            QuantityText = "1";
+            AddItem();
         }
         #endregion
 
@@ -528,7 +706,7 @@ namespace FashionStore.App.ViewModels
                 Vouchers.Clear();
                 foreach (var v in vouchers) Vouchers.Add(v);
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Load vouchers failed: {ex.Message}"); }
         }
 
         private void OnVoucherSelected()
@@ -568,16 +746,25 @@ namespace FashionStore.App.ViewModels
                 var discountVal = decimal.TryParse(DiscountValueText, out var dv) ? dv : 0m;
                 var discount = _calculationService.CalculateDiscount(subtotal, SelectedDiscountMode, discountVal);
 
-                var (tier, _) = SelectedCustomer != null ? CustomerService.GetCustomerLoyalty(SelectedCustomer.Id) : ("Regular", 0);
+                var (tier, points) = SelectedCustomer != null ? CustomerService.GetCustomerLoyalty(SelectedCustomer.Id) : ("Regular", 0);
                 var tierDiscountPercent = TierSettingsManager.GetTierDiscount(tier);
                 var tierDiscount = _calculationService.CalculateTierDiscount(subtotal, tierDiscountPercent);
 
-                TierDiscountInlineText = $"(+ Ưu đãi hạng: {tierDiscount:N0}₫)";
+                // Redemption logic
+                decimal redemptionDiscount = 0;
+                if (IsRedeemingPoints && points > 0)
+                {
+                    // Assume 1 point = 1000 VND (or check settings)
+                    decimal pointValue = points * 1000; 
+                    redemptionDiscount = Math.Min(subtotal - discount - tierDiscount, pointValue);
+                }
 
-                var totalDiscount = discount + tierDiscount;
+                TierDiscountInlineText = $"(+ Ưu đãi hạng: {tierDiscount:N0}₫" + (redemptionDiscount > 0 ? $" | Dùng điểm: {redemptionDiscount:N0}₫" : "") + ")";
+
+                var totalDiscount = discount + tierDiscount + redemptionDiscount;
                 if (SelectedVoucher != null && (SelectedVoucher.DiscountType == Voucher.TypePercentage || SelectedVoucher.DiscountType == "%") && SelectedVoucher.MaxDiscountAmount > 0)
                 {
-                    totalDiscount = Math.Min(totalDiscount, SelectedVoucher.MaxDiscountAmount + tierDiscount);
+                    totalDiscount = Math.Min(totalDiscount, SelectedVoucher.MaxDiscountAmount + tierDiscount + redemptionDiscount);
                 }
 
                 decimal discountRatio = subtotal > 0 ? totalDiscount / subtotal : 0;
@@ -594,7 +781,7 @@ namespace FashionStore.App.ViewModels
 
                 UpdateQRCode(total);
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Update totals failed: {ex.Message}"); }
             finally { _isInternalUpdate = false; }
         }
 
@@ -608,14 +795,18 @@ namespace FashionStore.App.ViewModels
 
             foreach (var bogo in bogoPromos)
             {
-                var requiredItem = InvoiceItems.FirstOrDefault(i => i.ProductId == bogo.RequiredProductId.Value && !i.IsReward);
+                int requiredProductId = bogo.RequiredProductId ?? 0;
+                int rewardProductId = bogo.RewardProductId ?? 0;
+                if (requiredProductId <= 0 || rewardProductId <= 0) continue;
+
+                var requiredItem = InvoiceItems.FirstOrDefault(i => i.ProductId == requiredProductId && !i.IsReward);
                 if (requiredItem != null && bogo.RequiredQuantity > 0)
                 {
                     int sets = requiredItem.Quantity / bogo.RequiredQuantity;
                     if (sets > 0)
                     {
                         int rewardQty = sets * bogo.RewardQuantity;
-                        var rewardProduct = Products.FirstOrDefault(p => p.Id == bogo.RewardProductId.Value);
+                        var rewardProduct = Products.FirstOrDefault(p => p.Id == rewardProductId);
                         if (rewardProduct != null)
                         {
                             // Check stock
@@ -770,55 +961,108 @@ namespace FashionStore.App.ViewModels
                 var discountVal = decimal.TryParse(DiscountValueText, out var dv) ? dv : 0m;
                 var manualDiscount = SelectedDiscountMode == "%" ? Math.Round(subtotal * (discountVal / 100m), 2) : discountVal;
                 var paid = decimal.TryParse(PaidText, out var p) ? p : 0m;
-                var itemsForSave = InvoiceItems.Select(item => (item.ProductId, item.Quantity, item.UnitPrice)).ToList();
+                var itemsSnapshot = InvoiceItems
+                    .Select(i => new InvoiceItemViewModel
+                    {
+                        ProductId = i.ProductId,
+                        ProductName = i.ProductName,
+                        PromoDiscountPercent = i.PromoDiscountPercent,
+                        UnitPrice = i.UnitPrice,
+                        Quantity = i.Quantity,
+                        LineTotal = i.LineTotal,
+                        CategoryTaxPercent = i.CategoryTaxPercent,
+                        Note = i.Note,
+                        IsReward = i.IsReward
+                    })
+                    .ToList();
                 var voucherId = SelectedVoucher?.Id;
                 var customerId = SelectedCustomer.Id;
 
                 var currentUser = Application.Current.Resources["CurrentUser"]?.ToString() ?? "admin";
 
-                // Run all DB operations on thread pool
-                var (tier, currentPoints, employeeId, result, invoiceId) = await System.Threading.Tasks.Task.Run(() =>
+                var loyalty = CustomerService.GetCustomerLoyalty(customerId);
+                var tierDiscountPercent = TierSettingsManager.GetTierDiscount(loyalty.Tier);
+                var tierDiscount = Math.Round(subtotal * (tierDiscountPercent / 100m), 2);
+
+                // Redemption logic
+                decimal redemptionDiscount = 0;
+                if (IsRedeemingPoints && loyalty.Points > 0)
                 {
-                    var loyalty = CustomerService.GetCustomerLoyalty(customerId);
-                    var tierDiscountPercent = TierSettingsManager.GetTierDiscount(loyalty.Tier);
-                    var tierDiscount = Math.Round(subtotal * (tierDiscountPercent / 100m), 2);
-                    var totalDiscount = manualDiscount + tierDiscount;
-                    var taxAmount = InvoiceItems.Sum(item => item.LineTotal * (item.CategoryTaxPercent / 100m));
-                    var total = Math.Max(0, subtotal + taxAmount - totalDiscount);
+                    decimal pointValue = loyalty.Points * 1000;
+                    redemptionDiscount = Math.Min(subtotal - manualDiscount - tierDiscount, pointValue);
+                }
 
-                    var empId = 1;
-                    try { empId = UserService.GetEmployeeIdByUsername(currentUser); } catch { }
+                var totalDiscount = manualDiscount + tierDiscount + redemptionDiscount;
+                decimal discountRatio = subtotal > 0 ? totalDiscount / subtotal : 0;
+                var taxAmount = itemsSnapshot.Sum(item => _calculationService.CalculateTaxAmount(item.LineTotal, discountRatio, item.CategoryTaxPercent));
+                var total = Math.Max(0, subtotal + taxAmount - totalDiscount);
 
-                    var saved = InvoiceService.SaveInvoice(customerId, empId, subtotal, 0, taxAmount, totalDiscount, total, paid, itemsForSave, voucherId: voucherId);
-                    var invId = InvoiceService.LastSavedInvoiceId;
-                    return (loyalty.Tier, loyalty.Points, empId, saved, invId);
-                });
+                var empId = 1;
+                try
+                {
+                    var employeeIdResult = await _userService.GetEmployeeIdByUsernameAsync(currentUser);
+                    if (employeeIdResult.IsSuccess && employeeIdResult.Value > 0)
+                    {
+                        empId = employeeIdResult.Value;
+                    }
+                }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Resolve employee failed: {ex.Message}"); }
 
-                if (!result)
+                var invoiceModel = new Invoice
+                {
+                    CustomerId = customerId,
+                    EmployeeId = empId,
+                    Subtotal = subtotal,
+                    TaxAmount = taxAmount,
+                    Discount = totalDiscount,
+                    Total = total,
+                    Paid = paid,
+                    PaymentMethod = NormalizePaymentMethod(SelectedPaymentMethod),
+                    VoucherId = voucherId,
+                    Note = InvoiceNote,
+                    Status = "Completed",
+                    Items = itemsSnapshot.Select(i => new InvoiceItem
+                    {
+                        ProductId = i.ProductId,
+                        Quantity = i.Quantity,
+                        UnitPrice = i.UnitPrice,
+                        LineTotal = i.LineTotal,
+                        Note = i.Note,
+                        EmployeeId = empId
+                    }).ToList()
+                };
+
+                var saved = await _invoiceService.SaveInvoiceAsync(invoiceModel, voucherId);
+                var resultData = new { EmployeeId = empId, Result = saved, InvoiceId = invoiceModel.Id };
+
+                if (!resultData.Result)
                 {
                     MessageBox.Show("Không thể lưu hóa đơn.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
-                MessageBox.Show($"Hóa đơn #{invoiceId} đã được lưu.", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Hóa đơn #{resultData.InvoiceId} đã được lưu.", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                // Update loyalty in background
-                _ = System.Threading.Tasks.Task.Run(() =>
-                {
-                    var spendPerPoint = (double)(TierSettingsManager.Load().SpendPerPoint);
-                    var earnedPoints = spendPerPoint > 0 ? (int)Math.Floor((double)(InvoiceItems.Sum(i => i.LineTotal)) / spendPerPoint) : 0;
-                    var newPoints = currentPoints + earnedPoints;
-                    var newTier = TierSettingsManager.DetermineTierByPoints(newPoints);
-                    CustomerService.UpdateCustomerLoyalty(customerId, newPoints, newTier);
-                });
+                // Refresh stock shown in POS immediately after successful checkout.
+                await ReloadProductsAsync();
+
+                // Loyalty is already updated in invoice repository transaction.
 
                 ClearInvoice();
                 DiscountValueText = "0";
                 PaidText = "0";
                 UpdateTotals();
 
-                try { new InvoicePrintWindow(invoiceId, employeeId).ShowDialog(); }
+                try { new InvoicePrintWindow(resultData.InvoiceId, resultData.EmployeeId).ShowDialog(); }
                 catch (Exception ex) { MessageBox.Show($"Lỗi hiển thị cửa sổ in: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error); }
+
+                // Keep invoice management tab in sync after checkout/print.
+                await LoadInvoicesAsync();
+                var newInvoice = _allInvoices.FirstOrDefault(i => i.Id == resultData.InvoiceId);
+                if (newInvoice != null)
+                {
+                    SelectedInvoice = newInvoice;
+                }
 
                 DashboardViewModel.TriggerDashboardRefresh();
             }
@@ -832,8 +1076,176 @@ namespace FashionStore.App.ViewModels
 
         private void OpenHistory()
         {
-            var historyWindow = new TransactionHistoryWindow();
-            historyWindow.ShowDialog();
+            // Now switching to the "Quản lý đơn" tab or showing dialog - prefer tab index
+            if (Application.Current.MainWindow?.FindName("MainTabs") is System.Windows.Controls.TabControl tc)
+            {
+                tc.SelectedIndex = 1;
+                _ = LoadInvoicesAsync();
+            }
+        }
+
+        #endregion
+
+        #region Operational Logic (New)
+        private async Task AddNewCustomerAsync()
+        {
+            // Simple approach: add a generic walking customer with details
+            string name = "Khách lẻ " + DateTime.Now.ToString("HH:mm");
+            try
+            {
+                await _customerService.AddCustomerAsync(new Customer { Name = name, Phone = "0000", Address = "Tại quầy", CustomerType = "Regular" });
+                LoadCustomers();
+                var added = _allCustomerItems.OrderByDescending(c => c.Id).FirstOrDefault();
+                if (added != null) SelectCustomer(added);
+            }
+            catch (Exception ex) { MessageBox.Show($"Lỗi thêm khách nhanh: {ex.Message}"); }
+        }
+
+        private void SuspendCurrentOrder()
+        {
+            if (InvoiceItems.Count == 0) return;
+            
+            var suspended = new SuspendedOrder
+            {
+                Customer = SelectedCustomer,
+                Items = InvoiceItems.ToList(),
+                Total = decimal.TryParse(TotalText.Replace("₫", "").Replace(".", "").Replace(",", ""), out var t) ? t : 0,
+                Note = InvoiceNote
+            };
+            
+            SuspendedOrders.Add(suspended);
+            ClearInvoice();
+            UpdateTotals();
+            MessageBox.Show("Đã tạm dừng đơn hàng.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void ResumeOrder(SuspendedOrder? order)
+        {
+            if (order == null) return;
+            
+            if (InvoiceItems.Count > 0)
+            {
+                var result = MessageBox.Show("Hóa đơn hiện tại có đồ. Bạn muốn ghép hay thay thế?", "Xác nhận", MessageBoxButton.YesNoCancel);
+                if (result == MessageBoxResult.Cancel) return;
+                if (result == MessageBoxResult.No) InvoiceItems.Clear();
+            }
+
+            foreach (var item in order.Items) InvoiceItems.Add(item);
+            SelectedCustomer = order.Customer;
+            InvoiceNote = order.Note ?? "";
+            
+            SuspendedOrders.Remove(order);
+            IsPendingOrdersPopupOpen = false;
+            RefreshItems();
+            UpdateTotals();
+        }
+
+        private void EditItemNote(InvoiceItemViewModel? item)
+        {
+            if (item == null) return;
+            // Simplified input
+            string note = Microsoft.VisualBasic.Interaction.InputBox("Nhập ghi chú cho sản phẩm:", "Ghi chú món", item.Note);
+            item.Note = note;
+        }
+        #endregion
+
+        #region Order Management Logic
+        private async System.Threading.Tasks.Task LoadInvoicesAsync()
+        {
+            try
+            {
+                var invoicesTask = _invoiceService.SearchInvoicesAsync(null, null, null, "");
+                _allInvoices = (await invoicesTask).ToList();
+                FilterOrders();
+            }
+            catch (Exception ex) { MessageBox.Show($"Lỗi tải lịch sử đơn: {ex.Message}"); }
+        }
+
+        private void FilterOrders()
+        {
+            FilteredInvoices.Clear();
+            var query = _allInvoices.AsEnumerable();
+            
+            if (SelectedOrderDate.HasValue)
+            {
+                query = query.Where(i => i.CreatedDate.Date == SelectedOrderDate.Value.Date);
+            }
+
+            if (!string.IsNullOrWhiteSpace(OrderSearchText))
+            {
+                query = query.Where(i => 
+                    i.Id.ToString().Contains(OrderSearchText) || 
+                    (i.CustomerName?.Contains(OrderSearchText, StringComparison.OrdinalIgnoreCase) ?? false));
+            }
+
+            foreach (var inv in query.OrderByDescending(i => i.CreatedDate)) FilteredInvoices.Add(inv);
+        }
+
+        private async Task LoadSelectedInvoiceDetailsSafeAsync(Invoice? invoice)
+        {
+            try
+            {
+                await LoadSelectedInvoiceDetailsAsync(invoice);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi tải chi tiết đơn: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async Task LoadSelectedInvoiceDetailsAsync(Invoice? invoice)
+        {
+            int requestVersion = ++_invoiceDetailsLoadVersion;
+            SelectedInvoiceItems.Clear();
+            if (invoice == null) return;
+            
+            var details = await _invoiceService.GetInvoiceDetailsAsync(invoice.Id);
+            if (requestVersion != _invoiceDetailsLoadVersion) return; // Ignore stale responses.
+            foreach (var item in details.Items ?? new List<InvoiceItem>()) SelectedInvoiceItems.Add(item);
+        }
+
+        private void ReprintSelectedInvoice()
+        {
+            if (SelectedInvoice == null) return;
+            try 
+            { 
+               new InvoicePrintWindow(SelectedInvoice.Id, SelectedInvoice.EmployeeId).ShowDialog(); 
+            }
+            catch (Exception ex) { MessageBox.Show($"Lỗi in lại hóa đơn: {ex.Message}"); }
+        }
+
+        private async System.Threading.Tasks.Task RefundSelectedInvoiceAsync()
+        {
+            if (SelectedInvoice == null) return;
+            
+            var res = MessageBox.Show($"Xác nhận HỦY và TRẢ HÀNG cho đơn #{SelectedInvoice.Id}?\nHành động này sẽ cộng lại tồn kho cho sản phẩm.", 
+                                      "Xác nhận hoàn trả", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            
+            if (res != MessageBoxResult.Yes) return;
+
+            try
+            {
+                bool ok = await _invoiceService.RefundInvoiceAsync(SelectedInvoice.Id);
+                if (!ok)
+                {
+                    MessageBox.Show("Không thể hoàn trả đơn. Vui lòng thử lại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                MessageBox.Show("Đã hủy đơn và hoàn trả kho thành công.", "Hoàn tất");
+                await LoadInvoicesAsync();
+                await ReloadProductsAsync();
+                DashboardViewModel.TriggerDashboardRefresh();
+            }
+            catch (Exception ex) { MessageBox.Show($"Lỗi xử lý hoàn trả: {ex.Message}"); }
+        }
+
+        private static string NormalizePaymentMethod(string? uiText)
+        {
+            if (string.IsNullOrWhiteSpace(uiText)) return "Cash";
+            if (uiText.Contains("Chuyển khoản", StringComparison.OrdinalIgnoreCase)) return "BankTransfer";
+            if (uiText.Contains("Thẻ", StringComparison.OrdinalIgnoreCase)) return "Card";
+            return "Cash";
         }
         #endregion
     }
@@ -856,7 +1268,21 @@ namespace FashionStore.App.ViewModels
 
         public decimal CategoryTaxPercent { get; set; }
 
+        private string _note = "";
+        public string Note { get => _note; set => SetProperty(ref _note, value); }
+
         public bool IsReward { get; set; } = false;
+    }
+
+    public class SuspendedOrder
+    {
+        public int Id { get; set; } = DateTime.Now.GetHashCode();
+        public string Title { get; set; } = DateTime.Now.ToString("HH:mm:ss");
+        public CustomerListItem? Customer { get; set; }
+        public List<InvoiceItemViewModel> Items { get; set; } = new();
+        public string? Note { get; set; }
+        public decimal Total { get; set; }
+        public DateTime Time { get; set; } = DateTime.Now;
     }
 
     public class ProductListItem
@@ -879,3 +1305,4 @@ namespace FashionStore.App.ViewModels
         public string Phone { get; set; } = string.Empty;
     }
 }
+#endregion

@@ -27,9 +27,9 @@ namespace FashionStore.Data.Repositories
             try
             {
                 string insertInvoice = @"INSERT INTO Invoices 
-                    (Id, CustomerId, EmployeeId, Subtotal, TaxPercent, TaxAmount, DiscountAmount, Total, Paid, CreatedDate, VoucherId)
+                    (Id, CustomerId, EmployeeId, Subtotal, TaxPercent, TaxAmount, DiscountAmount, Total, Paid, PaymentMethod, CreatedDate, VoucherId)
                     VALUES 
-                    (@Id, @CustomerId, @EmployeeId, @Subtotal, @TaxPercent, @TaxAmount, @Discount, @Total, @Paid, @CreatedDate, @VoucherId);";
+                    (@Id, @CustomerId, @EmployeeId, @Subtotal, @TaxPercent, @TaxAmount, @Discount, @Total, @Paid, @PaymentMethod, @CreatedDate, @VoucherId);";
 
                 await connection.ExecuteAsync(insertInvoice, new
                 {
@@ -42,6 +42,7 @@ namespace FashionStore.Data.Repositories
                     invoice.Discount,
                     invoice.Total,
                     invoice.Paid,
+                    invoice.PaymentMethod,
                     invoice.CreatedDate,
                     VoucherId = voucherId
                 }, transaction: tx);
@@ -138,6 +139,7 @@ namespace FashionStore.Data.Repositories
                         Discount = inv.Discount,
                         inv.Total,
                         inv.Paid,
+                        inv.PaymentMethod,
                         inv.CreatedDate
                     });
 
@@ -157,9 +159,9 @@ namespace FashionStore.Data.Repositories
 
                 // 2. Batch Insert Invoices (chunks of 500)
                 const string insertInvoiceSql = @"INSERT INTO Invoices
-                    (Id, CustomerId, EmployeeId, Subtotal, TaxPercent, TaxAmount, DiscountAmount, Total, Paid, CreatedDate)
+                    (Id, CustomerId, EmployeeId, Subtotal, TaxPercent, TaxAmount, DiscountAmount, Total, Paid, PaymentMethod, CreatedDate)
                     VALUES
-                    (@Id, @CustomerId, @EmployeeId, @Subtotal, @TaxPercent, @TaxAmount, @Discount, @Total, @Paid, @CreatedDate);";
+                    (@Id, @CustomerId, @EmployeeId, @Subtotal, @TaxPercent, @TaxAmount, @Discount, @Total, @Paid, @PaymentMethod, @CreatedDate);";
 
                 // Dapper's ExecuteAsync with IEnumerable is efficient, but we chunk to be safe
                 for (int i = 0; i < invoiceData.Count; i += 500)
@@ -240,7 +242,7 @@ namespace FashionStore.Data.Repositories
             const string sql = @"
                 SELECT 
                     i.Id, i.CustomerId, i.EmployeeId, i.Subtotal, i.TaxPercent, i.TaxAmount,
-                    IFNULL(i.DiscountAmount,0) AS Discount, i.Total, i.Paid, i.CreatedDate, i.VoucherId,
+                    IFNULL(i.DiscountAmount,0) AS Discount, i.Total, i.Paid, IFNULL(i.PaymentMethod, 'Cash') AS PaymentMethod, i.CreatedDate, i.VoucherId,
                     IFNULL(c.Name,'')    AS CustomerName,
                     IFNULL(c.Phone,'')   AS CustomerPhone,
                     IFNULL(c.Email,'')   AS CustomerEmail,
@@ -279,7 +281,7 @@ namespace FashionStore.Data.Repositories
         {
             using var connection = GetConnection();
             string sql = @"SELECT i.Id, i.CustomerId, i.EmployeeId, i.Subtotal, i.TaxPercent, i.TaxAmount, 
-                                  IFNULL(i.DiscountAmount, 0) AS Discount, i.Total, i.Paid, i.CreatedDate, i.VoucherId,
+                                  IFNULL(i.DiscountAmount, 0) AS Discount, i.Total, i.Paid, IFNULL(i.PaymentMethod, 'Cash') AS PaymentMethod, i.CreatedDate, i.VoucherId,
                                   IFNULL(c.Name, '') AS CustomerName
                            FROM Invoices i
                            LEFT JOIN Customers c ON c.Id = i.CustomerId
@@ -293,7 +295,7 @@ namespace FashionStore.Data.Repositories
             using var connection = GetConnection();
             var sb = new StringBuilder();
             sb.Append(@"SELECT i.Id, i.CustomerId, i.EmployeeId, i.Subtotal, i.TaxPercent, i.TaxAmount, 
-                               IFNULL(i.DiscountAmount, 0) AS Discount, i.Total, i.Paid, i.CreatedDate, i.VoucherId,
+                               IFNULL(i.DiscountAmount, 0) AS Discount, i.Total, i.Paid, IFNULL(i.PaymentMethod, 'Cash') AS PaymentMethod, i.CreatedDate, i.VoucherId,
                                IFNULL(c.Name, '') AS CustomerName
                         FROM Invoices i
                         LEFT JOIN Customers c ON c.Id = i.CustomerId
@@ -356,7 +358,7 @@ namespace FashionStore.Data.Repositories
         {
             using var connection = GetConnection();
             string headerSql = @"SELECT i.Id, i.CustomerId, i.EmployeeId, i.Subtotal, i.TaxPercent, i.TaxAmount, 
-                                        IFNULL(i.DiscountAmount, 0) AS Discount, i.Total, i.Paid, i.CreatedDate, i.VoucherId,
+                                        IFNULL(i.DiscountAmount, 0) AS Discount, i.Total, i.Paid, IFNULL(i.PaymentMethod, 'Cash') AS PaymentMethod, i.CreatedDate, i.VoucherId,
                                         IFNULL(c.Name, '') AS CustomerName,
                                         IFNULL(c.Phone, '') AS CustomerPhone,
                                         IFNULL(c.Email, '') AS CustomerEmail,
@@ -418,8 +420,86 @@ namespace FashionStore.Data.Repositories
 
         public async Task<bool> DeleteAsync(int id)
         {
+            return await DeleteInvoiceAsync(id);
+        }
+
+        public async Task<bool> DeleteInvoiceAsync(int invoiceId)
+        {
+            // Keep stock and customer spending consistent when deleting an invoice.
+            return await RefundInvoiceAsync(invoiceId);
+        }
+
+        public async Task<bool> RefundInvoiceAsync(int invoiceId)
+        {
             using var connection = GetConnection();
-            return await connection.ExecuteAsync("DELETE FROM Invoices WHERE Id = @Id", new { Id = id }) > 0;
+            await connection.OpenAsync();
+            using var tx = await connection.BeginTransactionAsync();
+            try
+            {
+                var header = await connection.QueryFirstOrDefaultAsync<(int CustomerId, decimal Total)>(
+                    "SELECT CustomerId, Total FROM Invoices WHERE Id = @Id",
+                    new { Id = invoiceId }, tx);
+                if (header.CustomerId <= 0)
+                {
+                    await tx.RollbackAsync();
+                    return false;
+                }
+
+                var items = (await connection.QueryAsync<(int ProductId, int Quantity)>(
+                    "SELECT ProductId, Quantity FROM InvoiceItems WHERE InvoiceId = @Id",
+                    new { Id = invoiceId }, tx)).ToList();
+
+                foreach (var item in items)
+                {
+                    await connection.ExecuteAsync(
+                        "UPDATE Products SET StockQuantity = StockQuantity + @Qty WHERE Id = @ProductId",
+                        new { Qty = item.Quantity, item.ProductId }, tx);
+                }
+
+                await connection.ExecuteAsync("DELETE FROM InvoiceItems WHERE InvoiceId = @Id", new { Id = invoiceId }, tx);
+                var deleted = await connection.ExecuteAsync("DELETE FROM Invoices WHERE Id = @Id", new { Id = invoiceId }, tx);
+                if (deleted == 0)
+                {
+                    await tx.RollbackAsync();
+                    return false;
+                }
+
+                await connection.ExecuteAsync(
+                    "UPDATE Customers SET TotalSpent = GREATEST(0, IFNULL(TotalSpent, 0) - @Amount) WHERE Id = @CustomerId",
+                    new { Amount = header.Total, header.CustomerId }, tx);
+
+                await RecalculateCustomerLoyaltyAsync(connection, tx, header.CustomerId);
+                await tx.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                throw;
+            }
+        }
+
+        private static async Task RecalculateCustomerLoyaltyAsync(System.Data.IDbConnection connection, System.Data.IDbTransaction tx, int customerId)
+        {
+            var settings = FashionStore.Core.Models.TierSettingsManager.Load();
+            const string sql = @"
+                UPDATE Customers 
+                SET Points = FLOOR(IFNULL(TotalSpent, 0) / @Spend),
+                    CustomerType = CASE
+                        WHEN FLOOR(IFNULL(TotalSpent, 0) / @Spend) >= @VIP THEN 'VIP'
+                        WHEN FLOOR(IFNULL(TotalSpent, 0) / @Spend) >= @Gold THEN 'Gold'
+                        WHEN FLOOR(IFNULL(TotalSpent, 0) / @Spend) >= @Silver THEN 'Silver'
+                        ELSE 'Regular'
+                    END
+                WHERE Id = @Id;";
+            await connection.ExecuteAsync(sql, new
+            {
+                Spend = settings.SpendPerPoint,
+                VIP = settings.VIPMinPoints,
+                Gold = settings.GoldMinPoints,
+                Silver = settings.SilverMinPoints,
+                Id = customerId
+            }, tx);
         }
     }
 }

@@ -14,6 +14,7 @@ namespace FashionStore.Core.Models
 
         public decimal Total { get; set; }
         public decimal Paid { get; set; }
+        public string PaymentMethod { get; set; } = "Cash";
         public int? VoucherId { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.Now;
         public string? Note { get; set; }

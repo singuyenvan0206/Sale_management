@@ -15,6 +15,8 @@ namespace FashionStore.Core.Interfaces
         Task<(Invoice Header, List<InvoiceItem> Items)> GetInvoiceDetailsAsync(int invoiceId);
         Task<IEnumerable<(DateTime Day, decimal Revenue)>> GetRevenueByDayAsync(DateTime from, DateTime to);
         Task<IEnumerable<(string CategoryName, decimal Revenue)>> GetRevenueByCategoryAsync(DateTime from, DateTime to);
+        Task<bool> DeleteInvoiceAsync(int invoiceId);
+        Task<bool> RefundInvoiceAsync(int invoiceId);
         Task<bool> DeleteAllInvoicesAsync();
     }
 }

@@ -19,12 +19,26 @@ namespace FashionStore.App
         {
             if (e.Key == System.Windows.Input.Key.Enter)
             {
-                if (DataContext is MainViewModel vm && vm.LoginCommand.CanExecute(PasswordBox))
+                if (System.Windows.Input.FocusManager.GetFocusedElement(this) == UsernameTextBox)
+                {
+                    PasswordBox.Focus();
+                }
+                else if (DataContext is MainViewModel vm && vm.LoginCommand.CanExecute(PasswordBox))
                 {
                     vm.LoginCommand.Execute(PasswordBox);
                 }
                 e.Handled = true;
             }
+        }
+
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
+        private void TextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.TextBox tb) tb.SelectAll();
         }
     }
 }

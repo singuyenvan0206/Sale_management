@@ -79,6 +79,11 @@ namespace FashionStore.App.Views
             // Mặc định không làm gì nếu không phải là scroll bubbling cho nội dung chính
         }
 
+        private void TextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox tb) tb.SelectAll();
+        }
+
         private bool IsInsideControl<T>(DependencyObject obj) where T : DependencyObject
         {
             DependencyObject? parent = obj;

@@ -1,19 +1,19 @@
+using FashionStore.Core.Common;
 using FashionStore.Core.Models;
 
 namespace FashionStore.Services
 {
     public interface IUserService
     {
-        Task<bool> RegisterAccountAsync(string username, string employeeName, string password, string role = "Cashier");
-        Task<string> ValidateLoginAsync(string username, string password);
-        Task<string> GetUserRoleAsync(string username);
-        Task<UserRole> GetUserRoleEnumAsync(string username);
-        Task<bool> ChangePasswordAsync(string username, string oldPassword, string newPassword);
-        Task<IEnumerable<(int Id, string Username, string EmployeeName)>> GetAllAccountsAsync();
-        Task<string> GetEmployeeNameAsync(string username);
-        Task<int> GetEmployeeIdByUsernameAsync(string username);
-        Task<bool> DeleteAccountAsync(string username);
-        Task<bool> UpdateAccountAsync(string username, string? newPassword = null, string? newRole = null, string? newEmployeeName = null);
-        Task MigratePasswordsToHashedAsync();
+        Task<Result> RegisterAccountAsync(string username, string employeeName, string password, string role = "Cashier");
+        Task<Result<bool>> ValidateLoginAsync(string username, string password);
+        Task<Result<string>> GetUserRoleAsync(string username);
+        Task<Result<UserRole>> GetUserRoleEnumAsync(string username);
+        Task<Result> ChangePasswordAsync(string username, string oldPassword, string newPassword);
+        Task<Result<IEnumerable<(int Id, string Username, string EmployeeName, string Role)>>> GetAllAccountsAsync();
+        Task<Result<string>> GetEmployeeNameAsync(string username);
+        Task<Result<int>> GetEmployeeIdByUsernameAsync(string username);
+        Task<Result> DeleteAccountAsync(string username);
+        Task<Result> UpdateAccountAsync(string username, string? newPassword = null, string? newRole = null, string? newEmployeeName = null);
     }
 }

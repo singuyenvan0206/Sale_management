@@ -1,3 +1,4 @@
+
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
@@ -33,5 +34,27 @@ namespace FashionStore.App.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => throw new NotImplementedException();
+    }
+
+    public class LessThanConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is int val && int.TryParse(parameter?.ToString(), out int param)) return val < param;
+            if (value is decimal dVal && decimal.TryParse(parameter?.ToString(), out decimal dParam)) return dVal < dParam;
+            return false;
+        }
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
+    }
+
+    public class GreaterThanConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is int val && int.TryParse(parameter?.ToString(), out int param)) return val > param;
+            if (value is decimal dVal && decimal.TryParse(parameter?.ToString(), out decimal dParam)) return dVal > dParam;
+            return false;
+        }
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
     }
 }

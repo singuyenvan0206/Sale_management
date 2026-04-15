@@ -9,6 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using System.IO;
 using System.Windows;
+
+
 namespace FashionStore.App
 {
     public partial class App : Application
@@ -51,10 +53,33 @@ namespace FashionStore.App
                 new FrameworkPropertyMetadata(
                     System.Windows.Markup.XmlLanguage.GetLanguage(cultureInfo.IetfLanguageTag)));
 
+            // 4. Show Splash Screen
+            var splash = new SplashWindow();
+            splash.Show();
+
             base.OnStartup(e);
 
-            // Run database initialization asynchronously to not block UI show
-            Dispatcher.BeginInvoke(new Action(TryInitializeDatabaseWithFallback), System.Windows.Threading.DispatcherPriority.Background);
+            // Run database initialization and app setup asynchronously 
+            Task.Run(async () => {
+                try 
+                {
+                    // Artificial delay to show branding (can be removed in production if too fast)
+                    await Task.Delay(1500); 
+                    
+                    await Dispatcher.InvokeAsync(() => {
+                        TryInitializeDatabaseWithFallback();
+                        
+                        var mainWindow = new MainWindow();
+                        Application.Current.MainWindow = mainWindow;
+                        mainWindow.Show();
+                        splash.Close();
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Error during app startup sequence");
+                }
+            });
         }
 
         private void ConfigureServices(IServiceCollection services)
@@ -69,7 +94,7 @@ namespace FashionStore.App
 
             // Services
             services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<FashionStore.Core.Interfaces.IProductService, FashionStore.Services.ProductService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<IVoucherService, VoucherService>();

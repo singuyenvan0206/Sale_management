@@ -2,6 +2,7 @@ using Dapper;
 using FashionStore.Core.Interfaces;
 using FashionStore.Core.Models;
 using Microsoft.Extensions.DependencyInjection;
+using System.IO;
 
 namespace FashionStore.Services
 {
@@ -135,9 +136,55 @@ namespace FashionStore.Services
 
         public static int ImportCustomersFromCsv(string filePath) => 0; // Placeholder
 
-        public static bool ExportCustomersToCsv(string filePath) => false; // Placeholder
+        public static bool ExportCustomersToCsv(string filePath)
+        {
+            try
+            {
+                var customers = GetAllCustomers();
+                var lines = new List<string>(customers.Count + 1)
+                {
+                    "Id,Name,Phone,Email,Address,CustomerType,Points"
+                };
 
-        public static bool DeleteAllCustomers() => false; // Placeholder
+                static string Esc(string? value)
+                {
+                    if (string.IsNullOrEmpty(value)) return "";
+                    return "\"" + value.Replace("\"", "\"\"") + "\"";
+                }
+
+                foreach (var c in customers)
+                {
+                    lines.Add($"{c.Id},{Esc(c.Name)},{Esc(c.Phone)},{Esc(c.Email)},{Esc(c.Address)},{Esc(c.CustomerType)},{c.Points}");
+                }
+
+                File.WriteAllLines(filePath, lines, new System.Text.UTF8Encoding(true));
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public static bool DeleteAllCustomers()
+        {
+            try
+            {
+                const string sql = @"
+                    DELETE c
+                    FROM Customers c
+                    LEFT JOIN Invoices i ON i.CustomerId = c.Id
+                    WHERE i.Id IS NULL;";
+                using var connection = new MySql.Data.MySqlClient.MySqlConnection(FashionStore.Core.Settings.SettingsManager.BuildConnectionString());
+                connection.Open();
+                connection.Execute(sql);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
         public static List<(int InvoiceId, DateTime CreatedAt, int ItemCount, decimal Total)> GetCustomerPurchaseHistory(int customerId)
         {

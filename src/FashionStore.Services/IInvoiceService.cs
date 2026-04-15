@@ -11,6 +11,8 @@ namespace FashionStore.Services
         Task<int> GetInvoiceCountAsync(DateTime from, DateTime to);
         Task<IEnumerable<(DateTime Day, decimal Revenue)>> GetRevenueByDayAsync(DateTime from, DateTime to);
         Task<IEnumerable<(string CategoryName, decimal Revenue)>> GetRevenueByCategoryAsync(DateTime from, DateTime to);
+        Task<bool> DeleteInvoiceAsync(int invoiceId);
+        Task<bool> RefundInvoiceAsync(int invoiceId);
         Task<bool> ExportInvoicesToCsvAsync(string filePath);
         Task<int> ImportInvoicesFromCsvAsync(string filePath);
         Task<bool> DeleteAllInvoicesAsync();
