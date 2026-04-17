@@ -1,7 +1,7 @@
 using System;
 using Xunit;
 using FashionStore.Services;
-using FashionStore.Models;
+using FashionStore.Core.Models;
 
 namespace FashionStore.Tests
 {
@@ -55,15 +55,49 @@ namespace FashionStore.Tests
         }
 
         [Fact]
-        public void CalculateVoucherValue_PercentageWithoutCap()
+        public void CalculateTaxAmount_ShouldApplyDiscountCorrectly()
         {
-            var voucher = new Voucher 
-            { 
-                DiscountType = Voucher.TypePercentage, 
-                DiscountValue = 10 
-            };
-            var result = _service.CalculateVoucherValue(100000, voucher);
-            Assert.Equal(10000, result);
+            // Arrange
+            decimal lineTotal = 100000;
+            decimal discountRatio = 0.1m; // 10% discount
+            decimal taxPercent = 10;      // 10% tax
+
+            // Act
+            // Formula: (100k * 0.9) * 0.1 = 9k
+            var result = _service.CalculateTaxAmount(lineTotal, discountRatio, taxPercent);
+
+            // Assert
+            Assert.Equal(9000, result);
+        }
+
+        [Fact]
+        public void Integrated_TierAndVoucher_ShouldWork()
+        {
+            // Arrange
+            decimal subtotal = 1000000; // 1M
+            string tier = "Gold"; // 10%
+            var voucher = new Voucher { DiscountType = "%", DiscountValue = 5, MaxDiscountAmount = 100000 };
+
+            // Act
+            decimal tierDiscPercent = _service.GetTierDiscountPercent(tier);
+            decimal tierDiscAmount = _service.CalculateTierDiscount(subtotal, tierDiscPercent);
+            
+            decimal remaining = subtotal - tierDiscAmount; // 930k (1M - 7%)
+            decimal voucherDisc = _service.CalculateVoucherValue(remaining, voucher); // 5% of 930k = 46.5k
+
+            // Assert
+            Assert.Equal(7, tierDiscPercent);
+            Assert.Equal(70000, tierDiscAmount);
+            Assert.Equal(46500, voucherDisc);
+            Assert.Equal(883500, subtotal - tierDiscAmount - voucherDisc);
+        }
+
+        [Fact]
+        public void ApplyPercentDiscount_CapTest()
+        {
+            Assert.Equal(0, _service.ApplyPercentDiscount(100, 100));
+            Assert.Equal(0, _service.ApplyPercentDiscount(100, 150));
+            Assert.Equal(100, _service.ApplyPercentDiscount(100, -10));
         }
     }
 }

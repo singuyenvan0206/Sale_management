@@ -1,5 +1,5 @@
 using Xunit;
-using FashionStore.Core;
+using FashionStore.Core.Settings;
 using System;
 
 namespace FashionStore.Tests

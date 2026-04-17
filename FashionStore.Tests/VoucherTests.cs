@@ -1,7 +1,7 @@
 using System;
 using Xunit;
-using FashionStore;
-using FashionStore.Models;
+using Xunit;
+using FashionStore.Core.Models;
 
 namespace FashionStore.Tests
 {

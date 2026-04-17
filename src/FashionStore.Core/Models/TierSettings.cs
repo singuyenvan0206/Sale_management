@@ -38,7 +38,7 @@ namespace FashionStore.Core.Models
             {
                 "silver" => SilverDiscountPercent,
                 "gold" => GoldDiscountPercent,
-                "VIP" => VIPDiscountPercent,
+                "vip" => VIPDiscountPercent,
                 _ => RegularDiscountPercent
             };
         }
