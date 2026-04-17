@@ -1,0 +1,68 @@
+@{
+    ViewData["Title"] = "Chỉnh sửa tài khoản: " + ViewBag.Username;
+}
+
+<div class="animate-in">
+    <div style="margin-bottom: 2rem;">
+        <a asp-action="Index" style="color: var(--text-muted); text-decoration: none;"><i class="fas fa-arrow-left"></i> Quay lại danh sách</a>
+    </div>
+
+    <div class="glass" style="max-width: 600px; margin: 0 auto; padding: 2.5rem; border: 1px solid var(--glass-border); background: #fff;">
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+            <div style="width: 50px; height: 50px; border-radius: 12px; background: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: 800;">
+                @ViewBag.Username.Substring(0, 1).ToUpper()
+            </div>
+            <div>
+                <h2 class="gradient-text">Cập nhật tài khoản</h2>
+                <p style="color: var(--text-muted); font-size: 0.875rem;">Đang chỉnh sửa người dùng: <strong>@ViewBag.Username</strong></p>
+            </div>
+        </div>
+        
+        <form asp-action="Edit" method="post" style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <input type="hidden" name="username" value="@ViewBag.Username" />
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="glass" style="background: rgba(239, 68, 68, 0.1); border-color: #ef4444; color: #ef4444; padding: 1rem; border-radius: 8px;">
+                    <div asp-validation-summary="All"></div>
+                </div>
+            }
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Họ tên nhân viên</label>
+                <input name="employeeName" value="@ViewBag.EmployeeName" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" required />
+            </div>
+
+            <div class="glass" style="padding: 1.5rem; background: rgba(14, 165, 233, 0.05); border-color: var(--primary-color);">
+                <label style="display: block; margin-bottom: 1rem; color: var(--primary-color); font-weight: 700; font-size: 0.875rem;">
+                    <i class="fas fa-key"></i> ĐẶT LẠI MẬT KHẨU (TÙY CHỌN)
+                </label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.75rem;">Mật khẩu mới</label>
+                        <input name="password" type="password" class="glass" style="width: 100%; padding: 0.6rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" placeholder="Bỏ trống nếu không đổi" />
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.75rem;">Xác nhận</label>
+                        <input name="confirmPassword" type="password" class="glass" style="width: 100%; padding: 0.6rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" />
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Vai trò hệ thống</label>
+                <select name="role" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;">
+                    <option value="Cashier" selected='@(ViewBag.Role == "Cashier")'>Thu ngân</option>
+                    <option value="Manager" selected='@(ViewBag.Role == "Manager")'>Quản lý</option>
+                    <option value="Admin" selected='@(ViewBag.Role == "Admin")'>Quản trị viên</option>
+                </select>
+            </div>
+
+            <div style="margin-top: 1rem;">
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 1rem; font-weight: 700; letter-spacing: 1px;">
+                    <i class="fas fa-save"></i> LƯU THAY ĐỔI
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,62 @@
+@model FashionStore.Core.Models.Account
+@{
+    ViewData["Title"] = "Thêm tài khoản nhân viên";
+}
+
+<div class="animate-in">
+    <div style="margin-bottom: 2rem;">
+        <a asp-action="Index" style="color: var(--text-muted); text-decoration: none;"><i class="fas fa-arrow-left"></i> Quay lại danh sách</a>
+    </div>
+
+    <div class="glass" style="max-width: 600px; margin: 0 auto; padding: 2.5rem; border: 1px solid var(--glass-border); background: #fff;">
+        <h2 class="gradient-text" style="margin-bottom: 2rem;">Đăng ký nhân viên mới</h2>
+        
+        <form asp-action="Create" method="post" style="display: flex; flex-direction: column; gap: 1.5rem;">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="glass" style="background: rgba(239, 68, 68, 0.1); border-color: #ef4444; color: #ef4444; padding: 1rem; border-radius: 8px;">
+                    <div asp-validation-summary="All"></div>
+                </div>
+            }
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Tên đăng nhập</label>
+                <input name="username" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" placeholder="Ví dụ: nhanvien01" required />
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Họ tên nhân viên</label>
+                <input name="employeeName" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" placeholder="Ví dụ: Nguyễn Văn A" required />
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Mật khẩu</label>
+                    <input name="password" type="password" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" required />
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Xác nhận</label>
+                    <input name="confirmPassword" type="password" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" required />
+                </div>
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Vai trò hệ thống</label>
+                <select name="role" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;">
+                    <option value="Cashier">Thu ngân</option>
+                    <option value="Manager">Quản lý</option>
+                    <option value="Admin">Quản trị viên</option>
+                </select>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">
+                    <i class="fas fa-info-circle"></i> Phân quyền xác định các chức năng nhân viên được phép sử dụng.
+                </p>
+            </div>
+
+            <div style="margin-top: 1rem;">
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 1rem; font-weight: 700; letter-spacing: 1px;">
+                    <i class="fas fa-user-plus"></i> TẠO TÀI KHOẢN
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

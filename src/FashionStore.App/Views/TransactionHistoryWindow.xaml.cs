@@ -8,18 +8,25 @@ namespace FashionStore.App.Views
     public partial class TransactionHistoryWindow : Window
     {
         private List<InvoiceSummaryItem> _invoices = new();
+        private int? _targetCustomerId;
 
-        public TransactionHistoryWindow()
+        public TransactionHistoryWindow(int? customerId = null)
         {
             InitializeComponent();
+            _targetCustomerId = customerId;
             LoadInvoices();
+
+            if (_targetCustomerId.HasValue)
+            {
+                this.Title = "📜 Lịch Sử Giao Dịch - [Đã Lọc Theo Khách Hàng]";
+            }
         }
 
         private void LoadInvoices()
         {
             try
             {
-                _invoices = InvoiceService.QueryInvoices(null, null, null, "")
+                _invoices = InvoiceService.QueryInvoices(null, null, _targetCustomerId, "")
                     .Select(i => new InvoiceSummaryItem
                     {
                         InvoiceId = i.Id,

@@ -1,0 +1,58 @@
+@model IEnumerable<FashionStore.Core.Models.Category>
+@{
+    ViewData["Title"] = "Quản lý danh mục";
+}
+
+<div class="header-actions animate-in" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+        <h1 class="gradient-text">Danh mục sản phẩm</h1>
+        <p style="color: var(--text-muted);">Phân loại sản phẩm và cấu hình thuế VAT.</p>
+    </div>
+    <a asp-action="Create" class="btn-primary" style="text-decoration: none;"><i class="fas fa-plus"></i> Thêm danh mục</a>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="glass animate-in" style="padding: 1rem; border-color: #ef4444; color: #ef4444; margin-bottom: 1.5rem;">
+        <i class="fas fa-exclamation-triangle"></i> @TempData["Error"]
+    </div>
+}
+
+<div class="glass animate-in" style="animation-delay: 0.1s;">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tên danh mục</th>
+                    <th>Thuế (%)</th>
+                    <th>Ghi chú</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var cat in Model)
+                {
+                    <tr class="glass-hover-row">
+                        <td style="color: var(--text-muted);">#@cat.Id</td>
+                        <td style="font-weight: 600;">@cat.Name</td>
+                        <td style="font-weight: 700; color: var(--secondary-color);">@cat.TaxPercent%</td>
+                        <td style="color: var(--text-muted); font-size: 0.875rem;">@cat.Description</td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <a asp-action="Edit" asp-route-id="@cat.Id" class="nav-link" style="padding: 0.4rem; color: var(--text-muted);">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@cat.Id" method="post" onsubmit="return confirm('Xoá danh mục này?')">
+                                    <button type="submit" style="background:transparent; border:none; color:#ef4444; cursor:pointer; padding:0.4rem;">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,83 @@
+@model FashionStore.Core.Models.Product
+@{
+    ViewData["Title"] = "Chỉnh sửa sản phẩm: " + Model.Name;
+}
+
+<div class="animate-in">
+    <div style="margin-bottom: 2rem;">
+        <a asp-action="Index" style="color: var(--text-muted); text-decoration: none;"><i class="fas fa-arrow-left"></i> Quay lại danh sách</a>
+    </div>
+
+    <div class="glass" style="max-width: 800px; margin: 0 auto; padding: 2.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h2 class="gradient-text">Chỉnh sửa thông tin</h2>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">ID: #@Model.Id</div>
+        </div>
+        
+        <form asp-action="Edit" method="post" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <input type="hidden" asp-for="Id" />
+            
+            <div style="grid-column: span 2;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Tên sản phẩm</label>
+                <input asp-for="Name" class="glass" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); border-radius: 8px;" required />
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Mã sản phẩm (Code)</label>
+                <input asp-for="Code" class="glass" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); border-radius: 8px;" required />
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Danh mục</label>
+                <select asp-for="CategoryId" class="glass" style="width: 100%; padding: 0.75rem; background: var(--bg-color); color: white; border: 1px solid var(--glass-border); border-radius: 8px;">
+                    @foreach (var cat in ViewBag.Categories as IEnumerable<FashionStore.Core.Models.Category>)
+                    {
+                        <option value="@cat.Id">@cat.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Giá nhập</label>
+                <input asp-for="PurchasePrice" type="number" class="glass" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); border-radius: 8px;" />
+            </div>
+
+            <div style="grid-column: span 2;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Đường dẫn hình ảnh (URL)</label>
+                <input asp-for="ImageUrl" class="glass" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); border-radius: 8px;" placeholder="https://example.com/image.jpg" />
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <div style="margin-top: 1rem;">
+                        <img src="@Model.ImageUrl" style="max-width: 200px; border-radius: 8px; border: 1px solid var(--glass-border);" />
+                    </div>
+                }
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Giá bán</label>
+                <input asp-for="SalePrice" type="number" class="glass" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); border-radius: 8px;" />
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Số lượng tồn</label>
+                <input asp-for="StockQuantity" type="number" class="glass" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); border-radius: 8px;" />
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Nhà cung cấp</label>
+                <select asp-for="SupplierId" class="glass" style="width: 100%; padding: 0.75rem; background: var(--bg-color); color: white; border: 1px solid var(--glass-border); border-radius: 8px;">
+                    @foreach (var s in ViewBag.Suppliers as IEnumerable<FashionStore.Core.Models.Supplier>)
+                    {
+                        <option value="@s.Id">@s.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div style="grid-column: span 2; margin-top: 1rem;">
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 1rem;">
+                    <i class="fas fa-save"></i> CẬP NHẬT THAY ĐỔI
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

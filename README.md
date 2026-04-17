@@ -1,242 +1,90 @@
-# Fashion Store – Sale Management System
+# 👗 FashionStore ERP - Hệ thống quản lý bán hàng thời trang toàn diện
 
-Ứng dụng quản lý bán hàng thời trang xây dựng bằng **WPF** trên **.NET 9**, theo mô hình **MVVM**.  
-Hỗ trợ quản lý người dùng, sản phẩm, khách hàng, hoá đơn, voucher, báo cáo và tuỳ chỉnh cài đặt hệ thống.
+![Banner](https://img.shields.io/badge/FashionStore-ERP-blue?style=for-the-badge&logo=dotnet)
+![Status](https://img.shields.io/badge/Status-Development-green?style=for-the-badge)
+![Security](https://img.shields.io/badge/Security-Hardened-success?style=for-the-badge)
 
----
-
-## ✨ Tính năng chính
-
-| Nhóm | Tính năng |
-|------|-----------|
-| **Người dùng** | Đăng nhập, phân quyền (Admin / Staff), quản lý tài khoản, đổi mật khẩu |
-| **Sản phẩm** | CRUD sản phẩm & danh mục, quản lý nhà cung cấp, theo dõi xuất nhập kho |
-| **Khách hàng** | Quản lý thông tin khách hàng, phân hạng tier |
-| **Hoá đơn** | Lập hoá đơn, in hoá đơn, lịch sử giao dịch |
-| **Voucher** | Tạo & quản lý mã giảm giá, áp dụng khi thanh toán |
-| **Báo cáo** | Dashboard KPI, biểu đồ doanh thu (OxyPlot), tuỳ chỉnh mẫu báo cáo |
-| **Cài đặt** | Mức giá/tier, phương thức thanh toán, mã QR, đa ngôn ngữ (🇻🇳 / 🇬🇧) |
+**FashionStore ERP** là một giải pháp quản trị doanh nghiệp bán lẻ hiện đại, được thiết kế chuyên biệt cho ngành thời trang. Hệ thống kết hợp sức mạnh của ứng dụng Desktop (WPF) để quản lý kho/vận hành và ứng dụng Web (ASP.NET Core) để bán hàng linh hoạt (POS).
 
 ---
 
-## 📋 Yêu cầu hệ thống
+## ✨ Tính năng nổi bật
 
-- **OS:** Windows 10 / 11
-- **.NET SDK:** 9.0 trở lên
-- **IDE:** Visual Studio 2022 (khuyến nghị) với workload **.NET Desktop Development**
-- **Database:** MySQL 8.0+ (qua XAMPP/WAMP hoặc standalone)
+### 🛒 Điểm bán hàng (Web POS)
+- **Thanh toán QR tự động**: Tích hợp **SePay API** để tạo mã VietQR động và tự động kiểm tra trạng thái thanh toán.
+- **Quản lý giỏ hàng thông minh**: Tìm kiếm sản phẩm nhanh, quét mã vạch (Barcode/QR) trực tiếp qua Camera.
+- **Tiền thưởng & Ưu đãi**: Tự động áp dụng giảm giá theo phân hạng khách hàng (Loyalty) và mã Voucher.
+
+### 📦 Quản trị Kho & Sản phẩm
+- **Sản phẩm đa biến thể**: Quản lý màu sắc, kích thước, số lượng tồn kho theo từng biến thể.
+- **Lịch sử nhập xuất**: Theo dõi di biến động hàng hóa chi tiết.
+- **Quản lý nhà cung cấp**: Tối ưu hóa chuỗi cung ứng.
+
+### 👥 Khách hàng & Marketing
+- **Hệ thống phân hạng**: Tự động nâng hạng khách hàng (Regular, Silver, Gold, VIP) dựa trên doanh số.
+- **Chiến dịch Khuyến mãi**: Thiết lập các chương trình giảm giá, mua X tặng Y linh hoạt.
+
+### 🛡️ Bảo mật chuẩn Enterprise
+- **Mã hóa dữ liệu**: Sử dụng AES-256 để bảo vệ các Token API nhạy cảm.
+- **An toàn mật khẩu**: Băm mật khẩu bằng thuật toán **BCrypt**.
+- **Chống tấn công SQL**: 100% sử dụng Parameterized Queries với Dapper.
+- **Phòng thủ Web**: Tích hợp Anti-Forgery Token (CSRF), HSTS, và chính sách Cookie nghiêm ngặt.
 
 ---
 
-## 📁 Cấu trúc dự án
+## 🛠️ Công nghệ sử dụng
 
-```
-Fashion_store/
-├── FashionStore.sln                  # Solution chính
-├── database_schema.sql               # Script tạo database
-├── README.md
-│
-├── WpfApp1/                          # Ứng dụng WPF chính (FashionStore)
-│   ├── FashionStore.csproj
-│   ├── App.xaml / App.xaml.cs        # Entry point, cấu hình DI & ngôn ngữ
-│   ├── MainWindow.xaml               # Shell chính
-│   │
-│   ├── Models/                       # Data models
-│   │   ├── Account.cs
-│   │   ├── Product.cs
-│   │   ├── Supplier.cs
-│   │   ├── StockMovement.cs
-│   │   ├── Voucher.cs
-│   │   ├── TierSettings.cs
-│   │   └── UserRole.cs
-│   │
-│   ├── Views/                        # XAML views (giao diện)
-│   │   ├── DashboardWindow.xaml
-│   │   ├── ProductManagementWindow.xaml
-│   │   ├── CustomerManagementWindow.xaml
-│   │   ├── InvoiceManagementWindow.xaml
-│   │   ├── InvoicePrintWindow.xaml
-│   │   ├── VoucherManagementWindow.xaml
-│   │   ├── SupplierManagementWindow.xaml
-│   │   ├── CategoryManagementWindow.xaml
-│   │   ├── ReportsWindow.xaml
-│   │   ├── ReportsSettingsWindow.xaml
-│   │   ├── SettingsWindow.xaml
-│   │   ├── UserManagementWindow.xaml
-│   │   ├── AddEditUserWindow.xaml
-│   │   ├── ChangePasswordWindow.xaml
-│   │   ├── TierSettingsWindow.xaml
-│   │   ├── TransactionHistoryWindow.xaml
-│   │   └── CodeBehind/               # Code-behind cho các views
-│   │
-│   ├── ViewModels/                   # MVVM ViewModels
-│   │   ├── MainViewModel.cs
-│   │   ├── DashboardViewModel.cs
-│   │   ├── ProductManagementViewModel.cs
-│   │   ├── CustomerManagementViewModel.cs
-│   │   ├── InvoiceManagementViewModel.cs
-│   │   ├── VoucherManagementViewModel.cs
-│   │   ├── SupplierManagementViewModel.cs
-│   │   ├── CategoryManagementViewModel.cs
-│   │   ├── ReportsViewModel.cs
-│   │   ├── SettingsViewModel.cs
-│   │   ├── TierSettingsViewModel.cs
-│   │   └── UserManagementViewModel.cs
-│   │
-│   ├── Services/                     # Business logic & data access
-│   │   ├── CategoryService.cs
-│   │   ├── CustomerService.cs
-│   │   ├── InvoiceService.cs
-│   │   ├── ProductService.cs
-│   │   ├── SupplierService.cs
-│   │   ├── UserService.cs
-│   │   └── VoucherService.cs
-│   │
-│   ├── Data/                         # Database layer
-│   │   ├── DatabaseHelper.cs         # Kết nối & thao tác DB trung tâm
-│   │   └── DatabaseMigration.cs      # Quản lý migration
-│   │
-│   ├── Core/                         # Framework & utilities
-│   │   ├── BaseViewModel.cs          # INotifyPropertyChanged base
-│   │   ├── RelayCommand.cs           # ICommand implementation
-│   │   ├── LanguageService.cs        # Chuyển đổi ngôn ngữ
-│   │   ├── PaginationHelper.cs
-│   │   ├── PasswordHelper.cs
-│   │   ├── QRCodeHelper.cs
-│   │   ├── SettingsManager.cs
-│   │   └── PaymentSettings.cs
-│   │
-│   ├── Converters/                   # WPF value converters
-│   │   └── ValueConverters.cs
-│   │
-│   └── Resources/
-│       └── Languages/                # Đa ngôn ngữ
-│           ├── vi.xaml                # Tiếng Việt
-│           └── en.xaml                # English
-│
-└── FashionStore.Tests/               # Unit tests (xUnit)
-    ├── FashionStore.Tests.csproj
-    ├── CalculationTests.cs
-    └── VoucherTests.cs
+| Lớp (Layer) | Công nghệ |
+| :--- | :--- |
+| **Backend** | .NET 9.0 / 10.0, ASP.NET Core MVC |
+| **Desktop App** | WPF (Windows Presentation Foundation) |
+| **Database** | MySQL |
+| **ORM** | Dapper (High Performance) |
+| **UI/UX** | Vanilla CSS, FontAwesome, JavaScript (ES6+) |
+| **Security** | BCrypt.Net, System.Security.Cryptography |
+
+---
+
+## 📂 Cấu trúc thư mục
+
+```text
+FashionStore/
+├── src/
+│   ├── FashionStore.Core/       # Chứa Model, Interface và Logic dùng chung
+│   ├── FashionStore.Data/       # Tầng truy xuất dữ liệu (Repositories)
+│   ├── FashionStore.Services/   # Tầng nghiệp vụ (Business Logic)
+│   ├── FashionStore.Web/        # Ứng dụng Web (POS, Dashboard)
+│   └── FashionStore.App/        # Ứng dụng Desktop (WPF Management)
+├── FashionStore.Tests/          # Các bài kiểm tra unit test
+└── main.sql                     # Script khởi tạo cơ sở dữ liệu
 ```
 
 ---
 
-## 🚀 Thiết lập & Chạy
+## 🚀 Hướng dẫn cài đặt
 
-### 1. Clone & mở solution
+### 1. Yêu cầu hệ thống
+- .NET SDK 9.0 trở lên.
+- MySQL Server 8.0+.
+- Visual Studio 2022 hoặc VS Code.
 
-```bash
-git clone https://github.com/singuyenvan0206/Sale_management.git
-```
+### 2. Cấu hình Cơ sở dữ liệu
+1. Tạo một database mới trong MySQL.
+2. Chạy file `main.sql` để khởi tạo cấu trúc bảng.
+3. Cập nhật chuỗi kết nối (Connection String) trong `appsettings.json` của dự án Web và App.
 
-Mở `FashionStore.sln` bằng Visual Studio 2022.
-
-### 2. Khôi phục NuGet packages
-
-Visual Studio tự khôi phục khi mở solution. Nếu cần thủ công:
-
-```powershell
-dotnet restore
-```
-
-### 3. Cấu hình cơ sở dữ liệu
-
-#### Tuỳ chọn 1: XAMPP / phpMyAdmin *(khuyến nghị cho người mới)*
-
-1. Cài đặt [XAMPP](https://www.apachefriends.org/) và khởi động **MySQL**
-2. Mở phpMyAdmin (`http://localhost/phpmyadmin`)
-3. Tạo database mới tên `main` và import file `database_schema.sql`
-4. Cấu hình kết nối trong ứng dụng (**Settings → Database Settings**):
-
-   | Trường | Giá trị |
-   |--------|---------|
-   | Server | `localhost` |
-   | Port | `3306` |
-   | Database | `main` |
-   | User ID | `root` |
-   | Password | *(để trống nếu XAMPP mặc định)* |
-
-#### Tuỳ chọn 2: MySQL standalone
-
-- Đảm bảo MySQL server đang chạy với user có quyền truy cập
-- Ứng dụng sẽ tự tạo các bảng cần thiết khi chạy lần đầu
-
-### 4. Chạy ứng dụng
-
-- Chọn cấu hình **Debug** và **FashionStore** làm startup project
-- Nhấn **F5** để chạy
+### 3. Chạy ứng dụng
+- **Web App**: 
+  ```bash
+  dotnet run --project src/FashionStore.Web/FashionStore.Web.csproj
+  ```
+- **WPF App**:
+  Mở giải pháp (`FashionStore.sln`) bằng Visual Studio và chạy dự án `FashionStore.App`.
 
 ---
 
-## 📦 NuGet Packages
-
-| Package | Version | Mục đích |
-|---------|---------|----------|
-| `MySql.Data` | 9.4.0 | Kết nối MySQL |
-| `Dapper` | 2.1.35 | Tối ưu truy xuất CSDL (Micro-ORM) |
-| `Serilog` | 4.0.0+ | Ghi log hệ thống và lỗi tự động |
-| `OxyPlot.Wpf` | 2.1.0 | Biểu đồ báo cáo |
-| `QRCoder` | 1.4.3 | Tạo mã QR thanh toán |
+## 📝 Ghi chú bảo mật
+Hệ thống yêu cầu cấu hình **SePay API Token** để tính năng thanh toán QR hoạt động. Token này sẽ được mã hóa an toàn khi lưu vào cơ sở dữ liệu. Vui lòng không chia sẻ file cấu hình hoặc database chứa dữ liệu nhạy cảm.
 
 ---
-
-## 🛡️ Hệ thống Log & Giám sát lỗi
-
-Dự án áp dụng **Global Error Handling** thông qua Serilog. Nếu ứng dụng gặp sự cố (Crash/Exception), thông tin chi tiết sẽ được tự động lưu lại thay vì văng ứng dụng đột ngột.
-- Đường dẫn file log mặc định: `%AppData%\FashionStore\Logs\`
-
----
-
-## 🏗️ Kiến trúc
-
-Dự án tuân theo mô hình **MVVM** (Model-View-ViewModel) kết hợp **Repository Pattern**:
-
-```
-View (XAML) ──binding──▶ ViewModel ──calls──▶ Service ──queries──▶ Repository (Dapper)
-                              │
-                              └── Model (data classes)
-```
-
-- **Views** — Giao diện XAML, tối thiểu code-behind
-- **ViewModels** — Logic hiển thị, binding, commands (kế thừa `BaseViewModel`, dùng `RelayCommand`)
-- **Services** — Quản lý Business Logic
-- **Repositories (Data)** — Lớp trừu tượng thao tác cơ sở dữ liệu qua **Dapper** (Rollback an toàn).
-- **Core** — Utilities dùng chung (pagination, QR, ngôn ngữ, settings…)
-- **Models** — Các lớp dữ liệu thực thể (Product, Account, Voucher…)
-
----
-
-## 🧪 Chạy Unit Tests
-
-```powershell
-dotnet test FashionStore.Tests/FashionStore.Tests.csproj
-```
-
----
-
-## 📤 Build Release / Publish
-
-```powershell
-dotnet publish WpfApp1/FashionStore.csproj -c Release -r win-x64
-```
-
-Hoặc trong Visual Studio: **Build → Publish** (target `win-x64`, framework `net9.0-windows`).
-
----
-
-## 🌐 Đa ngôn ngữ
-
-Ứng dụng hỗ trợ **Tiếng Việt** và **English**.  
-Chuyển đổi ngôn ngữ trong **Settings**. Các resource string nằm tại:
-
-- `Resources/Languages/vi.xaml`
-- `Resources/Languages/en.xaml`
-
----
-
-## 📄 Tài liệu liên quan
-
-- Database schema: [`database_schema.sql`](database_schema.sql)
-
-
+*© 2026 FashionStore ERP Team. Built with ❤️ for the Fashion Industry.*

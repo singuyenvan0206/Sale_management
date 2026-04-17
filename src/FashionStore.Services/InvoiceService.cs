@@ -1,5 +1,6 @@
 using FashionStore.Core.Interfaces;
 using FashionStore.Core.Models;
+using FashionStore.Core.Utils;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FashionStore.Services
@@ -39,6 +40,16 @@ namespace FashionStore.Services
             return await _invoiceRepository.GetTotalRevenueAsync(from, to);
         }
 
+        public async Task<decimal> GetCostAsync(DateTime from, DateTime to)
+        {
+            return await _invoiceRepository.GetTotalCostAsync(from, to);
+        }
+
+        public async Task<decimal> GetProfitAsync(DateTime from, DateTime to)
+        {
+            return await _invoiceRepository.GetTotalProfitAsync(from, to);
+        }
+
         public async Task<int> GetInvoiceCountAsync(DateTime from, DateTime to)
         {
             return await _invoiceRepository.GetInvoiceCountAsync(from, to);
@@ -46,12 +57,23 @@ namespace FashionStore.Services
 
         public async Task<IEnumerable<(DateTime Day, decimal Revenue)>> GetRevenueByDayAsync(DateTime from, DateTime to)
         {
-            return await _invoiceRepository.GetRevenueByDayAsync(from, to);
+            var data = (await _invoiceRepository.GetRevenueByDayAsync(from, to)).ToDictionary(x => x.Day.Date, x => x.Revenue);
+            var result = new List<(DateTime Day, decimal Revenue)>();
+            for (var date = from.Date; date <= to.Date; date = date.AddDays(1))
+            {
+                result.Add((date, data.ContainsKey(date) ? data[date] : 0m));
+            }
+            return result;
         }
 
         public async Task<IEnumerable<(string CategoryName, decimal Revenue)>> GetRevenueByCategoryAsync(DateTime from, DateTime to)
         {
             return await _invoiceRepository.GetRevenueByCategoryAsync(from, to);
+        }
+
+        public async Task<IEnumerable<(string ProductName, int Quantity)>> GetTopProductsAsync(DateTime from, DateTime to, int limit = 5)
+        {
+            return await _invoiceRepository.GetTopProductsAsync(from, to, limit);
         }
 
         public async Task<bool> DeleteInvoiceAsync(int invoiceId)
@@ -71,8 +93,6 @@ namespace FashionStore.Services
                 // Single JOIN query — O(1) round-trips
                 var allData = await _invoiceRepository.GetAllInvoicesWithItemsAsync();
 
-                static string Esc(string? s) => s == null ? "" : "\"" + s.Replace("\"", "\"\"") + "\"";
-
                 var lines = new System.Collections.Generic.List<string>(allData.Count * 2 + 1)
                 {
                     "Mã HĐ,Ngày tạo,Tên khách hàng,SĐT khách,Email khách,Địa chỉ,Mã SP,Tên sản phẩm,Đơn giá,Số lượng,Thành tiền,Tiền hàng (HĐ),Thuế,Giảm giá,Tổng tiền,Đã trả"
@@ -84,10 +104,10 @@ namespace FashionStore.Services
                     var items = entry.Items;
 
                     string date = header.CreatedDate.ToString("dd/MM/yyyy HH:mm");
-                    string custName = Esc(header.CustomerName);
-                    string custPhone = Esc(header.CustomerPhone);
-                    string custEmail = Esc(header.CustomerEmail);
-                    string custAddr = Esc(header.CustomerAddress);
+                    string custName = CsvHelper.Escape(header.CustomerName);
+                    string custPhone = CsvHelper.Escape(header.CustomerPhone);
+                    string custEmail = CsvHelper.Escape(header.CustomerEmail);
+                    string custAddr = CsvHelper.Escape(header.CustomerAddress);
                     string subtotal = header.Subtotal.ToString("F0");
                     string tax = header.TaxAmount.ToString("F0");
                     string discount = header.Discount.ToString("F0");
@@ -103,7 +123,7 @@ namespace FashionStore.Services
                     {
                         foreach (var item in items)
                         {
-                            string prodName = Esc(item.ProductName);
+                            string prodName = CsvHelper.Escape(item.ProductName);
                             lines.Add($"{header.Id},{date},{custName},{custPhone},{custEmail},{custAddr}," +
                                       $"{item.ProductId},{prodName},{item.UnitPrice:F0},{item.Quantity},{item.LineTotal:F0}," +
                                       $"{subtotal},{tax},{discount},{total},{paid}");
@@ -127,31 +147,11 @@ namespace FashionStore.Services
                 var allLines = await System.IO.File.ReadAllLinesAsync(filePath, System.Text.Encoding.UTF8);
                 if (allLines.Length < 2) return 0;
 
-                static string[] ParseCsvLine(string line)
-                {
-                    var fields = new System.Collections.Generic.List<string>();
-                    bool inQuotes = false;
-                    var current = new System.Text.StringBuilder();
-                    for (int i = 0; i < line.Length; i++)
-                    {
-                        char c = line[i];
-                        if (c == '"')
-                        {
-                            if (inQuotes && i + 1 < line.Length && line[i + 1] == '"') { current.Append('"'); i++; }
-                            else inQuotes = !inQuotes;
-                        }
-                        else if (c == ',' && !inQuotes) { fields.Add(current.ToString()); current.Clear(); }
-                        else current.Append(c);
-                    }
-                    fields.Add(current.ToString());
-                    return fields.ToArray();
-                }
-
                 var invoiceRows = new System.Collections.Generic.Dictionary<int, System.Collections.Generic.List<string[]>>();
                 foreach (var line in allLines.Skip(1))
                 {
                     if (string.IsNullOrWhiteSpace(line)) continue;
-                    var cols = ParseCsvLine(line);
+                    var cols = CsvHelper.ParseLine(line);
                     if (cols.Length < 16) continue;
                     if (!int.TryParse(cols[0], out int invId)) continue;
                     if (!invoiceRows.ContainsKey(invId)) invoiceRows[invId] = new();
@@ -276,6 +276,12 @@ namespace FashionStore.Services
 
         public static decimal GetRevenueBetween(DateTime from, DateTime to)
             => RunSync(() => GetService().GetRevenueAsync(from, to));
+
+        public static decimal GetCostBetween(DateTime from, DateTime to)
+            => RunSync(() => GetService().GetCostAsync(from, to));
+
+        public static decimal GetProfitBetween(DateTime from, DateTime to)
+            => RunSync(() => GetService().GetProfitAsync(from, to));
 
         public static int GetInvoiceCountBetween(DateTime from, DateTime to)
             => RunSync(() => GetService().GetInvoiceCountAsync(from, to));

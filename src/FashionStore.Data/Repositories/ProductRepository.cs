@@ -1,6 +1,9 @@
 using Dapper;
 using FashionStore.Core.Interfaces;
 using FashionStore.Core.Models;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace FashionStore.Data.Repositories
 {
@@ -9,46 +12,116 @@ namespace FashionStore.Data.Repositories
         public async Task<IEnumerable<Product>> GetAllWithCategoriesAsync()
         {
             using var connection = GetConnection();
-            string sql = @"SELECT p.Id, p.Name, p.Code, p.CategoryId, c.Name as CategoryName, p.SalePrice,
-                                  IFNULL(p.PromoDiscountPercent, 0) AS PromoDiscountPercent,
-                                  p.PromoStartDate, p.PromoEndDate,
-                                  p.PurchasePrice, p.PurchaseUnit, p.ImportQuantity, p.StockQuantity, p.Description,
-                                  IFNULL(c.TaxPercent, 0) AS CategoryTaxPercent,
-                                  IFNULL(p.SupplierId, 0) AS SupplierId,
-                                  IFNULL(s.Name, '') AS SupplierName
-                           FROM Products p 
-                           LEFT JOIN Categories c ON p.CategoryId = c.Id 
-                           LEFT JOIN Suppliers s ON p.SupplierId = s.Id
-                           ORDER BY p.Id ASC
-                           LIMIT 10000;";
-            return await connection.QueryAsync<Product>(sql);
+            string sql = @"SELECT p.*, c.Name as CategoryName, c.TaxPercent as TaxPercent, s.Name as SupplierName,
+                                   v.Id AS VariantId, v.Size, v.Color, v.Barcode as VariantBarcode, v.StockQuantity AS VariantStock
+                            FROM Products p 
+                            LEFT JOIN Categories c ON p.CategoryId = c.Id 
+                            LEFT JOIN Suppliers s ON p.SupplierId = s.Id
+                            LEFT JOIN ProductVariants v ON v.ProductId = p.Id
+                            ORDER BY p.Id ASC;";
+
+            var result = await connection.QueryAsync<dynamic>(sql);
+            return MapProductsWithVariants(result);
+        }
+
+        public async Task<(IEnumerable<Product> Items, int TotalCount)> GetPagedWithCategoriesAsync(int pageIndex, int pageSize)
+        {
+            using var connection = GetConnection();
+            int offset = (pageIndex - 1) * pageSize;
+
+            // 1. Get total count
+            int totalCount = await connection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Products;");
+
+            // 2. Get paged product ids first (to avoid duplications when joining with variants)
+            string idSql = "SELECT Id FROM Products ORDER BY Id ASC LIMIT @PageSize OFFSET @Offset;";
+            var productIds = await connection.QueryAsync<int>(idSql, new { PageSize = pageSize, Offset = offset });
+
+            if (!productIds.Any()) return (Enumerable.Empty<Product>(), totalCount);
+
+            // 3. Get full details for these specific ids
+            string sql = @"SELECT p.*, c.Name as CategoryName, c.TaxPercent as TaxPercent, s.Name as SupplierName,
+                                   v.Id AS VariantId, v.Size, v.Color, v.Barcode as VariantBarcode, v.StockQuantity AS VariantStock
+                            FROM Products p 
+                            LEFT JOIN Categories c ON p.CategoryId = c.Id 
+                            LEFT JOIN Suppliers s ON p.SupplierId = s.Id
+                            LEFT JOIN ProductVariants v ON v.ProductId = p.Id
+                            WHERE p.Id IN @Ids
+                            ORDER BY p.Id ASC;";
+
+            var result = await connection.QueryAsync<dynamic>(sql, new { Ids = productIds });
+            return (MapProductsWithVariants(result), totalCount);
+        }
+
+        private IEnumerable<Product> MapProductsWithVariants(IEnumerable<dynamic> result)
+        {
+            var productDict = new Dictionary<int, Product>();
+            foreach (var row in result)
+            {
+                int id = (int)row.Id;
+                if (!productDict.TryGetValue(id, out var p))
+                {
+                    p = new Product
+                    {
+                        Id = id,
+                        Name = row.Name,
+                        Code = row.Code,
+                        CategoryId = (int)row.CategoryId,
+                        CategoryName = row.CategoryName ?? "",
+                        ImageUrl = row.ImageUrl ?? "",
+                        SalePrice = (decimal)row.SalePrice,
+                        PurchasePrice = (decimal)row.PurchasePrice,
+                        StockQuantity = (int)row.StockQuantity,
+                        CategoryTaxPercent = (decimal)(row.TaxPercent ?? 0m),
+                        Variants = new List<ProductVariant>()
+                    };
+                    productDict.Add(id, p);
+                }
+
+                if (row.VariantId != null)
+                {
+                    p.Variants.Add(new ProductVariant
+                    {
+                        Id = (int)row.VariantId,
+                        Size = row.Size ?? "",
+                        Color = row.Color ?? "",
+                        Barcode = row.VariantBarcode ?? "",
+                        StockQuantity = (int)row.VariantStock
+                    });
+                }
+            }
+            return productDict.Values;
+        }
+
+        public async Task<Product?> GetByIdAsync(int id)
+        {
+            using var connection = GetConnection();
+            string sql = @"SELECT p.*, c.Name as CategoryName, c.TaxPercent as CategoryTaxPercent, s.Name as SupplierName
+                            FROM Products p 
+                            LEFT JOIN Categories c ON p.CategoryId = c.Id 
+                            LEFT JOIN Suppliers s ON p.SupplierId = s.Id
+                            WHERE p.Id = @Id LIMIT 1;";
+            return await connection.QueryFirstOrDefaultAsync<Product>(sql, new { Id = id });
         }
 
         public async Task<Product?> GetByCodeAsync(string code)
         {
             if (string.IsNullOrWhiteSpace(code)) return null;
             using var connection = GetConnection();
-            string sql = @"SELECT p.Id, p.Name, p.Code, p.CategoryId, c.Name as CategoryName, p.SalePrice,
-                                  IFNULL(p.PromoDiscountPercent, 0) AS PromoDiscountPercent,
-                                  p.PromoStartDate, p.PromoEndDate,
-                                  p.PurchasePrice, p.PurchaseUnit, p.ImportQuantity, p.StockQuantity, p.Description,
-                                  IFNULL(c.TaxPercent, 0) AS CategoryTaxPercent,
-                                  IFNULL(p.SupplierId, 0) AS SupplierId,
-                                  IFNULL(s.Name, '') AS SupplierName
-                           FROM Products p
-                           LEFT JOIN Categories c ON p.CategoryId = c.Id
-                           LEFT JOIN Suppliers s ON p.SupplierId = s.Id
-                           WHERE p.Code = @Code LIMIT 1";
+            string sql = @"SELECT p.*, c.Name as CategoryName, c.TaxPercent as CategoryTaxPercent, s.Name as SupplierName
+                            FROM Products p
+                            LEFT JOIN Categories c ON p.CategoryId = c.Id
+                            LEFT JOIN Suppliers s ON p.SupplierId = s.Id
+                            WHERE p.Code = @Code LIMIT 1";
             return await connection.QueryFirstOrDefaultAsync<Product>(sql, new { Code = code });
         }
 
         public async Task<bool> AddAsync(Product p)
         {
             using var connection = GetConnection();
-            string sql = @"INSERT INTO Products (Name, Code, CategoryId, SalePrice, PromoDiscountPercent, 
+            string sql = @"INSERT INTO Products (Name, Code, CategoryId, ImageUrl, SalePrice, PromoDiscountPercent, 
                                                 PromoStartDate, PromoEndDate, PurchasePrice, PurchaseUnit, 
                                                 ImportQuantity, StockQuantity, Description, SupplierId) 
-                           VALUES (@Name, @Code, @CategoryId, @SalePrice, @PromoDiscountPercent, 
+                           VALUES (@Name, @Code, @CategoryId, @ImageUrl, @SalePrice, @PromoDiscountPercent, 
                                    @PromoStartDate, @PromoEndDate, @PurchasePrice, @PurchaseUnit, 
                                    @ImportQuantity, @StockQuantity, @Description, @SupplierId);";
             return await connection.ExecuteAsync(sql, p) > 0;
@@ -57,7 +130,7 @@ namespace FashionStore.Data.Repositories
         public async Task<bool> UpdateAsync(Product p)
         {
             using var connection = GetConnection();
-            string sql = @"UPDATE Products SET Name=@Name, Code=@Code, CategoryId=@CategoryId, SalePrice=@SalePrice, 
+            string sql = @"UPDATE Products SET Name=@Name, Code=@Code, CategoryId=@CategoryId, ImageUrl=@ImageUrl, SalePrice=@SalePrice, 
                            PromoDiscountPercent=@PromoDiscountPercent, PromoStartDate=@PromoStartDate, PromoEndDate=@PromoEndDate, 
                            PurchasePrice=@PurchasePrice, PurchaseUnit=@PurchaseUnit, ImportQuantity=@ImportQuantity, 
                            StockQuantity=@StockQuantity, Description=@Description, SupplierId=@SupplierId 
@@ -68,8 +141,6 @@ namespace FashionStore.Data.Repositories
         public async Task<bool> DeleteAsync(int id)
         {
             using var connection = GetConnection();
-
-            // Check for dependencies (simplified)
             string checkSql = "SELECT COUNT(*) FROM InvoiceItems WHERE ProductId=@Id;";
             long count = await connection.ExecuteScalarAsync<long>(checkSql, new { Id = id });
             if (count > 0) return false;
@@ -152,6 +223,70 @@ namespace FashionStore.Data.Repositories
             if (string.IsNullOrWhiteSpace(productName)) return 0;
             using var connection = GetConnection();
             return await connection.ExecuteScalarAsync<int>("SELECT Id FROM Products WHERE Name=@Name LIMIT 1;", new { Name = productName });
+        }
+
+        // Variant Support Implementation
+        public async Task<IEnumerable<ProductVariant>> GetVariantsAsync(int productId)
+        {
+            using var connection = GetConnection();
+            string sql = "SELECT * FROM ProductVariants WHERE ProductId = @ProductId";
+            return await connection.QueryAsync<ProductVariant>(sql, new { ProductId = productId });
+        }
+
+        public async Task<ProductVariant?> GetVariantByBarcodeAsync(string barcode)
+        {
+            if (string.IsNullOrWhiteSpace(barcode)) return null;
+            using var connection = GetConnection();
+            string sql = "SELECT * FROM ProductVariants WHERE Barcode = @Barcode LIMIT 1";
+            return await connection.QueryFirstOrDefaultAsync<ProductVariant>(sql, new { Barcode = barcode });
+        }
+
+        public async Task<ProductVariant?> GetVariantByIdAsync(int variantId)
+        {
+            using var connection = GetConnection();
+            string sql = "SELECT * FROM ProductVariants WHERE Id = @Id LIMIT 1";
+            return await connection.QueryFirstOrDefaultAsync<ProductVariant>(sql, new { Id = variantId });
+        }
+
+        public async Task<bool> AddVariantAsync(ProductVariant variant)
+        {
+            using var connection = GetConnection();
+            string sql = @"INSERT INTO ProductVariants (ProductId, Size, Color, Sku, Barcode, StockQuantity, PriceAdjustment)
+                           VALUES (@ProductId, @Size, @Color, @Sku, @Barcode, @StockQuantity, @PriceAdjustment)";
+            return await connection.ExecuteAsync(sql, variant) > 0;
+        }
+
+        public async Task<bool> UpdateVariantAsync(ProductVariant variant)
+        {
+            using var connection = GetConnection();
+            string sql = @"UPDATE ProductVariants 
+                           SET Size=@Size, Color=@Color, Sku=@Sku, Barcode=@Barcode, 
+                               StockQuantity=@StockQuantity, PriceAdjustment=@PriceAdjustment
+                           WHERE Id=@Id";
+            return await connection.ExecuteAsync(sql, variant) > 0;
+        }
+
+        public async Task<bool> DeleteVariantAsync(int variantId)
+        {
+            using var connection = GetConnection();
+            string sql = "DELETE FROM ProductVariants WHERE Id=@Id";
+            return await connection.ExecuteAsync(sql, new { Id = variantId }) > 0;
+        }
+        
+        public async Task<bool> AdjustStockAsync(int productId, int delta)
+        {
+            using var connection = GetConnection();
+            // Use atomic SQL arithmetic to prevent race conditions
+            string sql = "UPDATE Products SET StockQuantity = StockQuantity + @Delta WHERE Id = @Id";
+            return await connection.ExecuteAsync(sql, new { Id = productId, Delta = delta }) > 0;
+        }
+
+        public async Task<bool> AdjustVariantStockAsync(int variantId, int delta)
+        {
+            using var connection = GetConnection();
+            // Use atomic SQL arithmetic to prevent race conditions
+            string sql = "UPDATE ProductVariants SET StockQuantity = StockQuantity + @Delta WHERE Id = @Id";
+            return await connection.ExecuteAsync(sql, new { Id = variantId, Delta = delta }) > 0;
         }
     }
 }

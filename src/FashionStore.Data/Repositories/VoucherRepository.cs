@@ -23,21 +23,21 @@ namespace FashionStore.Data.Repositories
         public async Task<IEnumerable<Voucher>> GetAllAsync()
         {
             using var connection = GetConnection();
-            string sql = $"SELECT {SelectColumns} FROM Vouchers ORDER BY Id ASC;";
+            string sql = "SELECT " + SelectColumns + " FROM Vouchers ORDER BY Id ASC;";
             return await connection.QueryAsync<Voucher>(sql);
         }
 
         public async Task<Voucher?> GetByIdAsync(int id)
         {
             using var connection = GetConnection();
-            string sql = $"SELECT {SelectColumns} FROM Vouchers WHERE Id = @Id;";
+            string sql = "SELECT " + SelectColumns + " FROM Vouchers WHERE Id = @Id;";
             return await connection.QueryFirstOrDefaultAsync<Voucher>(sql, new { Id = id });
         }
 
         public async Task<Voucher?> GetByCodeAsync(string code)
         {
             using var connection = GetConnection();
-            string sql = $"SELECT {SelectColumns} FROM Vouchers WHERE Code = @Code AND IsActive = 1;";
+            string sql = "SELECT " + SelectColumns + " FROM Vouchers WHERE Code = @Code AND IsActive = 1;";
             return await connection.QueryFirstOrDefaultAsync<Voucher>(sql, new { Code = code });
         }
 

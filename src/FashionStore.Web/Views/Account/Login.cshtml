@@ -1,0 +1,146 @@
+@{
+    Layout = null;
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Fashion Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        body {
+            background: radial-gradient(circle at top left, #1e293b, #0f172a);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .login-card {
+            width: 400px;
+            padding: 3rem;
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .login-header i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 1rem;
+            color: var(--text-muted);
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: white;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+        }
+
+        .error-summary {
+            color: #f87171;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            background: rgba(248, 113, 113, 0.1);
+            padding: 0.75rem;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="glass login-card">
+        <div class="login-header">
+            <i class="fas fa-gem"></i>
+            <h1 class="gradient-text" style="font-size: 1.75rem; margin: 0;">FASHION STORE</h1>
+            <p style="color: var(--text-muted); margin-top: 0.5rem;">Chào mừng quay trở lại!</p>
+        </div>
+
+        <form asp-action="Login" asp-route-returnUrl="@ViewBag.ReturnUrl" method="post">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="error-summary">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <div>@error.ErrorMessage</div>
+                    }
+                </div>
+            }
+
+            <div class="input-group">
+                <label>Tên đăng nhập</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-user"></i>
+                    <input type="text" name="username" placeholder="Nhập tên đăng nhập..." required autocomplete="username" />
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Mật khẩu</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" name="password" placeholder="Nhập mật khẩu..." required autocomplete="current-password" />
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary" style="width: 100%; padding: 1rem; margin-top: 1rem; font-weight: 700;">
+                ĐĂNG NHẬP <i class="fas fa-sign-in-alt" style="margin-left: 0.5rem;"></i>
+            </button>
+        </form>
+
+        <div style="margin-top: 2rem; text-align: center; font-size: 0.75rem; color: var(--text-muted); opacity: 0.5;">
+            &copy; 2026 Fashion Store Professional v1.0
+        </div>
+    </div>
+
+    @* Background elements for visual flair *@
+    <div style="position: fixed; top: -10%; left: -10%; width: 400px; height: 400px; background: var(--primary-color); filter: blur(150px); opacity: 0.1; z-index: -1;"></div>
+    <div style="position: fixed; bottom: -10%; right: -10%; width: 400px; height: 400px; background: var(--secondary-color); filter: blur(150px); opacity: 0.1; z-index: -1;"></div>
+</body>
+</html>

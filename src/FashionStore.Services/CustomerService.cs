@@ -1,6 +1,7 @@
 using Dapper;
 using FashionStore.Core.Interfaces;
 using FashionStore.Core.Models;
+using FashionStore.Core.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using System.IO;
 
@@ -100,6 +101,68 @@ namespace FashionStore.Services
             return await _customerRepository.RefreshAllLoyaltyAsync(spendPerPoint, silverMin, goldMin, vipMin);
         }
 
+        public async Task<bool> ExportCustomersToCsvAsync(string filePath)
+        {
+            try
+            {
+                var customers = await _customerRepository.GetAllAsync();
+                var lines = new List<string>(customers.Count() + 1)
+                {
+                    "Id,Name,Phone,Email,Address,CustomerType,Points,TotalSpent"
+                };
+
+                foreach (var c in customers)
+                {
+                    lines.Add($"{c.Id},{CsvHelper.Escape(c.Name)},{CsvHelper.Escape(c.Phone)},{CsvHelper.Escape(c.Email)},{CsvHelper.Escape(c.Address)},{CsvHelper.Escape(c.CustomerType)},{c.Points},{c.TotalSpent:F0}");
+                }
+
+                await File.WriteAllLinesAsync(filePath, lines, new System.Text.UTF8Encoding(true));
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<int> ImportCustomersFromCsvAsync(string filePath)
+        {
+            try
+            {
+                var allLines = await File.ReadAllLinesAsync(filePath, System.Text.Encoding.UTF8);
+                if (allLines.Length < 2) return 0;
+
+                var customersToImport = new List<Customer>();
+                foreach (var line in allLines.Skip(1))
+                {
+                    if (string.IsNullOrWhiteSpace(line)) continue;
+                    var cols = CsvHelper.ParseLine(line);
+                    if (cols.Length < 2) continue; // Min Name
+
+                    customersToImport.Add(new Customer
+                    {
+                        Name = cols[1].Trim('"'),
+                        Phone = cols.Length > 2 ? cols[2].Trim('"') : "",
+                        Email = cols.Length > 3 ? cols[3].Trim('"') : "",
+                        Address = cols.Length > 4 ? cols[4].Trim('"') : "",
+                        CustomerType = cols.Length > 5 ? cols[5].Trim('"') : "Regular",
+                        Points = cols.Length > 6 && int.TryParse(cols[6], out int p) ? p : 0
+                    });
+                }
+
+                return await _customerRepository.BulkImportCustomersAsync(customersToImport);
+            }
+            catch
+            {
+                return -1;
+            }
+        }
+
+        public async Task<IEnumerable<(int InvoiceId, DateTime CreatedAt, int ItemCount, decimal Total)>> GetCustomerPurchaseHistoryAsync(int customerId)
+        {
+            return await _customerRepository.GetCustomerPurchaseHistoryAsync(customerId);
+        }
+
         #region Legacy Static Bridge - SHOULD BE DEPRECATED
 
         private static ICustomerService GetService() => ServiceLocator.ServiceProvider?.GetRequiredService<ICustomerService>() ?? throw new InvalidOperationException("DI not initialized");
@@ -134,37 +197,9 @@ namespace FashionStore.Services
         public static int GetTotalCustomers()
             => RunSync(() => GetService().GetAllCustomersAsync()).Count();
 
-        public static int ImportCustomersFromCsv(string filePath) => 0; // Placeholder
+        public static int ImportCustomersFromCsv(string filePath) => RunSync(() => GetService().ImportCustomersFromCsvAsync(filePath));
 
-        public static bool ExportCustomersToCsv(string filePath)
-        {
-            try
-            {
-                var customers = GetAllCustomers();
-                var lines = new List<string>(customers.Count + 1)
-                {
-                    "Id,Name,Phone,Email,Address,CustomerType,Points"
-                };
-
-                static string Esc(string? value)
-                {
-                    if (string.IsNullOrEmpty(value)) return "";
-                    return "\"" + value.Replace("\"", "\"\"") + "\"";
-                }
-
-                foreach (var c in customers)
-                {
-                    lines.Add($"{c.Id},{Esc(c.Name)},{Esc(c.Phone)},{Esc(c.Email)},{Esc(c.Address)},{Esc(c.CustomerType)},{c.Points}");
-                }
-
-                File.WriteAllLines(filePath, lines, new System.Text.UTF8Encoding(true));
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        public static bool ExportCustomersToCsv(string filePath) => RunSync(() => GetService().ExportCustomersToCsvAsync(filePath));
 
         public static bool DeleteAllCustomers()
         {
@@ -187,21 +222,7 @@ namespace FashionStore.Services
         }
 
         public static List<(int InvoiceId, DateTime CreatedAt, int ItemCount, decimal Total)> GetCustomerPurchaseHistory(int customerId)
-        {
-            var sql = @"
-                SELECT 
-                    i.Id AS InvoiceId, 
-                    i.CreatedDate AS CreatedAt, 
-                    CAST(COALESCE(SUM(ii.Quantity), 0) AS SIGNED) AS ItemCount, 
-                    i.Total AS Total 
-                FROM Invoices i
-                LEFT JOIN InvoiceItems ii ON i.Id = ii.InvoiceId
-                WHERE i.CustomerId = @CustomerId
-                GROUP BY i.Id, i.CreatedDate, i.Total
-                ORDER BY i.Id ASC;";
-            using var connection = new MySql.Data.MySqlClient.MySqlConnection(FashionStore.Core.Settings.SettingsManager.BuildConnectionString());
-            return connection.Query<(int InvoiceId, DateTime CreatedAt, int ItemCount, decimal Total)>(sql, new { CustomerId = customerId }).ToList();
-        }
+            => RunSync(() => GetService().GetCustomerPurchaseHistoryAsync(customerId)).ToList();
 
         public static List<(string Name, decimal TotalSpent)> GetTopCustomers(int topN = 10)
             => RunSync(() => GetService().GetTopCustomersAsync(topN)).ToList();

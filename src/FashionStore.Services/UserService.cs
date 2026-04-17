@@ -243,22 +243,42 @@ namespace FashionStore.Services
         public static bool RegisterAccount(string u, string e, string p, string r = "Cashier") => RunSync(() => GetService().RegisterAccountAsync(u, e, p, r)).IsSuccess;
         
         [Obsolete("Use Async version through DI")]
-        public static string ValidateLogin(string u, string p) => RunSync(() => GetService().ValidateLoginAsync(u, p)).Value.ToString().ToLower();
-        
+        public static string ValidateLogin(string u, string p)
+        {
+            var res = RunSync(() => GetService().ValidateLoginAsync(u, p));
+            return res.IsSuccess ? res.Value.ToString().ToLower() : "false";
+        }
+
         [Obsolete("Use Async version through DI")]
-        public static string GetUserRole(string u) => RunSync(() => GetService().GetUserRoleAsync(u)).Value;
-        
+        public static string GetUserRole(string u)
+        {
+            var res = RunSync(() => GetService().GetUserRoleAsync(u));
+            return res.IsSuccess ? res.Value : "Cashier";
+        }
+
         [Obsolete("Use Async version through DI")]
         public static bool ChangePassword(string u, string o, string n) => RunSync(() => GetService().ChangePasswordAsync(u, o, n)).IsSuccess;
-        
+
         [Obsolete("Use Async version through DI")]
-        public static List<(int Id, string Username, string EmployeeName, string Role)> GetAllAccounts() => RunSync(() => GetService().GetAllAccountsAsync()).Value.ToList();
-        
+        public static List<(int Id, string Username, string EmployeeName, string Role)> GetAllAccounts()
+        {
+            var res = RunSync(() => GetService().GetAllAccountsAsync());
+            return res.IsSuccess ? res.Value.ToList() : new List<(int, string, string, string)>();
+        }
+
         [Obsolete("Use Async version through DI")]
-        public static string GetEmployeeName(string u) => RunSync(() => GetService().GetEmployeeNameAsync(u)).Value;
-        
+        public static string GetEmployeeName(string u)
+        {
+            var res = RunSync(() => GetService().GetEmployeeNameAsync(u));
+            return res.IsSuccess ? res.Value : u;
+        }
+
         [Obsolete("Use Async version through DI")]
-        public static int GetEmployeeIdByUsername(string u) => RunSync(() => GetService().GetEmployeeIdByUsernameAsync(u)).Value;
+        public static int GetEmployeeIdByUsername(string u)
+        {
+            var res = RunSync(() => GetService().GetEmployeeIdByUsernameAsync(u));
+            return res.IsSuccess ? res.Value : 1;
+        }
         
         [Obsolete("Use Async version through DI")]
         public static bool DeleteAccount(string u) => RunSync(() => GetService().DeleteAccountAsync(u)).IsSuccess;
@@ -267,7 +287,11 @@ namespace FashionStore.Services
         public static bool UpdateAccount(string u, string? p = null, string? r = null, string? e = null) => RunSync(() => GetService().UpdateAccountAsync(u, p, r, e)).IsSuccess;
         
         [Obsolete("Use Async version through DI")]
-        public static UserRole GetUserRoleEnum(string u) => RunSync(() => GetService().GetUserRoleEnumAsync(u)).Value;
+        public static UserRole GetUserRoleEnum(string u)
+        {
+            var res = RunSync(() => GetService().GetUserRoleEnumAsync(u));
+            return res.IsSuccess ? res.Value : UserRole.Cashier;
+        }
         
         [Obsolete("Use Async version through DI")]
         public static bool DeleteAllAccountsExceptAdmin()

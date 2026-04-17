@@ -106,7 +106,7 @@ namespace FashionStore.App.ViewModels
 
         private void LoadPromotions()
         {
-            var pList = PromotionService.GetAllPromotions();
+            var pList = PromotionService.   GetAllPromotions();
             Promotions.Clear();
             foreach (var p in pList) Promotions.Add(p);
         }

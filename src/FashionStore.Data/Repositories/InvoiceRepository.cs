@@ -317,6 +317,38 @@ namespace FashionStore.Data.Repositories
             return await connection.ExecuteScalarAsync<decimal>("SELECT IFNULL(SUM(Total), 0) FROM Invoices WHERE CreatedDate BETWEEN @from AND @to", new { from, to });
         }
 
+        public async Task<decimal> GetTotalCostAsync(DateTime from, DateTime to)
+        {
+            using var connection = GetConnection();
+            // JOIN with Products to get historic/current purchase price for costing
+            string sql = @"SELECT IFNULL(SUM(ii.Quantity * p.PurchasePrice), 0)
+                           FROM InvoiceItems ii
+                           JOIN Invoices i ON i.Id = ii.InvoiceId
+                           JOIN Products p ON p.Id = ii.ProductId
+                           WHERE i.CreatedDate BETWEEN @from AND @to;";
+            return await connection.ExecuteScalarAsync<decimal>(sql, new { from, to });
+        }
+
+        public async Task<decimal> GetTotalProfitAsync(DateTime from, DateTime to)
+        {
+            using var connection = GetConnection();
+            // Profit = Aggregate(LineTotal - Cost of Goods Sold)
+            string sql = @"SELECT IFNULL(SUM(ii.LineTotal - (ii.Quantity * p.PurchasePrice)), 0)
+                           FROM InvoiceItems ii
+                           JOIN Invoices i ON i.Id = ii.InvoiceId
+                           JOIN Products p ON p.Id = ii.ProductId
+                           WHERE i.CreatedDate BETWEEN @from AND @to;";
+            
+            // Note: We might need to subtract global invoice discounts (vouchers/tier) from the total profit
+            decimal itemsProfit = await connection.ExecuteScalarAsync<decimal>(sql, new { from, to });
+            
+            // Subtract global discounts applied to the whole invoice
+            string discountSql = "SELECT IFNULL(SUM(DiscountAmount), 0) FROM Invoices WHERE CreatedDate BETWEEN @from AND @to;";
+            decimal globalDiscounts = await connection.ExecuteScalarAsync<decimal>(discountSql, new { from, to });
+            
+            return Math.Max(0, itemsProfit - globalDiscounts);
+        }
+
         public async Task<int> GetInvoiceCountAsync(DateTime from, DateTime to)
         {
             using var connection = GetConnection();
@@ -351,6 +383,23 @@ namespace FashionStore.Data.Repositories
             var result = await connection.QueryAsync<dynamic>(sql, new { from, to });
             var list = new List<(string CategoryName, decimal Revenue)>();
             foreach (var r in result) list.Add(((string)(r.CategoryName ?? "Chưa phân loại"), Convert.ToDecimal(r.Revenue)));
+            return list;
+        }
+
+        public async Task<IEnumerable<(string ProductName, int Quantity)>> GetTopProductsAsync(DateTime from, DateTime to, int limit = 5)
+        {
+            using var connection = GetConnection();
+            string sql = @"SELECT p.Name as ProductName, SUM(ii.Quantity) as Quantity
+                           FROM InvoiceItems ii
+                           JOIN Invoices i ON i.Id = ii.InvoiceId
+                           JOIN Products p ON p.Id = ii.ProductId
+                           WHERE i.CreatedDate BETWEEN @from AND @to
+                           GROUP BY p.Name
+                           ORDER BY Quantity DESC
+                           LIMIT @limit;";
+            var result = await connection.QueryAsync<dynamic>(sql, new { from, to, limit });
+            var list = new List<(string ProductName, int Quantity)>();
+            foreach (var r in result) list.Add(((string)r.ProductName, Convert.ToInt32(r.Quantity)));
             return list;
         }
 

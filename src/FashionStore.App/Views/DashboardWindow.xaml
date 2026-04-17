@@ -36,7 +36,10 @@
         </Grid.RowDefinitions>
         
         <!-- Header Bar -->
-        <Border Grid.Row="0" Background="#1CB5E0" Padding="20">
+        <Border Grid.Row="0" BorderBrush="#334155" BorderThickness="0,0,0,1" Padding="20">
+            <Border.Background>
+                <SolidColorBrush Color="#00AEEF"/>
+            </Border.Background>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -51,7 +54,7 @@
                                VerticalAlignment="Center"/>
                     <TextBlock Text="{Binding UserInfoText}" 
                                FontSize="16" 
-                               Foreground="#B3E5FC" 
+                               Foreground="{StaticResource GoldBrush}" 
                                VerticalAlignment="Center"
                                Margin="20,0,0,0"/>
                 </StackPanel>
@@ -103,7 +106,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Left Nav -->
-            <Border Grid.Column="0" Background="#1E293B" CornerRadius="0,0,0,0">
+            <Border Grid.Column="0" Background="#1E293B" BorderBrush="#334155" BorderThickness="0,0,1,0" CornerRadius="0,0,0,0">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -116,7 +119,7 @@
                         <StackPanel>
                             <TextBlock Text="🎛️" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,8"/>
                             <TextBlock Text="QUẢN LÝ" 
-                                       Foreground="#F8FAFC" 
+                                       Foreground="White" 
                                        FontWeight="Bold" 
                                        FontSize="18"
                                        HorizontalAlignment="Center"/>
@@ -135,7 +138,7 @@
                                      SelectionChanged="NavList_SelectionChanged" 
                                      Background="Transparent" 
                                      BorderThickness="0" 
-                                     Foreground="#F8FAFC">
+                                     Foreground="#CBD5E1">
                                 <ListBox.Resources>
                                     <Style TargetType="ListBoxItem">
                                         <Setter Property="Template">
@@ -163,13 +166,14 @@
                                                     </Grid>
                                                     <ControlTemplate.Triggers>
                                                         <Trigger Property="IsSelected" Value="True">
-                                                            <Setter TargetName="ItemBorder" Property="Background" Value="#2563EB"/>
-                                                            <Setter TargetName="Accent" Property="Background" Value="#60A5FA"/>
+                                                            <Setter TargetName="ItemBorder" Property="Background" Value="#00AEEF"/>
+                                                            <Setter TargetName="Accent" Property="Background" Value="#00AEEF"/>
                                                             <Setter Property="Foreground" Value="White"/>
                                                         </Trigger>
                                                         <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter TargetName="ItemBorder" Property="Background" Value="#263445"/>
-                                                            <Setter TargetName="Accent" Property="Background" Value="#475569"/>
+                                                            <Setter TargetName="ItemBorder" Property="Background" Value="#334155"/>
+                                                            <Setter TargetName="Accent" Property="Background" Value="#00AEEF"/>
+                                                            <Setter Property="Foreground" Value="White"/>
                                                         </Trigger>
                                                     </ControlTemplate.Triggers>
                                                 </ControlTemplate>
@@ -220,68 +224,68 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     
-                    <Border Background="White" CornerRadius="16" Padding="20" Margin="8">
+                    <Border Background="White" CornerRadius="16" Padding="20" Margin="8" BorderBrush="#E2E8F0" BorderThickness="1">
                         <StackPanel>
-                            <TextBlock Text="💰 Doanh thu hôm nay" Foreground="#777" FontSize="12"/>
-                            <TextBlock Text="{Binding RevenueTodayText}" FontSize="28" FontWeight="Bold" Foreground="#059669"/>
+                            <TextBlock Text="💰 Doanh thu hôm nay" Foreground="#64748B" FontSize="12"/>
+                            <TextBlock Text="{Binding RevenueTodayText}" FontSize="28" FontWeight="Bold" Foreground="#10B981"/>
                         </StackPanel>
                     </Border>
-                    <Border Grid.Column="1" Background="White" CornerRadius="16" Padding="20" Margin="8">
+                    <Border Grid.Column="1" Background="White" CornerRadius="16" Padding="20" Margin="8" BorderBrush="#E2E8F0" BorderThickness="1">
                         <StackPanel>
-                            <TextBlock Text="📈 Doanh thu 30 ngày" Foreground="#777" FontSize="12"/>
-                            <TextBlock Text="{Binding Revenue30Text}" FontSize="28" FontWeight="Bold" Foreground="#0D9488"/>
+                            <TextBlock Text="📈 Doanh thu 30 ngày" Foreground="#64748B" FontSize="12"/>
+                            <TextBlock Text="{Binding Revenue30Text}" FontSize="28" FontWeight="Bold" Foreground="#00AEEF"/>
                         </StackPanel>
                     </Border>
-                    <Border Grid.Column="2" Background="White" CornerRadius="16" Padding="20" Margin="8">
+                    <Border Grid.Column="2" Background="White" CornerRadius="16" Padding="20" Margin="8" BorderBrush="#E2E8F0" BorderThickness="1">
                         <StackPanel>
-                            <TextBlock Text="🧾 Hóa đơn hôm nay" Foreground="#777" FontSize="12"/>
-                            <TextBlock Text="{Binding InvoicesTodayText}" FontSize="28" FontWeight="Bold" Foreground="#DC2626"/>
+                            <TextBlock Text="🧾 Hóa đơn hôm nay" Foreground="#64748B" FontSize="12"/>
+                            <TextBlock Text="{Binding InvoicesTodayText}" FontSize="28" FontWeight="Bold" Foreground="#EF4444"/>
                         </StackPanel>
                     </Border>
-                    <Border Grid.Column="3" Background="White" CornerRadius="16" Padding="20" Margin="8">
+                    <Border Grid.Column="3" Background="White" CornerRadius="16" Padding="20" Margin="8" BorderBrush="#E2E8F0" BorderThickness="1">
                         <StackPanel>
-                            <TextBlock Text="👥 Khách hàng / Sản phẩm" Foreground="#777" FontSize="12"/>
-                            <TextBlock Text="{Binding CountsText}" FontSize="28" FontWeight="Bold" Foreground="#7C3AED"/>
+                            <TextBlock Text="👥 Khách hàng / Sản phẩm" Foreground="#64748B" FontSize="12"/>
+                            <TextBlock Text="{Binding CountsText}" FontSize="28" FontWeight="Bold" Foreground="#FF9800"/>
                         </StackPanel>
                     </Border>
                 </Grid>
 
                 <!-- Home charts - Row 1 -->
-                        <Grid Grid.Row="1" Margin="0,0,0,20">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Border Background="White" CornerRadius="16" Padding="12" Margin="8">
-                                <StackPanel>
-                                    <TextBlock Text="📊 Doanh thu 30 ngày qua" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="#374151"/>
-                                    <oxy:PlotView Model="{Binding HomeRevenuePlotModel}" Height="220"/>
-                                </StackPanel>
-                            </Border>
-                            <Border Grid.Column="1" Background="White" CornerRadius="16" Padding="12" Margin="8">
-                                <StackPanel>
-                                    <TextBlock Text="🥧 Doanh thu theo danh mục" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="#374151"/>
-                                    <oxy:PlotView Model="{Binding HomeCategoryPieModel}" Height="220"/>
-                                </StackPanel>
-                            </Border>
-                        </Grid>
-
+                <Grid Grid.Row="1" Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Background="White" CornerRadius="16" Padding="12" Margin="8" BorderBrush="#E2E8F0" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="📊 Doanh thu 30 ngày qua" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="#1E293B"/>
+                            <oxy:PlotView Model="{Binding HomeRevenuePlotModel}" Height="220" Background="Transparent"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Column="1" Background="White" CornerRadius="16" Padding="12" Margin="8" BorderBrush="#E2E8F0" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="🥧 Doanh thu theo danh mục" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="#1E293B"/>
+                            <oxy:PlotView Model="{Binding HomeCategoryPieModel}" Height="220" Background="Transparent"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+ 
                 <!-- Home charts - Row 2 -->
                         <Grid Grid.Row="2" Margin="0,0,0,20">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Border Background="White" CornerRadius="16" Padding="12" Margin="8">
+                            <Border Background="White" CornerRadius="16" Padding="12" Margin="8" BorderBrush="#E2E8F0" BorderThickness="1">
                                 <StackPanel>
-                                    <TextBlock Text="👥 Top 10 Khách Hàng" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="#374151"/>
-                                    <oxy:PlotView Model="{Binding TopCustomersPlotModel}" Height="220"/>
+                                    <TextBlock Text="👥 Top 10 Khách Hàng" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="#1E293B"/>
+                                    <oxy:PlotView Model="{Binding TopCustomersPlotModel}" Height="220" Background="Transparent"/>
                                 </StackPanel>
                             </Border>
-                            <Border Grid.Column="1" Background="White" CornerRadius="16" Padding="12" Margin="8">
+                            <Border Grid.Column="1" Background="White" CornerRadius="16" Padding="12" Margin="8" BorderBrush="#E2E8F0" BorderThickness="1">
                                 <StackPanel>
-                                    <TextBlock Text="🔥 Top 10 Sản Phẩm Bán Chạy" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="#374151"/>
-                                    <oxy:PlotView Model="{Binding TopProductsPlotModel}" Height="220"/>
+                                    <TextBlock Text="🔥 Top 10 Sản Phẩm Bán Chạy" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="#1E293B"/>
+                                    <oxy:PlotView Model="{Binding TopProductsPlotModel}" Height="220" Background="Transparent"/>
                                 </StackPanel>
                             </Border>
                         </Grid>

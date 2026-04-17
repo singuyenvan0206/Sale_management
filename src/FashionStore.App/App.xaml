@@ -6,6 +6,99 @@
              ShutdownMode="OnLastWindowClose">
     <Application.Resources>
         <ResourceDictionary>
+            <!-- Global Color System: Corporate Cyan Light -->
+            <Color x:Key="CorporateCyan">#00A8E8</Color>
+            <Color x:Key="VibrantOrange">#FF9800</Color>
+            <Color x:Key="VibrantPurple">#9C27B0</Color>
+            <Color x:Key="ZebraLight">#F8F9FA</Color>
+            <Color x:Key="BoundaryGray">#E2E8F0</Color>
+            <Color x:Key="TextDark">#1E293B</Color>
+            <Color x:Key="TextMuted">#64748B</Color>
+
+            <SolidColorBrush x:Key="CorporateCyanBrush" Color="{StaticResource CorporateCyan}"/>
+            <SolidColorBrush x:Key="GoldBrush" Color="{StaticResource VibrantOrange}"/> <!-- Reuse name but orange -->
+            <SolidColorBrush x:Key="DeepNavyBrush" Color="#FFFFFF"/> <!-- Background goes white -->
+            <SolidColorBrush x:Key="SlateNavyBrush" Color="#F5F5F5"/> <!-- Secondary background -->
+            <SolidColorBrush x:Key="MutedBrush" Color="{StaticResource TextMuted}"/>
+            <SolidColorBrush x:Key="ZebraBrush" Color="{StaticResource ZebraLight}"/>
+
+            <!-- Modern Base Button -->
+            <Style x:Key="ModernButton" TargetType="Button">
+                <Setter Property="Background" Value="{StaticResource CorporateCyanBrush}"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Padding" Value="15,8"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border" CornerRadius="8" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" SnapsToDevicePixels="true">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="true">
+                                    <Setter TargetName="border" Property="Opacity" Value="0.9"/>
+                                    <Setter Property="Cursor" Value="Hand"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="true">
+                                    <Setter TargetName="border" Property="Opacity" Value="0.75"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="SuccessButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+                <Setter Property="Background" Value="#4CAF50"/>
+            </Style>
+
+            <Style x:Key="WarningButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+                <Setter Property="Background" Value="#FF9800"/>
+            </Style>
+
+            <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+                <Setter Property="Background" Value="#F44336"/>
+            </Style>
+
+            <Style x:Key="RoundedFilterButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+                <Setter Property="Padding" Value="12,2"/>
+                <Setter Property="Height" Value="30"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="Margin" Value="0,0,6,0"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                    CornerRadius="15" 
+                                    Padding="{TemplateBinding Padding}"
+                                    BorderBrush="Transparent"
+                                    BorderThickness="0">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Opacity" Value="0.85"/>
+                                    <Setter Property="Cursor" Value="Hand"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Card & Shadow System -->
+            <DropShadowEffect x:Key="SubtleShadow" BlurRadius="10" ShadowDepth="2" Opacity="0.1" Color="Black"/>
+            <DropShadowEffect x:Key="CardShadow" BlurRadius="15" ShadowDepth="4" Opacity="0.15" Color="Black"/>
+
+            <Style x:Key="KpiCard" TargetType="Border">
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="CornerRadius" Value="12"/>
+                <Setter Property="Padding" Value="18"/>
+                <Setter Property="Margin" Value="8"/>
+                <Setter Property="Effect" Value="{StaticResource SubtleShadow}"/>
+            </Style>
+
             <converters:BooleanToStatusColorConverter x:Key="BooleanToStatusColorConverter" />
             <converters:BooleanToStatusTextConverter x:Key="BooleanToStatusTextConverter" />
             <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />

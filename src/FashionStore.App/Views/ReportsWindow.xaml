@@ -11,36 +11,6 @@
             <Style x:Key="RightAlignedCell" TargetType="TextBlock">
                 <Setter Property="TextAlignment" Value="Right"/>
             </Style>
-            <Style x:Key="KpiCard" TargetType="Border">
-                <Setter Property="Background" Value="White"/>
-                <Setter Property="CornerRadius" Value="16"/>
-                <Setter Property="Padding" Value="18"/>
-                <Setter Property="Margin" Value="8"/>
-            </Style>
-            <Style x:Key="RoundedFilterButton" TargetType="Button">
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="Button">
-                            <Border x:Name="border" Background="{TemplateBinding Background}" 
-                                    CornerRadius="14" 
-                                    Padding="{TemplateBinding Padding}"
-                                    BorderBrush="Transparent"
-                                    BorderThickness="0">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="border" Property="Opacity" Value="0.85"/>
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-                <Setter Property="Padding" Value="12,2"/>
-                <Setter Property="Height" Value="30"/>
-                <Setter Property="FontSize" Value="13"/>
-                <Setter Property="Margin" Value="0,0,6,0"/>
-            </Style>
         </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -50,7 +20,7 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Border Height="auto" Grid.Row="0" Background="#1CB5E0" Padding="20">
+        <Border Grid.Row="0" Background="#00AEEF" Padding="20,15">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -58,13 +28,17 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="📊 Báo Cáo và Thống Kê" FontSize="24" FontWeight="Bold" Foreground="White"/>
-                    <TextBlock Text=" - Phân tích doanh thu và hiệu suất" FontSize="14" Foreground="#B3E5FC" Margin="10,0,0,0"/>
+                    <TextBlock Text="- Phân tích doanh thu và hiệu suất" FontSize="14" Foreground="White" Opacity="0.8" Margin="10,0,0,0" VerticalAlignment="Bottom" Padding="0,0,0,3"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Content="🔄 Làm mới" Width="100" Height="32" Background="#FF9800" Foreground="White" 
-                            FontWeight="SemiBold" Margin="0,0,8,0" Command="{Binding RefreshCommand}"/>
-                    <Button Content="⚙️ Cài đặt" Width="100" Height="32" Background="#9C27B0" Foreground="White" 
-                            FontWeight="SemiBold" Command="{Binding OpenSettingsCommand}" />
+                    <Button Content="🔄 Làm mới" Width="100" Height="34" Background="#FF9800" Foreground="White" BorderThickness="0"
+                            FontWeight="Bold" Margin="0,0,8,0" Command="{Binding RefreshCommand}">
+                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="17"/></Style></Button.Resources>
+                    </Button>
+                    <Button Content="⚙️ Cài đặt" Width="100" Height="34" Background="#9C27B0" Foreground="White" BorderThickness="0"
+                            FontWeight="Bold" Command="{Binding OpenSettingsCommand}">
+                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="17"/></Style></Button.Resources>
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>
@@ -122,13 +96,13 @@
                     
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                         <TextBlock Text="⚡ Lọc nhanh:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,8,0"/>
-                        <Button Content="📅 Hôm nay" Style="{StaticResource RoundedFilterButton}" Background="#2196F3" Foreground="White" 
+                        <Button Content="📅 Hôm nay" Style="{StaticResource RoundedFilterButton}" Background="#00A8E8" Foreground="White" 
                                 FontWeight="SemiBold" Command="{Binding TodayCommand}"/>
                         <Button Content="📅 7 ngày" Style="{StaticResource RoundedFilterButton}" Background="#2196F3" Foreground="White" 
                                 FontWeight="SemiBold" Command="{Binding Last7DaysCommand}"/>
-                        <Button Content="📅 30 ngày" Style="{StaticResource RoundedFilterButton}" Background="#2196F3" Foreground="White" 
+                        <Button Content="📅 30 ngày" Style="{StaticResource RoundedFilterButton}" Background="#3F51B5" Foreground="White" 
                                 FontWeight="SemiBold" Command="{Binding Last30DaysCommand}"/>
-                        <Button Content="📅 Tháng này" Style="{StaticResource RoundedFilterButton}" Background="#2196F3" Foreground="White" 
+                        <Button Content="📅 Tháng này" Style="{StaticResource RoundedFilterButton}" Background="#673AB7" Foreground="White" 
                                 FontWeight="SemiBold" Command="{Binding ThisMonthCommand}"/>
                     </StackPanel>
 
@@ -179,6 +153,7 @@
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
                             CanUserResizeColumns="True"
+                            AlternatingRowBackground="{StaticResource ZebraBrush}"
                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
                             ScrollViewer.VerticalScrollBarVisibility="Auto"
                             ItemsSource="{Binding PagedInvoices}">
@@ -292,16 +267,28 @@
                     </StackPanel>
                     
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Border Background="#B3E5FC" CornerRadius="6" Padding="8,4" Margin="0,0,8,0">
+                        <Border Background="#B2EBF2" CornerRadius="6" Padding="12,6" Margin="0,0,10,0">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="📋 Số lượng:" FontWeight="SemiBold" Margin="0,0,4,0"/>
-                                <TextBlock Text="{Binding CountText}" FontWeight="Bold" Foreground="#1976D2"/>
+                                <TextBlock Text="📊 Số lượng:" FontWeight="Bold" Foreground="#0097A7" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding CountText}" FontWeight="Black" Foreground="#006064" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="14"/>
                             </StackPanel>
                         </Border>
-                        <Border Background="#E8F5E8" CornerRadius="6" Padding="8,4">
+                        <Border Background="#FFF9C4" CornerRadius="6" Padding="12,6" Margin="0,0,10,0">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="💰 Doanh thu:" FontWeight="SemiBold" Margin="0,0,4,0"/>
-                                <TextBlock Text="{Binding RevenueText}" FontWeight="Bold" Foreground="#2E7D32"/>
+                                <TextBlock Text="💰 Doanh thu:" FontWeight="Bold" Foreground="#FBC02D" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding RevenueText}" FontWeight="Black" Foreground="#1B5E20" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="14"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Background="#FFCCBC" CornerRadius="6" Padding="12,6" Margin="0,0,10,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📉 Giá vốn:" FontWeight="Bold" Foreground="#D84315" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding CostText}" FontWeight="Black" Foreground="#BF360C" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="14"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Background="#C8E6C9" CornerRadius="6" Padding="12,6">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📈 Lợi nhuận:" FontWeight="Bold" Foreground="#2E7D32" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding ProfitText}" FontWeight="Black" Foreground="#1B5E20" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="14"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>

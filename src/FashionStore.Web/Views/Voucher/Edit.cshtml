@@ -1,0 +1,62 @@
+@model FashionStore.Core.Models.Voucher
+@{
+    ViewData["Title"] = "Chỉnh sửa Voucher: " + Model.Code;
+}
+
+<div class="animate-in">
+    <div style="margin-bottom: 2rem;">
+        <a asp-action="Index" style="color: var(--text-muted); text-decoration: none;"><i class="fas fa-arrow-left"></i> Quay lại danh sách</a>
+    </div>
+
+    <div class="glass" style="max-width: 800px; margin: 0 auto; padding: 2.5rem;">
+        <h2 class="gradient-text" style="margin-bottom: 2rem;">Cập nhật mã giảm giá</h2>
+        
+        <form asp-action="Edit" method="post" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <input type="hidden" asp-for="Id" />
+            
+            <div style="grid-column: span 2;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Mã Code</label>
+                <input asp-for="Code" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px; font-weight: 800; letter-spacing: 1px;" required />
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Loại giảm giá</label>
+                <select asp-for="DiscountType" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;">
+                    <option value="Percentage">Phần trăm (%)</option>
+                    <option value="Fixed">Số tiền cố định (đ)</option>
+                </select>
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Giá trị giảm</label>
+                <input asp-for="DiscountValue" type="number" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" required />
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Ngày bắt đầu</label>
+                <input asp-for="StartDate" type="datetime-local" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" value="@Model.StartDate.ToString("yyyy-MM-ddTHH:mm")" />
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Ngày kết thúc</label>
+                <input asp-for="EndDate" type="datetime-local" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" value="@Model.EndDate.ToString("yyyy-MM-ddTHH:mm")" />
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Giới hạn lượt dùng</label>
+                <input asp-for="UsageLimit" type="number" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" />
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <input asp-for="IsActive" type="checkbox" style="width: 20px; height: 20px;" />
+                <label style="color: var(--text-muted);">Kích hoạt chương trình</label>
+            </div>
+
+            <div style="grid-column: span 2; margin-top: 1rem;">
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 1rem;">
+                    <i class="fas fa-save"></i> CẬP NHẬT CHƯƠNG TRÌNH
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

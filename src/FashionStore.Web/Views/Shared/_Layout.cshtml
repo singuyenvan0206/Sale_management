@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Fashion Store</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="brand">
+                <h2 class="gradient-text"><i class="fas fa-gem"></i> FASHION STORE</h2>
+            </div>
+            
+            <nav class="nav-list">
+                <div class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "POS" ? "active" : "")" asp-controller="POS" asp-action="Index" style="background: rgba(14, 165, 233, 0.1); border: 1px solid var(--primary-color); color: var(--primary-color); margin-bottom: 1.5rem;">
+                        <i class="fas fa-cash-register"></i> Bán hàng (POS)
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "active" : "")" asp-controller="Dashboard" asp-action="Index">
+                        <i class="fas fa-chart-line"></i> Dashboard
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Product" ? "active" : "")" asp-controller="Product" asp-action="Index">
+                        <i class="fas fa-tshirt"></i> Sản phẩm
+                    </a>
+                </div>
+                @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                {
+                    <div class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Inventory" ? "active" : "")" asp-controller="Inventory" asp-action="History">
+                            <i class="fas fa-warehouse"></i> Kho hàng
+                        </a>
+                    </div>
+                }
+                @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                {
+                    <div class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Category" ? "active" : "")" asp-controller="Category" asp-action="Index">
+                            <i class="fas fa-th-list"></i> Danh mục
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Supplier" ? "active" : "")" asp-controller="Supplier" asp-action="Index">
+                            <i class="fas fa-truck"></i> Nhà cung cấp
+                        </a>
+                    </div>
+                }
+                <div class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Customer" ? "active" : "")" asp-controller="Customer" asp-action="Index">
+                        <i class="fas fa-users"></i> Khách hàng
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Invoice" ? "active" : "")" asp-controller="Invoice" asp-action="Index">
+                        <i class="fas fa-file-invoice-dollar"></i> Hoá đơn
+                    </a>
+                </div>
+                @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                {
+                    <div class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Promotion" ? "active" : "")" asp-controller="Promotion" asp-action="Index">
+                            <i class="fas fa-bullhorn"></i> Khuyến mãi
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Voucher" ? "active" : "")" asp-controller="Voucher" asp-action="Index">
+                            <i class="fas fa-ticket-alt"></i> Voucher
+                        </a>
+                    </div>
+                }
+                @if (User.IsInRole("Admin"))
+                {
+                    <div class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "User" ? "active" : "")" asp-controller="User" asp-action="Index">
+                            <i class="fas fa-user-shield"></i> Tài khoản
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Settings" ? "active" : "")" asp-controller="Settings" asp-action="Tiers">
+                            <i class="fas fa-cog"></i> Cài đặt
+                        </a>
+                    </div>
+                }
+                <div class="nav-item" style="margin-top: auto;">
+                    <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                        <a class="nav-link" href="javascript:document.getElementById('logoutForm').submit()" style="color: #ef4444;">
+                            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                        </a>
+                    </form>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header animate-in">
+                <div class="search-bar">
+                    @* Search placeholder *@
+                </div>
+                <div class="user-profile glass" style="padding: 0.5rem 1rem; display: flex; align-items: center; gap: 1rem;">
+                    <div style="text-align: right;">
+                        <div style="font-weight: 600;">@User.Claims.FirstOrDefault(c => c.Type == "EmployeeName")?.Value</div>
+                        @{
+                            var roleDisplay = "Nhân viên";
+                            if (User.IsInRole("Admin")) roleDisplay = "Quản trị viên";
+                            else if (User.IsInRole("Manager")) roleDisplay = "Quản lý";
+                            else if (User.IsInRole("Cashier")) roleDisplay = "Thu ngân";
+                        }
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">@roleDisplay</div>
+                    </div>
+                    <div style="width: 40px; height: 40px; border-radius: 10px; background: var(--primary-color); display: flex; align-items: center; justify-content: center; font-weight: 800;">
+                        @(User.Identity?.Name?.Substring(0, 1).ToUpper())
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-body animate-in">
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

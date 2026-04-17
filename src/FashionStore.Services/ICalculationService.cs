@@ -9,5 +9,6 @@ namespace FashionStore.Services
         decimal CalculateTierDiscount(decimal amount, decimal tierDiscountPercent);
         decimal CalculateVoucherValue(decimal subtotal, Voucher voucher);
         decimal CalculateTaxAmount(decimal lineTotal, decimal discountRatio, decimal categoryTaxPercent);
+        decimal GetTierDiscountPercent(string customerType);
     }
 }

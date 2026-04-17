@@ -1,0 +1,120 @@
+<Window x:Class="FashionStore.App.Views.BankTransferWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:core="clr-namespace:FashionStore.App.Core"
+        Title="Thanh Toán Chuyển Khoản" Height="620" Width="450"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        Background="#F8F9FA">
+    
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#1CB5E0"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" CornerRadius="8" Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter TargetName="border" Property="Opacity" Value="0.9"/>
+                                <Setter Property="Cursor" Value="Hand"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SecondaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#EEE"/>
+            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" CornerRadius="8" Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter TargetName="border" Property="Background" Value="#E0E0E0"/>
+                                <Setter Property="Cursor" Value="Hand"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="THANH TOÁN QR-CODE" FontSize="22" FontWeight="ExtraBold" Foreground="#1CB5E0" HorizontalAlignment="Center"/>
+            <Border Background="#1CB5E0" Height="3" Width="50" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <!-- Amount Info -->
+        <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="15" Margin="0,0,0,20" BorderBrush="#DDD" BorderThickness="1">
+            <StackPanel HorizontalAlignment="Center">
+                <TextBlock Text="Số tiền cần thanh toán:" Foreground="#777" HorizontalAlignment="Center" FontSize="14"/>
+                <TextBlock x:Name="AmountTextBlock" Text="{Binding TotalText}" Foreground="#D32F2F" FontSize="36" FontWeight="ExtraBold" HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding CurrentQRDescription, StringFormat='Nội dung: \{0\}'}" Foreground="#555" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- QR Code Container -->
+        <Border Grid.Row="2" Background="White" CornerRadius="15" Padding="20" BorderBrush="#1CB5E0" BorderThickness="2">
+            <Grid>
+                <Image x:Name="QRCodeImage" 
+                       Source="{Binding QRCodeImage}" 
+                       Stretch="Uniform"
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                
+                <Border Background="#CCFFFFFF" 
+                        Visibility="{Binding IsVerifyingPayment, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel VerticalAlignment="Center">
+                        <ProgressBar IsIndeterminate="True" Width="150" Height="4" Foreground="#1CB5E0" Background="#EEE" BorderThickness="0"/>
+                        <TextBlock Text="Đang kiểm tra giao dịch..." Margin="0,15,0,0" HorizontalAlignment="Center" FontWeight="Bold" Foreground="#1CB5E0"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Status Messaging -->
+        <TextBlock Grid.Row="3" 
+                   Text="{Binding VerificationStatusText}" 
+                   Foreground="#2E7D32" 
+                   FontWeight="Bold" 
+                   FontSize="16" 
+                   HorizontalAlignment="Center" 
+                   Margin="0,15,0,15"
+                   TextWrapping="Wrap"
+                   TextAlignment="Center"/>
+
+        <!-- Actions -->
+        <UniformGrid Grid.Row="4" Columns="2" Rows="1">
+            <Button Content="HUỶ GIAO DỊCH" Margin="0,0,5,0" Height="45"
+                    Style="{StaticResource SecondaryButton}" Click="Cancel_Click"/>
+            <Button Content="KIỂM TRA THANH TOÁN" Margin="5,0,0,0" Height="45"
+                    Style="{StaticResource PrimaryButton}"
+                    Command="{Binding VerifyPaymentCommand}"/>
+        </UniformGrid>
+    </Grid>
+</Window>

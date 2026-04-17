@@ -1,0 +1,85 @@
+@model IEnumerable<(int Id, string Username, string EmployeeName, string Role)>
+@{
+    ViewData["Title"] = "Quản lý tài khoản";
+}
+
+<div class="header-actions animate-in" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+        <h1 class="gradient-text">Tài khoản hệ thống</h1>
+        <p style="color: var(--text-muted);">Quản lý quyền truy cập và phân quyền nhân viên.</p>
+    </div>
+    <div style="display: flex; gap: 1rem; align-items: center;">
+        <form asp-action="Index" method="get" class="glass" style="display: flex; padding: 0.25rem 0.5rem; border-radius: 12px; border: 1px solid var(--glass-border);">
+            <input type="text" name="search" value="@ViewBag.Search" placeholder="Tìm tài khoản/nhân viên..." style="background: transparent; border: none; color: var(--text-main); padding: 0.5rem; outline: none; min-width: 250px;" />
+            <button type="submit" style="background: transparent; border: none; color: var(--primary-color); cursor: pointer; padding: 0.5rem;">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+        <a asp-action="Create" class="btn-primary" style="text-decoration: none; padding: 0.75rem 1.5rem;">
+            <i class="fas fa-user-plus"></i> Thêm tài khoản
+        </a>
+    </div>
+</div>
+
+<div class="glass animate-in" style="animation-delay: 0.1s;">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nhân viên</th>
+                    <th>Tên đăng nhập</th>
+                    <th>Vai trò</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model)
+                {
+                    <tr class="glass-hover-row">
+                        <td style="font-weight: 600;">@user.EmployeeName</td>
+                        <td style="color: var(--primary-color);">@user.Username</td>
+                        <td>
+                            @{
+                                var badgeClass = user.Role switch
+                                {
+                                    "Admin" => "background: rgba(14, 165, 233, 0.1); color: var(--primary-color);",
+                                    "Manager" => "background: rgba(139, 92, 246, 0.1); color: #8b5cf6;",
+                                    _ => "background: rgba(100, 116, 139, 0.1); color: var(--text-muted);"
+                                };
+                                var roleName = user.Role switch
+                                {
+                                    "Admin" => "Quản trị viên",
+                                    "Manager" => "Quản lý",
+                                    "Cashier" => "Thu ngân",
+                                    _ => user.Role
+                                };
+                            }
+                            <span style="padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; @badgeClass">
+                                @roleName
+                            </span>
+                        </td>
+                        <td>
+                            <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">Kích hoạt</span>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <a asp-action="Edit" asp-route-username="@user.Username" class="nav-link" style="padding: 0.4rem; color: var(--primary-color);">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                @if (user.Username != User.Identity?.Name && user.Username != "admin")
+                                {
+                                    <form asp-action="Delete" asp-route-username="@user.Username" method="post" onsubmit="return confirm('Xoá tài khoản này?')" style="display: inline;">
+                                        <button type="submit" style="background:transparent; border:none; color:#ef4444; cursor:pointer; padding:0.4rem;">
+                                            <i class="fas fa-user-minus"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

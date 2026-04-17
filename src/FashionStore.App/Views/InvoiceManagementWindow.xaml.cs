@@ -13,6 +13,7 @@ namespace FashionStore.App.Views
         {
             InitializeComponent();
             this.DataContext = App.ServiceProvider?.GetRequiredService<InvoiceManagementViewModel>() ?? new InvoiceManagementViewModel();
+            this.Loaded += (s, e) => BarcodeTextBox.Focus();
         }
 
         private void ListBox_PreviewMouseWheel(object sender, MouseWheelEventArgs e)

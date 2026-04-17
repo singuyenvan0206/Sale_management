@@ -1,0 +1,51 @@
+@model IEnumerable<FashionStore.Core.Models.Supplier>
+@{
+    ViewData["Title"] = "Quản lý nhà cung cấp";
+}
+
+<div class="header-actions animate-in" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+        <h1 class="gradient-text">Nhà cung cấp</h1>
+        <p style="color: var(--text-muted);">Quản lý đối tác và thông tin nhập hàng.</p>
+    </div>
+    <a asp-action="Create" class="btn-primary" style="text-decoration: none;"><i class="fas fa-truck"></i> Thêm nhà cung cấp</a>
+</div>
+
+<div class="glass animate-in" style="animation-delay: 0.1s;">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nhà cung cấp</th>
+                    <th>Người liên hệ</th>
+                    <th>Số điện thoại</th>
+                    <th>Địa chỉ</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var s in Model)
+                {
+                    <tr class="glass-hover-row">
+                        <td style="font-weight: 700;">@s.Name</td>
+                        <td>@s.ContactName</td>
+                        <td>@s.Phone</td>
+                        <td style="color: var(--text-muted); font-size: 0.875rem;">@s.Address</td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <a asp-action="Edit" asp-route-id="@s.Id" class="nav-link" style="padding: 0.4rem; color: var(--text-muted);">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@s.Id" method="post" onsubmit="return confirm('Xoá nhà cung cấp này?')">
+                                    <button type="submit" style="background:transparent; border:none; color:#ef4444; cursor:pointer; padding:0.4rem;">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

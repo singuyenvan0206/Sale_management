@@ -64,7 +64,7 @@
                 <Button x:Name="LoginButton" 
                         Content="ĐĂNG NHẬP" 
                         Height="50" 
-                        Background="#D4AF37" 
+                        Background="{StaticResource GoldBrush}" 
                         Foreground="#0F172A" 
                         FontWeight="ExtraBold" 
                         FontSize="16" 

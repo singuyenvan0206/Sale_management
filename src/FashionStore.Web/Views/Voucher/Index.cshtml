@@ -1,0 +1,81 @@
+@model IEnumerable<FashionStore.Core.Models.Voucher>
+@{
+    ViewData["Title"] = "Quản lý Voucher";
+}
+
+<div class="header-actions animate-in" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+        <h1 class="gradient-text">Mã giảm giá</h1>
+        <p style="color: var(--text-muted);">Quản lý các chương trình khuyến mãi và mã giảm giá.</p>
+    </div>
+    <a asp-action="Create" class="btn-primary" style="text-decoration: none;"><i class="fas fa-plus"></i> Tạo Voucher mới</a>
+</div>
+
+<div class="glass animate-in" style="animation-delay: 0.1s;">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Mã code</th>
+                    <th>Loại giảm</th>
+                    <th>Giá trị</th>
+                    <th>Thời hạn</th>
+                    <th>Lượt dùng</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var voucher in Model)
+                {
+                    <tr class="glass-hover-row">
+                        <td style="font-weight: 800; color: var(--secondary-color); letter-spacing: 0.05em;">@voucher.Code</td>
+                        <td>@voucher.DiscountType</td>
+                        <td style="font-weight: 700;">
+                            @if (voucher.DiscountType == "Percentage")
+                            {
+                                <span>@voucher.DiscountValue %</span>
+                            }
+                            else
+                            {
+                                <span>@voucher.DiscountValue.ToString("C0")</span>
+                            }
+                        </td>
+                        <td style="font-size: 0.875rem;">
+                            <div style="color: #10b981;">@voucher.StartDate.ToString("dd/MM/yy")</div>
+                            <div style="color: #ef4444;">@voucher.EndDate.ToString("dd/MM/yy")</div>
+                        </td>
+                        <td>
+                            <div style="font-size: 0.875rem;">@voucher.UsedCount / @voucher.UsageLimit</div>
+                            <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 4px;">
+                                <div style="width: @(voucher.UsageLimit > 0 ? (voucher.UsedCount * 100 / voucher.UsageLimit) : 0)%; height: 100%; background: var(--primary-color); border-radius: 2px;"></div>
+                            </div>
+                        </td>
+                        <td>
+                            @if (voucher.IsActive && voucher.EndDate >= DateTime.Now)
+                            {
+                                <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">Đang chạy</span>
+                            }
+                            else
+                            {
+                                <span style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">Hết hạn</span>
+                            }
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <a asp-action="Edit" asp-route-id="@voucher.Id" class="nav-link" style="padding: 0.4rem; color: var(--text-muted);">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@voucher.Id" method="post" style="display: inline;" onsubmit="return confirm('Bạn có chắc muốn xoá voucher này?')">
+                                    <button type="submit" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 0.4rem;">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

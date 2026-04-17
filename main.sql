@@ -29,7 +29,7 @@ CREATE TABLE `accounts` (
   `Username` varchar(255) NOT NULL,
   `Password` varchar(255) NOT NULL,
   `Role` varchar(20) NOT NULL DEFAULT 'Cashier',
-  `employeeName` varchar(100) DEFAULT NULL,
+  `EmployeeName` varchar(100) DEFAULT NULL,
   `LastLoginDate` datetime DEFAULT NULL,
   `IsActive` tinyint(1) DEFAULT '1',
   `CreatedDate` datetime DEFAULT CURRENT_TIMESTAMP,
@@ -229,6 +229,29 @@ CREATE TABLE `products` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `ProductVariants`
+--
+
+DROP TABLE IF EXISTS `ProductVariants`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ProductVariants` (
+  `Id` int NOT NULL AUTO_INCREMENT,
+  `ProductId` int NOT NULL,
+  `Size` varchar(50) DEFAULT NULL,
+  `Color` varchar(50) DEFAULT NULL,
+  `Sku` varchar(100) DEFAULT NULL,
+  `Barcode` varchar(100) DEFAULT NULL,
+  `StockQuantity` int DEFAULT '0',
+  `PriceAdjustment` decimal(15,2) DEFAULT '0.00',
+  PRIMARY KEY (`Id`),
+  UNIQUE KEY `idx_barcode` (`Barcode`),
+  KEY `idx_product` (`ProductId`),
+  CONSTRAINT `productvariants_ibfk_1` FOREIGN KEY (`ProductId`) REFERENCES `products` (`Id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `promotions`
 --
 
@@ -309,6 +332,22 @@ CREATE TABLE `suppliers` (
   `IsActive` tinyint(1) DEFAULT '1',
   `CreatedDate` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`Id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `SystemSettings`
+--
+
+DROP TABLE IF EXISTS `SystemSettings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `SystemSettings` (
+  `SettingKey` varchar(100) NOT NULL,
+  `SettingValue` text,
+  `Description` text,
+  `UpdatedDate` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`SettingKey`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

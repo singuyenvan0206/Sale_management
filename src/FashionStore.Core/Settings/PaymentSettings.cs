@@ -9,6 +9,7 @@ namespace FashionStore.Core.Settings
         public string BankName { get; set; } = "";
         public string AccountHolder { get; set; } = "";
         public bool EnableQRCode { get; set; } = true;
+        public string SePayToken { get; set; } = ""; // Set via Environment Variable or UI
     }
 
     public static class PaymentSettingsManager
@@ -19,19 +20,34 @@ namespace FashionStore.Core.Settings
 
         public static PaymentSettings Load()
         {
+            // Priority 1: Environment Variable (Recommended for security)
+            var envToken = Environment.GetEnvironmentVariable("SEPAY_TOKEN");
+            
+            PaymentSettings settings;
             try
             {
                 if (File.Exists(SettingsPath))
                 {
                     var json = File.ReadAllText(SettingsPath);
-                    return JsonSerializer.Deserialize<PaymentSettings>(json) ?? new PaymentSettings();
+                    settings = JsonSerializer.Deserialize<PaymentSettings>(json) ?? new PaymentSettings();
+                }
+                else
+                {
+                    settings = new PaymentSettings();
                 }
             }
             catch
             {
-                // Silent failure
+                settings = new PaymentSettings();
             }
-            return new PaymentSettings();
+
+            // Override file settings if Environment Variable is present
+            if (!string.IsNullOrEmpty(envToken))
+            {
+                settings.SePayToken = envToken;
+            }
+
+            return settings;
         }
 
         public static bool Save(PaymentSettings settings)

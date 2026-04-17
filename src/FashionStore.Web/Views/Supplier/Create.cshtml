@@ -1,0 +1,77 @@
+@model FashionStore.Core.Models.Supplier
+@{
+    ViewData["Title"] = "Thêm nhà cung cấp";
+}
+
+<div class="animate-in">
+    <div style="margin-bottom: 2rem;">
+        <a asp-action="Index" style="color: var(--text-muted); text-decoration: none;"><i class="fas fa-arrow-left"></i> Quay lại danh sách</a>
+    </div>
+
+    <div class="glass" style="max-width: 800px; margin: 0 auto; padding: 2.5rem; border: 1px solid var(--glass-border); background: #fff;">
+        <h2 class="gradient-text" style="margin-bottom: 2rem;">Thêm nhà cung cấp mới</h2>
+        
+        <form asp-action="Create" method="post" style="display: flex; flex-direction: column; gap: 1.5rem;">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="glass" style="background: rgba(239, 68, 68, 0.1); border-color: #ef4444; color: #ef4444; padding: 1rem; border-radius: 8px;">
+                    <div asp-validation-summary="All"></div>
+                </div>
+            }
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Tên công ty/Nhà cung cấp</label>
+                    <input asp-for="Name" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" placeholder="Ví dụ: Công ty TNHH May Mặc ABC" required />
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Người liên hệ</label>
+                    <input asp-for="ContactName" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" placeholder="Ví dụ: Nguyễn Văn B" />
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Số điện thoại</label>
+                    <input asp-for="Phone" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" placeholder="090x xxx xxx" />
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Email</label>
+                    <input asp-for="Email" type="email" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" placeholder="ncc@example.com" />
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Mã số thuế</label>
+                    <input asp-for="TaxCode" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" placeholder="MST doanh nghiệp" />
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Website</label>
+                    <input asp-for="Website" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" placeholder="https://..." />
+                </div>
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Địa chỉ</label>
+                <input asp-for="Address" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" placeholder="Địa chỉ trụ sở" />
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Ghi chú</label>
+                <textarea asp-for="Notes" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px; min-height: 80px;" placeholder="Thông tin thêm về nhà cung cấp..."></textarea>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <input asp-for="IsActive" type="checkbox" style="width: 1.2rem; height: 1.2rem;" />
+                <label asp-for="IsActive" style="color: var(--text-main); font-weight: 600;">Kích hoạt nhà cung cấp</label>
+            </div>
+
+            <div style="margin-top: 1rem;">
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 1rem; font-weight: 700; letter-spacing: 1px;">
+                    <i class="fas fa-plus"></i> THÊM NHÀ CUNG CẤP
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

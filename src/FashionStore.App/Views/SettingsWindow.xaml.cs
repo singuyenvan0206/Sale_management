@@ -16,6 +16,17 @@ namespace FashionStore.App.Views
 
             // PasswordBox cannot bind directly — load from settings
             PasswordBox.Password = SettingsViewModel.LoadPassword();
+            LoadSePayToken();
+        }
+
+        private async void LoadSePayToken()
+        {
+            // Wait for VM to load token
+            string? token = await _vm.GetSePayTokenAsync();
+            if (!string.IsNullOrEmpty(token))
+            {
+                SePayTokenBox.Password = token;
+            }
         }
 
         // Kept in code-behind: PasswordBox bridge
@@ -23,7 +34,16 @@ namespace FashionStore.App.Views
             => _vm.TestConnection(PasswordBox.Password);
 
         private void SaveSettingsButton_Click(object sender, RoutedEventArgs e)
-            => _vm.SaveDbSettings(PasswordBox.Password);
+        {
+            _vm.SaveDbSettings(PasswordBox.Password);
+            PasswordBox.Clear();
+        }
+
+        private void SavePaymentButton_Click(object sender, RoutedEventArgs e)
+        {
+            _vm.SavePaymentSettingsCommand.Execute(SePayTokenBox.Password);
+            SePayTokenBox.Clear();
+        }
 
         private void Grid_PreviewMouseWheel(object sender, MouseWheelEventArgs e) { }
     }

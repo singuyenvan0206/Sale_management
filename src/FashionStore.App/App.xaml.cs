@@ -85,21 +85,28 @@ namespace FashionStore.App
         private void ConfigureServices(IServiceCollection services)
         {
             // Repositories
+            services.AddScoped<ISystemSettingsRepository, SystemSettingsRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<IVoucherRepository, VoucherRepository>();
             services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+            services.AddScoped<ISupplierRepository, SupplierRepository>();
+            services.AddScoped<IPromotionRepository, PromotionRepository>();
 
             // Services
+            services.AddScoped<ISystemSettingsService, SystemSettingsService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<FashionStore.Core.Interfaces.IProductService, FashionStore.Services.ProductService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<IVoucherService, VoucherService>();
             services.AddScoped<IInvoiceService, InvoiceService>();
+            services.AddScoped<ISupplierService, SupplierService>();
+            services.AddScoped<IPromotionService, PromotionService>();
             services.AddScoped<ICalculationService, CalculationService>();
+            services.AddScoped<IBankStatementService, SePayBankService>();
 
             // Infrastructure
             services.AddSingleton<ICacheService, InMemoryCacheService>();

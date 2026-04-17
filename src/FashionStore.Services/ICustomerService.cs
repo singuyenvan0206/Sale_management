@@ -15,5 +15,8 @@ namespace FashionStore.Services
         Task<int> GetOrCreateCustomerIdAsync(string name, string phone, string email, string address);
         Task<IEnumerable<(string Name, decimal TotalSpent)>> GetTopCustomersAsync(int topN);
         Task<int> RefreshAllLoyaltyAsync(decimal spendPerPoint, int silverMin, int goldMin, int vipMin);
+        Task<bool> ExportCustomersToCsvAsync(string filePath);
+        Task<int> ImportCustomersFromCsvAsync(string filePath);
+        Task<IEnumerable<(int InvoiceId, DateTime CreatedAt, int ItemCount, decimal Total)>> GetCustomerPurchaseHistoryAsync(int customerId);
     }
 }

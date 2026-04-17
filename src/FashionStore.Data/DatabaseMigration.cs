@@ -1,5 +1,6 @@
 using Dapper;
 using FashionStore.Core.Models;
+using FashionStore.Core.Settings;
 using MySql.Data.MySqlClient;
 using System.Diagnostics;
 
@@ -17,6 +18,9 @@ namespace FashionStore.Data
         {
             try
             {
+                EnsureDatabaseSchema(connection);
+                EnsureAdminAccount(connection);
+                
                 MigrateAccountsTable(connection);
                 MigrateCategoriesTable(connection);
                 MigrateSuppliersTable(connection);
@@ -25,13 +29,17 @@ namespace FashionStore.Data
                 MigrateVouchersTable(connection);
                 MigrateInvoicesTable(connection);
                 MigrateInvoiceItemsTable(connection);
+                CreateProductVariantsTable(connection);
                 CreateStockMovementsTable(connection);
                 CreateCustomerVoucherUsageTable(connection);
                 CreatePromotionsTable(connection);
                 MigratePromotionsTable(connection);
+                
                 SeedSampleData(connection);
+                FixIncorrectProductCategories(connection);
                 BackfillBarcodes(connection);
                 SyncCustomerPointsAndTotalSpent(connection);
+                MigrateTransactionHistoryView(connection);
 
                 Debug.WriteLine("All database migrations completed successfully.");
             }
@@ -46,29 +54,46 @@ namespace FashionStore.Data
         {
             try
             {
-                // Disable safe updates for this session to allow mass update
                 ExecuteNonQuery(connection, "SET SQL_SAFE_UPDATES = 0;");
-
-                // Generate barcodes for any products that have empty or null Code
-                // We use Id > 0 to satisfy some safe-update configurations even with safe updates off
-                // Pattern: 893 + 7-digit padded ID (Total 10 digits)
                 string sql = @"
                     UPDATE Products 
                     SET Code = CONCAT('893', LPAD(Id, 7, '0')) 
                     WHERE (Code IS NULL OR TRIM(Code) = '') AND Id > 0;";
-
-                int affected = ExecuteNonQuery(connection, sql);
-                if (affected > 0)
-                {
-                    Debug.WriteLine($"Successfully generated barcodes for {affected} products.");
-                }
-
-                // Re-enable safe updates
+                ExecuteNonQuery(connection, sql);
                 ExecuteNonQuery(connection, "SET SQL_SAFE_UPDATES = 1;");
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error backfilling barcodes: {ex.Message}");
+            }
+        }
+
+        private static void RandomizeAllBarcodes(MySqlConnection connection)
+        {
+            try
+            {
+                ExecuteNonQuery(connection, "SET SQL_SAFE_UPDATES = 0;");
+                
+                // 1. Randomize Products.Code
+                string sqlProducts = @"
+                    UPDATE Products 
+                    SET Code = CONCAT('893', LPAD(FLOOR(RAND() * 10000000), 7, '0')) 
+                    WHERE Id > 0;";
+                ExecuteNonQuery(connection, sqlProducts);
+
+                // 2. Randomize ProductVariants.Barcode
+                string sqlVariants = @"
+                    UPDATE ProductVariants 
+                    SET Barcode = CONCAT('888', LPAD(FLOOR(RAND() * 10000000), 7, '0'))
+                    WHERE Id > 0;";
+                ExecuteNonQuery(connection, sqlVariants);
+
+                ExecuteNonQuery(connection, "SET SQL_SAFE_UPDATES = 1;");
+                Debug.WriteLine("Successfully randomized all barcodes in database.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error randomizing barcodes: {ex.Message}");
             }
         }
 
@@ -91,11 +116,11 @@ namespace FashionStore.Data
 
                 decimal spendPerPoint = TierSettingsManager.Load().SpendPerPoint;
                 if (spendPerPoint <= 0) spendPerPoint = 100000;
-                string sqlPoints = $@"
+                string sqlPoints = @"
                     UPDATE Customers c
-                    SET Points = FLOOR(TotalSpent / {spendPerPoint})
+                    SET Points = FLOOR(TotalSpent / @SpendPerPoint)
                     WHERE TotalSpent > 0;";
-                ExecuteNonQuery(connection, sqlPoints);
+                ExecuteNonQuery(connection, sqlPoints, new { SpendPerPoint = spendPerPoint });
                 ExecuteNonQuery(connection, "SET SQL_SAFE_UPDATES = 1;");
             }
             catch (Exception ex)
@@ -112,39 +137,248 @@ namespace FashionStore.Data
                 string[] categories = { "Áo Sơ Mi", "Quần Jean", "Giày Sneaker", "Phụ Kiện" };
                 foreach (var cat in categories)
                 {
-                    ExecuteNonQuery(connection, $"INSERT IGNORE INTO Categories (Name, TaxPercent) VALUES ('{cat}', 10);");
+                    ExecuteNonQuery(connection, "INSERT IGNORE INTO Categories (Name, TaxPercent) VALUES (@Name, @Tax);", new { Name = cat, Tax = 10 });
                 }
 
                 // 2. Seed Suppliers
                 ExecuteNonQuery(connection, "INSERT IGNORE INTO Suppliers (Name, ContactName, Phone, Address) VALUES ('Công ty May Mặc Á Châu', 'Nguyễn Văn A', '0901234567', '123 Đường ABC, HCM');");
 
                 // Get some IDs
-                int catId = connection.ExecuteScalar<int>("SELECT Id FROM Categories WHERE Name='Áo Sơ Mi' LIMIT 1");
-                int supId = connection.ExecuteScalar<int>("SELECT Id FROM Suppliers WHERE Name='Công ty May Mặc Á Châu' LIMIT 1");
+                int catId = connection.ExecuteScalar<int>("SELECT Id FROM Categories WHERE Name=@Name LIMIT 1", new { Name = "Áo Sơ Mi" });
+                int supId = connection.ExecuteScalar<int>("SELECT Id FROM Suppliers WHERE Name=@Name LIMIT 1", new { Name = "Công ty May Mặc Á Châu" });
 
-                if (catId > 0)
+                string[][] products = new[]
                 {
-                    string[][] products = new[]
-                    {
-                        new[] { "Áo Sơ Mi Công Sở Nam", "8930001", "350000", "200000", "Chất liệu cotton cao cấp" },
-                        new[] { "Quần Jean Skinny Nữ", "8930002", "450000", "250000", "Co giãn 4 chiều" },
-                        new[] { "Giày Sneaker Classic", "8930003", "600000", "350000", "Phong cách trẻ trung" },
-                        new[] { "Thắt Lưng Da", "8930004", "150000", "80000", "Da bò thật 100%" }
-                    };
+                    new[] { "Áo Sơ Mi Công Sở Nam", "8930001", "350000", "200000", "Chất liệu cotton cao cấp", "Áo Sơ Mi" },
+                    new[] { "Quần Jean Skinny Nữ", "8930002", "450000", "250000", "Co giãn 4 chiều", "Quần Jean" },
+                    new[] { "Giày Sneaker Classic", "8930003", "600000", "350000", "Phong cách trẻ trung", "Giày Sneaker" },
+                    new[] { "Thắt Lưng Da", "8930004", "150000", "80000", "Da bò thật 100%", "Phụ Kiện" }
+                };
 
-                    foreach (var p in products)
-                    {
-                        // Use INSERT IGNORE combined with the unique index on 'Code'
-                        // This ensures we ONLY add these products if their barcode doesn't exist
-                        string sql = "INSERT IGNORE INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description, SupplierId) " +
-                                     $"VALUES ('{p[0]}', '{p[1]}', {catId}, {p[2]}, {p[3]}, 'Cái', 100, 50, '{p[4]}', {supId});";
-                        ExecuteNonQuery(connection, sql);
-                    }
+                foreach (var p in products)
+                {
+                    int specificCatId = connection.ExecuteScalar<int>("SELECT Id FROM Categories WHERE Name=@Name LIMIT 1", new { Name = p[5] });
+                    if (specificCatId == 0) specificCatId = catId; 
+
+                    string sql = "INSERT IGNORE INTO Products (Name, Code, CategoryId, SalePrice, PurchasePrice, PurchaseUnit, ImportQuantity, StockQuantity, Description, SupplierId) " +
+                                 "VALUES (@Name, @Code, @CategoryId, @SalePrice, @PurchasePrice, @PurchaseUnit, 100, 50, @Description, @SupplierId);";
+                    ExecuteNonQuery(connection, sql, new { 
+                        Name = p[0], 
+                        Code = p[1], 
+                        CategoryId = specificCatId, 
+                        SalePrice = p[2], 
+                        PurchasePrice = p[3], 
+                        PurchaseUnit = "Cái",
+                        Description = p[4],
+                        SupplierId = supId
+                    });
                 }
+
+                // 3. Seed Default Customer (Walk-in)
+                ExecuteNonQuery(connection, "INSERT IGNORE INTO Customers (Id, Name, Phone) VALUES (1, 'Khách lẻ', '0000000000');");
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error seeding sample data: {ex.Message}");
+            }
+        }
+
+        private static void FixIncorrectProductCategories(MySqlConnection connection)
+        {
+            try
+            {
+                ExecuteNonQuery(connection, "SET SQL_SAFE_UPDATES = 0;");
+                
+                // Ensure categories exist
+                string[] categories = { "Áo Sơ Mi", "Quần Jean", "Giày Sneaker", "Phụ Kiện" };
+                foreach (var cat in categories)
+                {
+                    ExecuteNonQuery(connection, "INSERT IGNORE INTO Categories (Name, TaxPercent) VALUES (@Name, @Tax);", new { Name = cat, Tax = 10 });
+                }
+
+                string[] categoryMappings = {
+                    // PHÂN LOẠIƯU TIÊN (Keywords cụ thể nhất)
+                    "UPDATE Products SET CategoryId = (SELECT Id FROM Categories WHERE Name='Váy' LIMIT 1) WHERE Name LIKE '%Váy%' OR Name LIKE '%Đầm%' OR Name LIKE '%Skirt%' OR Name LIKE '%Dress%';",
+                    
+                    "UPDATE Products SET CategoryId = (SELECT Id FROM Categories WHERE Name='Đồ ngủ' LIMIT 1) WHERE Name LIKE '%Đồ ngủ%' OR Name LIKE '%Pijama%' OR Name LIKE '%Đồ bộ%';",
+                    
+                    "UPDATE Products SET CategoryId = (SELECT Id FROM Categories WHERE Name='Áo khoác' LIMIT 1) WHERE Name LIKE '%Khoác%' OR Name LIKE '%Jacket%' OR Name LIKE '%Hoodie%' OR Name LIKE '%Cardigan%';",
+
+                    "UPDATE Products SET CategoryId = (SELECT Id FROM Categories WHERE Name='Áo thun' LIMIT 1) WHERE Name LIKE '%Thun%' OR Name LIKE '%Phông%' OR Name LIKE '%T-shirt%' OR Name LIKE '%Polo%';",
+
+                    // QUẦN
+                    "UPDATE Products SET CategoryId = (SELECT Id FROM Categories WHERE Name='Quần jeans' LIMIT 1) WHERE Name LIKE '%Jean%' OR Name LIKE '%Denim%' OR Name LIKE '%Quần bò%';",
+                    "UPDATE Products SET CategoryId = (SELECT Id FROM Categories WHERE Name='Quần short' LIMIT 1) WHERE Name LIKE '%Short%' OR Name LIKE '%Quần đùi%' OR Name LIKE '%Quần lửng%';",
+                    
+                    // GIÀY (Chạy sau Váy để tránh Sandal quai váy bị nhầm)
+                    "UPDATE Products SET CategoryId = (SELECT Id FROM Categories WHERE Name='Giày Sneaker' LIMIT 1) WHERE Name LIKE '%Sneaker%' OR Name LIKE '%Bitis%';",
+                    "UPDATE Products SET CategoryId = (SELECT Id FROM Categories WHERE Name='Giày dép' LIMIT 1) WHERE (Name LIKE '%Giày%' OR Name LIKE '%Dép%' OR Name LIKE '%Sandal%') AND Name NOT LIKE '%Váy%' AND Name NOT LIKE '%Đầm%';",
+                    
+                    // PHỤ KIỆN
+                    "UPDATE Products SET CategoryId = (SELECT Id FROM Categories WHERE Name='Phụ kiện' LIMIT 1) WHERE Name LIKE '%Thắt Lưng%' OR Name LIKE '%Dây Nịt%' OR Name LIKE '%Ví%' OR Name LIKE '%Nón%' OR Name LIKE '%Mũ%' OR Name LIKE '%Tất%' OR Name LIKE '%Vớ%' OR Name LIKE '%Cà Vạt%' OR Name LIKE '%Kính%';",
+                    
+                    // ÁO (Sau cùng để làm default cho các loại ÁO khác)
+                    "UPDATE Products SET CategoryId = (SELECT Id FROM Categories WHERE Name='Áo sơ mi' LIMIT 1) WHERE (Name LIKE '%Sơ Mi%' OR Name LIKE '%Áo%') AND CategoryId IS NULL;"
+                };
+
+                foreach (var sql in categoryMappings)
+                {
+                    // Enhanced safety check: Don't run the update if the target category doesn't exist
+                    // Extract category name from SQL: Name='...'
+                    var startIndex = sql.IndexOf("Name='") + 6;
+                    var endIndex = sql.IndexOf("'", startIndex);
+                    if (startIndex > 5 && endIndex > startIndex)
+                    {
+                        var catName = sql.Substring(startIndex, endIndex - startIndex);
+                        var exists = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM Categories WHERE Name=@Name", new { Name = catName }) > 0;
+                        if (!exists) 
+                        { 
+                            continue; 
+                        }
+                    }
+                    ExecuteNonQuery(connection, sql); 
+                }
+
+                ExecuteNonQuery(connection, "SET SQL_SAFE_UPDATES = 1;");
+                Debug.WriteLine("Successfully reorganized all product categories based on keywords.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error fixing product categories: {ex.Message}");
+            }
+        }
+
+        private static void EnsureDatabaseSchema(MySqlConnection connection)
+        {
+            try
+            {
+                connection.Execute(@"CREATE TABLE IF NOT EXISTS Accounts (
+                    Id INT AUTO_INCREMENT PRIMARY KEY,
+                    Username VARCHAR(255) NOT NULL UNIQUE,
+                    Password VARCHAR(255) NOT NULL,
+                    Role VARCHAR(20) NOT NULL DEFAULT 'Cashier',
+                    EmployeeName VARCHAR(255)
+                );");
+
+                connection.Execute(@"CREATE TABLE IF NOT EXISTS Categories (
+                    Id INT AUTO_INCREMENT PRIMARY KEY,
+                    Name VARCHAR(255) NOT NULL UNIQUE,
+                    TaxPercent DECIMAL(5,2) NOT NULL DEFAULT 0
+                );");
+
+                connection.Execute(@"CREATE TABLE IF NOT EXISTS Products (
+                    Id INT AUTO_INCREMENT PRIMARY KEY,
+                    Name VARCHAR(255) NOT NULL,
+                    Code VARCHAR(50) UNIQUE,
+                    CategoryId INT,
+                    ImageUrl VARCHAR(500),
+                    SalePrice DECIMAL(10,2) NOT NULL,
+                    PromoDiscountPercent DECIMAL(5,2) NOT NULL DEFAULT 0,
+                    PromoStartDate DATETIME NULL,
+                    PromoEndDate DATETIME NULL,
+                    PurchasePrice DECIMAL(10,2) DEFAULT 0,
+                    PurchaseUnit VARCHAR(50) DEFAULT 'VND',
+                    ImportQuantity INT DEFAULT 0,
+                    StockQuantity INT NOT NULL DEFAULT 0,
+                    Description TEXT,
+                    SupplierId INT DEFAULT 0,
+                    CreatedDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    UpdatedDate DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    FOREIGN KEY (CategoryId) REFERENCES Categories(Id)
+                );");
+
+                connection.Execute(@"CREATE TABLE IF NOT EXISTS Customers (
+                    Id INT AUTO_INCREMENT PRIMARY KEY,
+                    Name VARCHAR(255) NOT NULL,
+                    Phone VARCHAR(20),
+                    Email VARCHAR(255),
+                    Address TEXT,
+                    CustomerType VARCHAR(50) DEFAULT 'Regular',
+                    Points INT NOT NULL DEFAULT 0,
+                    UpdatedDate DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                );");
+
+                connection.Execute(@"CREATE TABLE IF NOT EXISTS Invoices (
+                    Id INT AUTO_INCREMENT PRIMARY KEY,
+                    CustomerId INT NOT NULL,
+                    EmployeeId INT NOT NULL,
+                    Subtotal DECIMAL(12,2) NOT NULL,
+                    TaxPercent DECIMAL(5,2) NOT NULL DEFAULT 0,
+                    TaxAmount DECIMAL(12,2) NOT NULL DEFAULT 0,
+                    Discount DECIMAL(12,2) NOT NULL DEFAULT 0,
+                    Total DECIMAL(12,2) NOT NULL,
+                    Paid DECIMAL(12,2) NOT NULL DEFAULT 0,
+                    CreatedDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    VoucherId INT NULL,
+                    Status VARCHAR(50) DEFAULT 'Completed',
+                    FOREIGN KEY (CustomerId) REFERENCES Customers(Id),
+                    FOREIGN KEY (EmployeeId) REFERENCES Accounts(Id)
+                );");
+
+                connection.Execute(@"CREATE TABLE IF NOT EXISTS InvoiceItems (
+                    Id INT AUTO_INCREMENT PRIMARY KEY,
+                    InvoiceId INT NOT NULL,
+                    ProductId INT NOT NULL,
+                    EmployeeId INT NOT NULL,
+                    UnitPrice DECIMAL(12,2) NOT NULL,
+                    Quantity INT NOT NULL,
+                    LineTotal DECIMAL(12,2) NOT NULL,
+                    FOREIGN KEY (InvoiceId) REFERENCES Invoices(Id) ON DELETE CASCADE,
+                    FOREIGN KEY (ProductId) REFERENCES Products(Id),
+                    FOREIGN KEY (EmployeeId) REFERENCES Accounts(Id)
+                );");
+
+                connection.Execute(@"CREATE TABLE IF NOT EXISTS Suppliers (
+                    Id INT AUTO_INCREMENT PRIMARY KEY,
+                    Name VARCHAR(255) NOT NULL,
+                    ContactName VARCHAR(255),
+                    Phone VARCHAR(50),
+                    Email VARCHAR(255),
+                    Address TEXT
+                );");
+
+                connection.Execute(@"CREATE TABLE IF NOT EXISTS Vouchers (
+                    Id INT AUTO_INCREMENT PRIMARY KEY,
+                    Code VARCHAR(50) NOT NULL UNIQUE,
+                    DiscountType VARCHAR(20) NOT NULL,
+                    DiscountValue DECIMAL(12,2) NOT NULL,
+                    MinInvoiceAmount DECIMAL(12,2) NOT NULL DEFAULT 0,
+                    StartDate DATETIME NOT NULL,
+                    EndDate DATETIME NOT NULL,
+                    UsageLimit INT NOT NULL DEFAULT 0,
+                    UsedCount INT NOT NULL DEFAULT 0,
+                    IsActive BOOLEAN NOT NULL DEFAULT 1
+                );");
+
+                connection.Execute(@"CREATE TABLE IF NOT EXISTS SystemSettings (
+                    SettingKey VARCHAR(255) PRIMARY KEY,
+                    SettingValue TEXT,
+                    Description TEXT,
+                    UpdatedDate DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                );");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error ensuring database schema: {ex.Message}");
+                throw;
+            }
+        }
+
+        private static void EnsureAdminAccount(MySqlConnection connection)
+        {
+            try
+            {
+                long adminCount = connection.ExecuteScalar<long>("SELECT COUNT(*) FROM Accounts WHERE Username='admin';");
+                if (adminCount == 0)
+                {
+                    string hashedPassword = PasswordHelper.HashPassword("admin"); 
+                    connection.Execute("INSERT INTO Accounts (Username, Password, Role) VALUES ('admin', @password, 'Admin');", new { password = hashedPassword });
+                    Debug.WriteLine("Default admin account created.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error ensuring admin account: {ex.Message}");
             }
         }
 
@@ -299,8 +533,14 @@ namespace FashionStore.Data
                     ExecuteNonQuery(connection, "ALTER TABLE Products ADD COLUMN MaxStockLevel INT DEFAULT 1000;");
                 }
 
-                // Cleanup: Remove redundant columns if they exist (Barcode, ImageUrl, Weight, Dimensions)
-                string[] unusedColumns = { "Barcode", "ImageUrl", "Weight", "Dimensions" };
+                // Add ImageUrl column if missing
+                if (!ColumnExists(connection, "Products", "ImageUrl"))
+                {
+                    ExecuteNonQuery(connection, "ALTER TABLE Products ADD COLUMN ImageUrl VARCHAR(500) NULL AFTER CategoryId;");
+                }
+
+                // Cleanup: Remove redundant columns if they exist (Barcode, Weight, Dimensions)
+                string[] unusedColumns = { "Barcode", "Weight", "Dimensions" };
                 foreach (var col in unusedColumns)
                 {
                     if (ColumnExists(connection, "Products", col))
@@ -673,12 +913,56 @@ namespace FashionStore.Data
             }
         }
 
+        private static void CreateProductVariantsTable(MySqlConnection connection)
+        {
+            try
+            {
+                string createTableCmd = @"CREATE TABLE IF NOT EXISTS ProductVariants (
+                    Id INT AUTO_INCREMENT PRIMARY KEY,
+                    ProductId INT NOT NULL,
+                    Size VARCHAR(50) NULL,
+                    Color VARCHAR(50) NULL,
+                    Sku VARCHAR(100) NULL,
+                    Barcode VARCHAR(100) NULL,
+                    StockQuantity INT DEFAULT 0,
+                    PriceAdjustment DECIMAL(15,2) DEFAULT 0,
+                    FOREIGN KEY (ProductId) REFERENCES Products(Id) ON DELETE CASCADE,
+                    UNIQUE KEY idx_barcode (Barcode),
+                    INDEX idx_product (ProductId)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
+
+                ExecuteNonQuery(connection, createTableCmd);
+
+                // Migrate existing stock to variants if variants table was empty
+                var count = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM ProductVariants");
+                if (count == 0)
+                {
+                    string migrateSql = @"
+                        INSERT INTO ProductVariants (ProductId, Size, Color, Sku, Barcode, StockQuantity)
+                        SELECT Id, 'Default', 'Default', Code, Code, StockQuantity
+                        FROM Products
+                        WHERE StockQuantity > 0 OR (Code IS NOT NULL AND Code <> '');";
+                    int migrated = ExecuteNonQuery(connection, migrateSql);
+                    if (migrated > 0)
+                    {
+                        Debug.WriteLine($"Migrated {migrated} products to default variants.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error creating ProductVariants table: {ex.Message}");
+            }
+        }
+
         private static bool ColumnExists(MySqlConnection connection, string tableName, string columnName)
         {
             try
             {
-                string checkCmd = $"SHOW COLUMNS FROM {tableName} LIKE '{columnName}';";
-                var result = connection.ExecuteScalar<string>(checkCmd);
+                // Note: Table and Column names cannot be parameterized in MySQL SHOW commands using standard parameters,
+                // but since these are coming from internal migration literals, we keep them but clean the usage.
+                string checkCmd = "SHOW COLUMNS FROM " + tableName + " LIKE @Col;";
+                var result = connection.ExecuteScalar<string>(checkCmd, new { Col = columnName });
                 return result != null;
             }
             catch
@@ -687,9 +971,9 @@ namespace FashionStore.Data
             }
         }
 
-        private static int ExecuteNonQuery(MySqlConnection connection, string sql)
+        private static int ExecuteNonQuery(MySqlConnection connection, string sql, object? param = null)
         {
-            return connection.Execute(sql);
+            return connection.Execute(sql, param);
         }
     }
 }

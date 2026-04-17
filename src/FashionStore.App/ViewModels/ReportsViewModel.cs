@@ -54,6 +54,12 @@ namespace FashionStore.App.ViewModels
         private string _revenueText = "";
         public string RevenueText { get => _revenueText; set => SetProperty(ref _revenueText, value); }
 
+        private string _costText = "";
+        public string CostText { get => _costText; set => SetProperty(ref _costText, value); }
+
+        private string _profitText = "";
+        public string ProfitText { get => _profitText; set => SetProperty(ref _profitText, value); }
+
         private string _lastUpdateText = "";
         public string LastUpdateText { get => _lastUpdateText; set => SetProperty(ref _lastUpdateText, value); }
 
@@ -194,12 +200,23 @@ namespace FashionStore.App.ViewModels
             CanLast = _pagination.CanGoLast;
         }
 
-        private void RefreshKPIs()
+        private async void RefreshKPIs()
         {
             try
             {
                 TotalInvoicesText = $"{_pagination.TotalItems} hóa đơn";
-                RevenueText = $"{_allInvoices.Sum(x => x.Total):N2}₫";
+                RevenueText = $"{_allInvoices.Sum(x => x.Total):N0}₫";
+
+                // For cost and profit, we use the service to get range-based accurate data
+                var from = FromDate ?? DateTime.Today.AddYears(-1);
+                var to = ToDate?.AddDays(1).AddTicks(-1) ?? DateTime.Now;
+
+                var cost = await System.Threading.Tasks.Task.Run(() => InvoiceService.GetCostBetween(from, to));
+                var profit = await System.Threading.Tasks.Task.Run(() => InvoiceService.GetProfitBetween(from, to));
+
+                CostText = $"{cost:N0}₫";
+                ProfitText = $"{profit:N0}₫";
+                
                 LastUpdateText = DateTime.Now.ToString("HH:mm:ss dd/MM/yyyy");
             }
             catch { }

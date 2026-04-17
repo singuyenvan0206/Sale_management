@@ -1,0 +1,85 @@
+@model IEnumerable<FashionStore.Core.Models.Promotion>
+@{
+    ViewData["Title"] = "Quản lý khuyến mãi";
+}
+
+<div class="header-actions animate-in" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+        <h1 class="gradient-text">Chương trình khuyến mãi</h1>
+        <p style="color: var(--text-muted);">Quản lý Flash Sales, mua 1 tặng 1 (BOGO) và Combos.</p>
+    </div>
+    <a asp-action="Create" class="btn-primary" style="text-decoration: none;"><i class="fas fa-bullhorn"></i> Tạo chương trình</a>
+</div>
+
+<div class="glass animate-in" style="animation-delay: 0.1s;">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Tên chương trình</th>
+                    <th>Loại</th>
+                    <th>Chi tiết</th>
+                    <th>Thời hạn</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var promo in Model)
+                {
+                    <tr class="glass-hover-row">
+                        <td style="font-weight: 700;">@promo.Name</td>
+                        <td>
+                            @switch (promo.Type)
+                            {
+                                case "FlashSale":
+                                    <span style="color: #f59e0b;"><i class="fas fa-bolt"></i> Flash Sale</span>
+                                    break;
+                                case "BOGO":
+                                    <span style="color: #ec4899;"><i class="fas fa-gift"></i> BOGO</span>
+                                    break;
+                                case "Combo":
+                                    <span style="color: #6366f1;"><i class="fas fa-layer-group"></i> Combo</span>
+                                    break;
+                                default:
+                                    <span>@promo.Type</span>
+                                    break;
+                            }
+                        </td>
+                        <td style="font-weight: 500;">@promo.PromotionDetails</td>
+                        <td style="font-size: 0.875rem;">
+                            <div style="color: #10b981;">@promo.StartDate.ToString("dd/MM/yy")</div>
+                            <div style="color: #ef4444;">@promo.EndDate.ToString("dd/MM/yy")</div>
+                        </td>
+                        <td>
+                            @if (promo.IsActive && promo.StartDate <= DateTime.Now && promo.EndDate >= DateTime.Now)
+                            {
+                                <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">Đang chạy</span>
+                            }
+                            else if (promo.EndDate < DateTime.Now)
+                            {
+                                <span style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">Kết thúc</span>
+                            }
+                            else
+                            {
+                                <span style="background: rgba(255, 255, 255, 0.05); color: var(--text-muted); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem;">Chờ / Tạm dừng</span>
+                            }
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <a asp-action="Edit" asp-route-id="@promo.Id" class="nav-link" style="padding: 0.4rem; color: var(--text-muted);">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@promo.Id" method="post" onsubmit="return confirm('Xoá chương trình này?')">
+                                    <button type="submit" style="background:transparent; border:none; color:#ef4444; cursor:pointer; padding:0.4rem;">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

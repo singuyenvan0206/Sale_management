@@ -1,0 +1,52 @@
+@model FashionStore.Core.Models.Category
+@{
+    ViewData["Title"] = "Thêm danh mục sản phẩm";
+}
+
+<div class="animate-in">
+    <div style="margin-bottom: 2rem;">
+        <a asp-action="Index" style="color: var(--text-muted); text-decoration: none;"><i class="fas fa-arrow-left"></i> Quay lại danh mục</a>
+    </div>
+
+    <div class="glass" style="max-width: 600px; margin: 0 auto; padding: 2.5rem; border: 1px solid var(--glass-border); background: #fff;">
+        <h2 class="gradient-text" style="margin-bottom: 2rem;">Thêm danh mục mới</h2>
+        
+        <form asp-action="Create" method="post" style="display: flex; flex-direction: column; gap: 1.5rem;">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="glass" style="background: rgba(239, 68, 68, 0.1); border-color: #ef4444; color: #ef4444; padding: 1rem; border-radius: 8px;">
+                    <div asp-validation-summary="All"></div>
+                </div>
+            }
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Tên danh mục</label>
+                <input asp-for="Name" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" placeholder="Ví dụ: Áo sơ mi" required />
+                <span asp-validation-for="Name" style="color: #ef4444; font-size: 0.8rem;"></span>
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Thuế (%)</label>
+                <input asp-for="TaxPercent" type="number" step="0.01" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" placeholder="Ví dụ: 8.00" required />
+                <span asp-validation-for="TaxPercent" style="color: #ef4444; font-size: 0.8rem;"></span>
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Mô tả</label>
+                <textarea asp-for="Description" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px; min-height: 100px;" placeholder="Thông tin chi tiết về danh mục này..."></textarea>
+                <span asp-validation-for="Description" style="color: #ef4444; font-size: 0.8rem;"></span>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <input asp-for="IsActive" type="checkbox" style="width: 1.2rem; height: 1.2rem;" />
+                <label asp-for="IsActive" style="color: var(--text-main); font-weight: 600;">Kích hoạt danh mục này</label>
+            </div>
+
+            <div style="margin-top: 1rem;">
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 1rem; font-weight: 700; letter-spacing: 1px;">
+                    <i class="fas fa-plus"></i> TẠO DANH MỤC
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,43 +1,54 @@
-using Dapper;
+using FashionStore.Core.Interfaces;
 using FashionStore.Core.Models;
-using FashionStore.Core.Settings;
-using MySql.Data.MySqlClient;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace FashionStore.Services
 {
-    public static class SupplierService
+    public class SupplierService : ISupplierService
     {
-        private static string ConnectionString => SettingsManager.BuildConnectionString();
+        private readonly ISupplierRepository _supplierRepository;
 
-        public static List<Supplier> GetAllSuppliers()
+        public SupplierService(ISupplierRepository supplierRepository)
         {
-            using var connection = new MySqlConnection(ConnectionString);
-            return connection.Query<Supplier>("SELECT * FROM Suppliers ORDER BY Id").ToList();
+            _supplierRepository = supplierRepository;
         }
 
-        public static bool AddSupplier(Supplier supplier)
+        public async Task<IEnumerable<Supplier>> GetAllSuppliersAsync()
         {
-            using var connection = new MySqlConnection(ConnectionString);
-            string sql = "INSERT INTO Suppliers (Name, ContactName, Phone, Email, Address) VALUES (@Name, @ContactName, @Phone, @Email, @Address)";
-            return connection.Execute(sql, supplier) > 0;
+            return await _supplierRepository.GetAllAsync();
         }
 
-        public static bool UpdateSupplier(Supplier supplier)
+        public async Task<Supplier?> GetSupplierByIdAsync(int id)
         {
-            using var connection = new MySqlConnection(ConnectionString);
-            string sql = "UPDATE Suppliers SET Name=@Name, ContactName=@ContactName, Phone=@Phone, Email=@Email, Address=@Address WHERE Id=@Id";
-            return connection.Execute(sql, supplier) > 0;
+            return await _supplierRepository.GetByIdAsync(id);
         }
 
-        public static bool DeleteSupplier(int id)
+        public async Task<bool> AddSupplierAsync(Supplier supplier)
         {
-            using var connection = new MySqlConnection(ConnectionString);
-            string checkSql = "SELECT COUNT(*) FROM Products WHERE SupplierId = @Id";
-            long count = connection.ExecuteScalar<long>(checkSql, new { Id = id });
-            if (count > 0) return false;
-
-            string sql = "DELETE FROM Suppliers WHERE Id=@Id";
-            return connection.Execute(sql, new { Id = id }) > 0;
+            if (string.IsNullOrWhiteSpace(supplier.Name)) return false;
+            return await _supplierRepository.AddAsync(supplier);
         }
+
+        public async Task<bool> UpdateSupplierAsync(Supplier supplier)
+        {
+            if (supplier.Id <= 0 || string.IsNullOrWhiteSpace(supplier.Name)) return false;
+            return await _supplierRepository.UpdateAsync(supplier);
+        }
+
+        public async Task<bool> DeleteSupplierAsync(int id)
+        {
+            if (await _supplierRepository.HasProductsAsync(id)) return false;
+            return await _supplierRepository.DeleteAsync(id);
+        }
+
+        // Bridge for legacy static calls
+        private static ISupplierService GetService() => ServiceLocator.ServiceProvider?.GetRequiredService<ISupplierService>() ?? throw new InvalidOperationException("DI not initialized");
+        private static T RunSync<T>(Func<Task<T>> func) => Task.Run(func).GetAwaiter().GetResult();
+
+        public static List<Supplier> GetAllSuppliers() => RunSync(() => GetService().GetAllSuppliersAsync()).ToList();
+        public static Supplier? GetSupplierById(int id) => RunSync(() => GetService().GetSupplierByIdAsync(id));
+        public static bool AddSupplier(Supplier supplier) => RunSync(() => GetService().AddSupplierAsync(supplier));
+        public static bool UpdateSupplier(Supplier supplier) => RunSync(() => GetService().UpdateSupplierAsync(supplier));
+        public static bool DeleteSupplier(int id) => RunSync(() => GetService().DeleteSupplierAsync(id));
     }
 }

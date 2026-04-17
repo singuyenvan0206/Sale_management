@@ -5,6 +5,8 @@ using FashionStore.Core.Settings;
 using FashionStore.Services;
 using System.Windows;
 using System.Windows.Input;
+using FashionStore.Core.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 namespace FashionStore.App.ViewModels
 {
     public class SettingsViewModel : BaseViewModel
@@ -48,6 +50,9 @@ namespace FashionStore.App.ViewModels
         private string _accountHolder = "";
         public string AccountHolder { get => _accountHolder; set => SetProperty(ref _accountHolder, value); }
 
+        private string _sePayToken = "";
+        public string SePayToken { get => _sePayToken; set => SetProperty(ref _sePayToken, value); }
+
         // -------- Role Permissions --------
         private bool _isTierSettingsVisible = true;
         public bool IsTierSettingsVisible { get => _isTierSettingsVisible; set => SetProperty(ref _isTierSettingsVisible, value); }
@@ -59,15 +64,20 @@ namespace FashionStore.App.ViewModels
         public ICommand OpenTierSettingsCommand { get; }
         public ICommand SaveGeneralSettingsCommand { get; }
 
+        private readonly ISystemSettingsService _settingsService;
+
 
         // Password is passed as a parameter from code-behind
         public SettingsViewModel()
         {
             TestConnectionCommand = new RelayCommand(p => TestConnection(p?.ToString() ?? ""));
             SaveDbSettingsCommand = new RelayCommand(p => SaveDbSettings(p?.ToString() ?? ""));
-            SavePaymentSettingsCommand = new RelayCommand(_ => SavePaymentSettings());
+            SavePaymentSettingsCommand = new RelayCommand(p => SavePaymentSettings(p?.ToString() ?? ""));
             OpenTierSettingsCommand = new RelayCommand(_ => OpenTierSettings());
             SaveGeneralSettingsCommand = new RelayCommand(p => SaveGeneralSettings(p?.ToString() ?? ""));
+
+            _settingsService = App.ServiceProvider?.GetService<ISystemSettingsService>()
+                               ?? throw new Exception("SystemSettingsService not found");
 
 
             LoadDbSettings();
@@ -84,13 +94,21 @@ namespace FashionStore.App.ViewModels
             // Password loaded in code-behind via PasswordBox
         }
 
-        private void LoadPaymentSettings()
+        private async void LoadPaymentSettings()
         {
             var ps = PaymentSettingsManager.Load();
             EnableQRCode = ps.EnableQRCode;
             BankAccount = ps.BankAccount;
             BankCode = ps.BankCode;
             AccountHolder = ps.AccountHolder;
+            
+            // Load SePay Token from DB
+            SePayToken = await _settingsService.GetSePayTokenAsync() ?? "";
+        }
+
+        public async Task<string?> GetSePayTokenAsync()
+        {
+            return await _settingsService.GetSePayTokenAsync();
         }
 
         private void ApplyRolePermissions()
@@ -129,19 +147,23 @@ namespace FashionStore.App.ViewModels
                 MessageBox.Show(error, "Lưu thất bại", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
-        private void SavePaymentSettings()
+        private async void SavePaymentSettings(string token)
         {
             if (string.IsNullOrWhiteSpace(BankAccount)) { MessageBox.Show("Vui lòng nhập số tài khoản ngân hàng.", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
             if (string.IsNullOrWhiteSpace(BankCode)) { MessageBox.Show("Vui lòng nhập mã ngân hàng.", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
 
             var ps = new PaymentSettings { EnableQRCode = EnableQRCode, BankAccount = BankAccount, BankCode = BankCode, BankName = "Ngân hàng", AccountHolder = AccountHolder };
-            if (PaymentSettingsManager.Save(ps))
+            
+            bool fileSaved = PaymentSettingsManager.Save(ps);
+            bool dbSaved = await _settingsService.SaveSePayTokenAsync(token);
+
+            if (fileSaved && dbSaved)
             {
-                StatusText = "Thông tin ngân hàng đã được lưu thành công!";
-                MessageBox.Show("Thông tin ngân hàng đã được lưu thành công!", "Đã lưu", MessageBoxButton.OK, MessageBoxImage.Information);
+                StatusText = "Thông tin thanh toán đã được lưu thành công vào Database!";
+                MessageBox.Show("Thông tin thanh toán đã được lưu thành công!", "Đã lưu", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
-                MessageBox.Show("Không thể lưu thông tin ngân hàng. Vui lòng thử lại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Có lỗi xảy ra khi lưu thông tin. Vui lòng thử lại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         private void SaveGeneralSettings(string password)

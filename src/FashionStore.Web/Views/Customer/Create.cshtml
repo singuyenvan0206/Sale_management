@@ -1,0 +1,57 @@
+@model FashionStore.Core.Models.Customer
+@{
+    ViewData["Title"] = "Thêm khách hàng mới";
+}
+
+<div class="animate-in">
+    <div style="margin-bottom: 2rem;">
+        <a asp-action="Index" style="color: var(--text-muted); text-decoration: none;"><i class="fas fa-arrow-left"></i> Quay lại danh sách</a>
+    </div>
+
+    <div class="glass" style="max-width: 800px; margin: 0 auto; padding: 2.5rem;">
+        <h2 class="gradient-text" style="margin-bottom: 2rem;">Thông tin khách hàng</h2>
+        
+        <form asp-action="Create" method="post" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div style="grid-column: span 2;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Họ và tên</label>
+                <input asp-for="Name" class="glass" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); border-radius: 8px;" required />
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Số điện thoại</label>
+                <input asp-for="Phone" class="glass" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); border-radius: 8px;" required />
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Email</label>
+                <input asp-for="Email" type="email" class="glass" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); border-radius: 8px;" />
+            </div>
+
+            <div style="grid-column: span 2;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Địa chỉ</label>
+                <input asp-for="Address" class="glass" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); border-radius: 8px;" />
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Hạng khách hàng</label>
+                <select asp-for="CustomerType" class="glass" style="width: 100%; padding: 0.75rem; background: var(--bg-color); color: white; border: 1px solid var(--glass-border); border-radius: 8px;">
+                    <option value="Normal">Thường</option>
+                    <option value="Silver">Bạc</option>
+                    <option value="Gold">Vàng</option>
+                    <option value="VIP">VIP</option>
+                </select>
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Điểm tích luỹ</label>
+                <input asp-for="Points" type="number" class="glass" style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); border-radius: 8px;" />
+            </div>
+
+            <div style="grid-column: span 2; margin-top: 1rem;">
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 1rem;">
+                    <i class="fas fa-save"></i> LƯU THÀNH VIÊN
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

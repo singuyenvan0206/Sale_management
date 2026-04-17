@@ -1,0 +1,123 @@
+@model FashionStore.Core.Models.Invoice
+@{
+    ViewData["Title"] = "Chi tiết hoá đơn #" + Model.Id.ToString("D5");
+    var items = ViewBag.Items as IEnumerable<FashionStore.Core.Models.InvoiceItem>;
+}
+
+<div class="animate-in">
+    <div style="margin-bottom: 2rem;">
+        <a asp-action="Index" style="color: var(--text-muted); text-decoration: none;"><i class="fas fa-arrow-left"></i> Quay lại danh sách</a>
+    </div>
+
+    <div class="glass" style="max-width: 800px; margin: 0 auto; padding: 4rem;">
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <h1 class="gradient-text" style="font-size: 2.5rem;"><i class="fas fa-gem"></i> FASHION STORE</h1>
+            <p style="color: var(--text-muted);">Hoá đơn bán lẻ</p>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-bottom: 3rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 2rem;">
+            <div>
+                <p style="text-transform: uppercase; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">Thông tin khách hàng</p>
+                <h3 style="margin-bottom: 0.25rem;">@Model.CustomerName</h3>
+                <p>@Model.CustomerPhone</p>
+                <p style="font-size: 0.875rem; color: var(--text-muted);">@Model.CustomerAddress</p>
+            </div>
+            <div style="text-align: right;">
+                <p style="text-transform: uppercase; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">Thông tin hoá đơn</p>
+                <h3 style="color: var(--primary-color);">#@Model.Id.ToString("D5")</h3>
+                <p>@Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")</p>
+                <p style="font-size: 0.875rem;">Nhân viên: <strong>Admin</strong></p>
+            </div>
+        </div>
+
+        <div class="table-container" style="margin-bottom: 3rem;">
+            <table style="width: 100%;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--glass-border);">
+                        <th style="padding: 1rem 0;">Sản phẩm</th>
+                        <th style="padding: 1rem 0; text-align: center;">SL</th>
+                        <th style="padding: 1rem 0; text-align: right;">Đơn giá</th>
+                        <th style="padding: 1rem 0; text-align: right;">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in items)
+                    {
+                        <tr>
+                            <td style="padding: 1rem 0;">@item.ProductName</td>
+                            <td style="padding: 1rem 0; text-align: center;">@item.Quantity</td>
+                            <td style="padding: 1rem 0; text-align: right;">@item.UnitPrice.ToString("C0")</td>
+                            <td style="padding: 1rem 0; text-align: right; font-weight: 600;">@item.LineTotal.ToString("C0")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end;">
+            <div style="width: 300px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span style="color: var(--text-muted);">Tạm tính:</span>
+                    <span>@Model.Subtotal.ToString("C0")</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span style="color: var(--text-muted);">Thuế (@Model.TaxPercent%):</span>
+                    <span>@Model.TaxAmount.ToString("C0")</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; color: #ef4444;">
+                    <span>Giảm giá:</span>
+                    <span>- @Model.Discount.ToString("C0")</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--glass-border); padding-top: 1rem; font-size: 1.5rem; font-weight: 800;">
+                    <span class="gradient-text">TỔNG CỘNG:</span>
+                    <span>@Model.Total.ToString("C0")</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 1rem; font-weight: 600; color: #10b981;">
+                    <span>Đã thanh toán:</span>
+                    <span>@Model.Paid.ToString("C0")</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 4rem; text-align: center; border-top: 1px dashed var(--glass-border); padding-top: 2rem;">
+            <div id="invoice-qr" style="display: flex; justify-content: center; margin-bottom: 1rem;"></div>
+            <p style="font-style: italic; color: var(--text-muted);">Cảm ơn quý khách đã mua sắm tại Fashion Store!</p>
+            <div class="no-print" style="margin-top: 2rem;">
+                <button onclick="window.print()" class="btn-primary" style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);"><i class="fas fa-print"></i> In hoá đơn</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @@media screen {
+        #invoice-qr { display: flex !important; }
+    }
+    @@media print {
+        body { background: white !important; color: black !important; padding: 0 !important; margin: 0 !important; }
+        .no-print, aside, header, .header-actions, .nav-link { display: none !important; }
+        .glass { 
+            position: absolute; left: 0; top: 0; width: 100%; 
+            border: none !important; box-shadow: none !important; 
+            backdrop-filter: none !important; background: white !important; 
+            color: black !important; padding: 1rem !important;
+        }
+        .gradient-text { -webkit-text-fill-color: black !important; background: none !important; color: black !important; }
+        #invoice-qr { display: flex !important; }
+        table { border-collapse: collapse !important; }
+        th, td { border-bottom: 1px solid #ddd !important; padding: 8px !important; color: black !important; }
+    }
+</style>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            new QRCode(document.getElementById("invoice-qr"), {
+                text: window.location.href,
+                width: 100,
+                height: 100
+            });
+        });
+    </script>
+}

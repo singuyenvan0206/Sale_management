@@ -10,5 +10,7 @@ namespace FashionStore.Core.Interfaces
         Task<IEnumerable<(string Name, decimal TotalSpent)>> GetTopCustomersAsync(int topN);
         Task<bool> HasInvoicesAsync(int customerId);
         Task<int> RefreshAllLoyaltyAsync(decimal spendPerPoint, int silverMin, int goldMin, int vipMin);
+        Task<int> BulkImportCustomersAsync(List<Customer> customers);
+        Task<IEnumerable<(int InvoiceId, DateTime CreatedAt, int ItemCount, decimal Total)>> GetCustomerPurchaseHistoryAsync(int customerId);
     }
 }

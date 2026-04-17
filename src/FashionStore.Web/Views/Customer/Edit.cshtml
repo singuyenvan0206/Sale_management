@@ -1,0 +1,94 @@
+@model FashionStore.Core.Models.Customer
+@{
+    ViewData["Title"] = "Chỉnh sửa khách hàng";
+}
+
+<div class="animate-in">
+    <div style="margin-bottom: 2rem;">
+        <a asp-action="Index" style="color: var(--text-muted); text-decoration: none;"><i class="fas fa-arrow-left"></i> Quay lại danh sách</a>
+    </div>
+
+    <div class="glass" style="max-width: 800px; margin: 0 auto; padding: 2.5rem; border: 1px solid var(--glass-border); background: #fff;">
+        <h2 class="gradient-text" style="margin-bottom: 2rem;">Chỉnh sửa thông tin khách hàng</h2>
+        
+        <form asp-action="Edit" method="post" style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <input type="hidden" asp-for="Id" />
+            
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="glass" style="background: rgba(239, 68, 68, 0.1); border-color: #ef4444; color: #ef4444; padding: 1rem; border-radius: 8px;">
+                    <div asp-validation-summary="All"></div>
+                </div>
+            }
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Họ tên khách hàng</label>
+                    <input asp-for="Name" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" placeholder="Ví dụ: Trần Văn C" required />
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Số điện thoại</label>
+                    <input asp-for="Phone" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" placeholder="09xx xxx xxx" />
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Email</label>
+                    <input asp-for="Email" type="email" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" placeholder="khachhang@example.com" />
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Hạng khách hàng</label>
+                    <select asp-for="CustomerType" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;">
+                        <option value="Regular">Regular (Thân thiết)</option>
+                        <option value="Silver">Silver (Bạc)</option>
+                        <option value="Gold">Gold (Vàng)</option>
+                        <option value="Platinum">Platinum (Bạch kim)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Giới tính</label>
+                    <select asp-for="Gender" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;">
+                        <option value="Nam">Nam</option>
+                        <option value="Nữ">Nữ</option>
+                        <option value="Khác">Khác</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Ngày sinh</label>
+                    <input asp-for="DateOfBirth" type="date" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" />
+                </div>
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">Địa chỉ</label>
+                <input asp-for="Address" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" placeholder="Số nhà, tên đường, quận/huyện..." />
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div class="glass" style="padding: 1rem; background: rgba(59, 130, 246, 0.1); border-color: var(--secondary-color);">
+                    <small style="color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Điểm tích lũy</small>
+                    <strong style="font-size: 1.25rem; color: var(--secondary-color);">@Model.Points điểm</strong>
+                </div>
+                <div class="glass" style="padding: 1rem; background: rgba(16, 185, 129, 0.1); border-color: #10b981;">
+                    <small style="color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Tổng chi tiêu</small>
+                    <strong style="font-size: 1.25rem; color: #10b981;">@Model.TotalSpent.ToString("N0")₫</strong>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <input asp-for="IsActive" type="checkbox" style="width: 1.2rem; height: 1.2rem;" />
+                <label asp-for="IsActive" style="color: var(--text-main); font-weight: 600;">Khách hàng đang hoạt động</label>
+            </div>
+
+            <div style="margin-top: 1rem;">
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 1rem; font-weight: 700; letter-spacing: 1px;">
+                    <i class="fas fa-save"></i> CẬP NHẬT THÔNG TIN
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

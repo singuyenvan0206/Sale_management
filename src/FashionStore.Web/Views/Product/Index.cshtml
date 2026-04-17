@@ -1,0 +1,131 @@
+@model FashionStore.Core.Models.PaginatedList<FashionStore.Core.Models.Product>
+@{
+    ViewData["Title"] = "Quản lý sản phẩm";
+}
+
+<div class="header-actions animate-in" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+        <h1 class="gradient-text">Kho sản phẩm</h1>
+        <p style="color: var(--text-muted);">Quản lý tồn kho và thông tin sản phẩm.</p>
+    </div>
+    <div style="display: flex; gap: 1rem;">
+        <a asp-action="ExportCsv" class="nav-link glass" style="border: none; padding: 0.75rem 1.5rem; color: var(--primary-color); cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; font-weight: 600;">
+            <i class="fas fa-file-export"></i> Xuất CSV
+        </a>
+        <button onclick="document.getElementById('csvFileInput').click()" class="nav-link glass" style="border: none; padding: 0.75rem 1.5rem; color: var(--primary-color); cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 600;">
+            <i class="fas fa-file-import"></i> Nhập CSV
+        </button>
+        <form id="csvImportForm" asp-action="ImportCsv" method="post" enctype="multipart/form-data" style="display: none;">
+            <input type="file" id="csvFileInput" name="file" accept=".csv" onchange="document.getElementById('csvImportForm').submit()" />
+        </form>
+        <a asp-action="Create" class="btn-primary" style="text-decoration: none;"><i class="fas fa-plus"></i> Thêm sản phẩm mới</a>
+    </div>
+</div>
+
+<div class="glass animate-in" style="animation-delay: 0.1s;">
+    <div class="table-container">
+        <table id="productTable">
+            <thead>
+                <tr>
+                    <th style="width: 60px;">Ảnh</th>
+                    <th>Mã sản phẩm</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Danh mục</th>
+                    <th>Giá bán</th>
+                    <th>Tồn kho</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var product in Model.Items)
+                {
+                    <tr class="glass-hover-row">
+                        <td>
+                            <div style="width: 50px; height: 50px; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center;">
+                                @if (!string.IsNullOrEmpty(product.ImageUrl))
+                                {
+                                    <img src="@product.ImageUrl" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://placehold.co/50x50/333/666?text=?'" />
+                                }
+                                else
+                                {
+                                    <i class="fas fa-image" style="color: var(--glass-border);"></i>
+                                }
+                            </div>
+                        </td>
+                        <td style="font-weight: 600; color: var(--primary-color);">@product.Code</td>
+                        <td>@product.Name</td>
+                        <td><span style="background: rgba(255,255,255,0.05); padding: 0.2rem 0.6rem; border-radius: 6px;">@product.CategoryName</span></td>
+                        <td style="font-weight: 700;">@product.SalePrice.ToString("C0")</td>
+                        <td>
+                            @if (product.StockQuantity <= 5)
+                            {
+                                <span style="color: #ef4444; font-weight: 600;"><i class="fas fa-exclamation-triangle"></i> @product.StockQuantity (Thấp)</span>
+                            }
+                            else
+                            {
+                                <span style="color: #10b981;">@product.StockQuantity</span>
+                            }
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <a asp-action="Edit" asp-route-id="@product.Id" class="nav-link" style="padding: 0.4rem; color: var(--text-muted);">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a asp-action="Details" asp-route-id="@product.Id" class="nav-link" style="padding: 0.4rem; color: var(--text-muted);">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div class="pagination-container" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-top: 1px solid var(--glass-border);">
+            <div class="pagination-info" style="color: var(--text-muted); font-size: 0.9rem;">
+                Hiển thị trang @Model.PageIndex / @Model.TotalPages (Tổng số @Model.TotalCount sản phẩm)
+            </div>
+            <div class="pagination-controls" style="display: flex; gap: 0.5rem;">
+                <a asp-action="Index" 
+                   asp-route-page="@(Model.PageIndex - 1)" 
+                   class="nav-link glass @(Model.HasPreviousPage ? "" : "disabled")" 
+                   style="padding: 0.5rem 1rem; text-decoration: none; border-radius: 8px; @(Model.HasPreviousPage ? "" : "opacity: 0.3; pointer-events: none;")">
+                    <i class="fas fa-chevron-left"></i> Trước
+                </a>
+                
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    if (i == 1 || i == Model.TotalPages || (i >= Model.PageIndex - 2 && i <= Model.PageIndex + 2))
+                    {
+                        <a asp-action="Index" 
+                           asp-route-page="@i" 
+                           class="nav-link glass @(i == Model.PageIndex ? "active" : "")" 
+                           style="padding: 0.5rem 1rem; text-decoration: none; border-radius: 8px; @(i == Model.PageIndex ? "background: var(--primary-color); color: white;" : "")">
+                            @i
+                        </a>
+                    }
+                    else if (i == 2 || i == Model.TotalPages - 1)
+                    {
+                        <span style="color: var(--text-muted); align-self: center;">...</span>
+                    }
+                }
+
+                <a asp-action="Index" 
+                   asp-route-page="@(Model.PageIndex + 1)" 
+                   class="nav-link glass @(Model.HasNextPage ? "" : "disabled")" 
+                   style="padding: 0.5rem 1rem; text-decoration: none; border-radius: 8px; @(Model.HasNextPage ? "" : "opacity: 0.3; pointer-events: none;")">
+                    Tiếp <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .glass-hover-row:hover {
+        background: rgba(255, 255, 255, 0.02);
+    }
+</style>

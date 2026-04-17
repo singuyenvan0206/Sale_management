@@ -1,6 +1,7 @@
 using FashionStore.App.Core;
 using FashionStore.App.Views;
 using FashionStore.Core.Models;
+using FashionStore.Core.Interfaces;
 using FashionStore.Core.Settings;
 using FashionStore.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,6 +38,8 @@ namespace FashionStore.App.ViewModels
         private readonly IInvoiceService _invoiceService;
         private readonly ICustomerService _customerService;
         private readonly IUserService _userService;
+        private readonly IProductService _productService;
+        private readonly IBankStatementService _bankStatementService;
 
         #region Properties
 
@@ -81,6 +84,13 @@ namespace FashionStore.App.ViewModels
                     catch (Exception ex) { System.Windows.MessageBox.Show($"Lỗi chọn hiển thị tệp: {ex.Message}"); }
                 }
             }
+        }
+
+        private string _barcodeText = "";
+        public string BarcodeText
+        {
+            get => _barcodeText;
+            set => SetProperty(ref _barcodeText, value);
         }
 
         private string _loyaltyTierText = "Regular";
@@ -201,6 +211,15 @@ namespace FashionStore.App.ViewModels
         private bool _isQRPlaceholderVisible = true;
         public bool IsQRPlaceholderVisible { get => _isQRPlaceholderVisible; set => SetProperty(ref _isQRPlaceholderVisible, value); }
 
+        private bool _isVerifyingPayment;
+        public bool IsVerifyingPayment { get => _isVerifyingPayment; set => SetProperty(ref _isVerifyingPayment, value); }
+
+        private string _verificationStatusText = "";
+        public string VerificationStatusText { get => _verificationStatusText; set => SetProperty(ref _verificationStatusText, value); }
+
+        private string _currentQRDescription = "";
+        public string CurrentQRDescription { get => _currentQRDescription; set => SetProperty(ref _currentQRDescription, value); }
+
         #region POS Properties
         private string _productSearchText = "";
         public string ProductSearchText
@@ -309,6 +328,9 @@ namespace FashionStore.App.ViewModels
         public ICommand RefreshOrdersCommand { get; }
         public ICommand ReprintInvoiceCommand { get; }
         public ICommand RefundInvoiceCommand { get; }
+        public ICommand ScanBarcodeCommand { get; }
+        public ICommand VerifyPaymentCommand { get; }
+        public ICommand OpenWebcamScannerCommand { get; }
         #endregion
 
         public InvoiceManagementViewModel() : this(null!) { }
@@ -316,7 +338,9 @@ namespace FashionStore.App.ViewModels
         public InvoiceManagementViewModel(ICalculationService? calculationService = null, 
                                          IInvoiceService? invoiceService = null,
                                          ICustomerService? customerService = null,
-                                         IUserService? userService = null)
+                                         IUserService? userService = null,
+                                         IProductService? productService = null,
+                                         IBankStatementService? bankStatementService = null)
         {
             _calculationService = calculationService ??
                                  (App.ServiceProvider?.GetService<ICalculationService>() ?? new CalculationService());
@@ -329,6 +353,9 @@ namespace FashionStore.App.ViewModels
 
             _userService = userService ??
                            (App.ServiceProvider?.GetService<IUserService>() ?? ServiceLocator.ServiceProvider?.GetService<IUserService>()!);
+
+            _productService = productService ??
+                            (App.ServiceProvider?.GetService<IProductService>() ?? ServiceLocator.ServiceProvider?.GetService<IProductService>()!);
 
             SelectCustomerCommand = new RelayCommand(p =>
             {
@@ -354,6 +381,12 @@ namespace FashionStore.App.ViewModels
             RefreshOrdersCommand = new RelayCommand(_ => _ = LoadInvoicesAsync());
             ReprintInvoiceCommand = new RelayCommand(_ => ReprintSelectedInvoice());
             RefundInvoiceCommand = new RelayCommand(_ => _ = RefundSelectedInvoiceAsync());
+            ScanBarcodeCommand = new RelayCommand(_ => SelectProductByBarcode(BarcodeText));
+            VerifyPaymentCommand = new RelayCommand(_ => _ = VerifyPaymentAsync());
+            OpenWebcamScannerCommand = new RelayCommand(_ => OpenWebcamScanner());
+
+            _bankStatementService = bankStatementService ??
+                                   (App.ServiceProvider?.GetService<IBankStatementService>() ?? ServiceLocator.ServiceProvider?.GetService<IBankStatementService>()!);
 
             _ = InitializeDataAsync();
         }
@@ -378,6 +411,7 @@ namespace FashionStore.App.ViewModels
             {
                 Id = p.Id,
                 Name = string.IsNullOrWhiteSpace(p.Code) ? p.Name : $"{p.Name} ({p.Code})",
+                Code = p.Code,
                 UnitPrice = p.SalePrice,
                 PromoDiscountPercent = p.PromoDiscountPercent,
                 PromoStartDate = p.PromoStartDate,
@@ -490,6 +524,7 @@ namespace FashionStore.App.ViewModels
                 {
                     Id = p.Id,
                     Name = string.IsNullOrWhiteSpace(p.Code) ? p.Name : $"{p.Name} ({p.Code})",
+                    Code = p.Code,
                     UnitPrice = p.SalePrice,
                     PromoDiscountPercent = p.PromoDiscountPercent,
                     PromoStartDate = p.PromoStartDate,
@@ -689,8 +724,14 @@ namespace FashionStore.App.ViewModels
             ItemCountText = $"{InvoiceItems.Count} mục";
         }
 
-        private void ClearInvoice()
+        private void ClearInvoice(bool showConfirmation = true)
         {
+            if (showConfirmation && InvoiceItems.Count > 0)
+            {
+                var result = MessageBox.Show("Bạn có chắc muốn làm mới hóa đơn? Tất cả mặt hàng đã nhập sẽ bị xóa.", 
+                                          "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result != MessageBoxResult.Yes) return;
+            }
             InvoiceItems.Clear();
             ItemCountText = "0 mục";
         }
@@ -900,8 +941,8 @@ namespace FashionStore.App.ViewModels
                     return;
                 }
 
-                var description = "INV" + Regex.Replace(DateTime.Now.ToString("yyMMdd"), @"[^a-zA-Z0-9]", "");
-                if (description.Length > 8) description = description.Substring(0, 8);
+                var description = "FS" + DateTime.Now.ToString("HHmmss");
+                CurrentQRDescription = description;
 
                 QRCodeImage = QRCodeHelper.GenerateVietQRCode_Safe(
                     paymentSettings.BankCode.ToLower(),
@@ -921,6 +962,50 @@ namespace FashionStore.App.ViewModels
                 IsQRCodeVisible = true;
                 IsQRPlaceholderVisible = true;
                 QRPlaceholderText = "Lỗi tạo QR code";
+            }
+        }
+
+        private async Task VerifyPaymentAsync()
+        {
+            if (IsVerifyingPayment) return;
+
+            decimal totalAmount = decimal.TryParse(TotalText.Replace("₫", "").Replace(".", "").Replace(",", ""), out var t) ? t : 0;
+            if (totalAmount <= 0) return;
+
+            IsVerifyingPayment = true;
+            VerificationStatusText = "🔄 Đang kiểm tra giao dịch...";
+
+            try
+            {
+                // Give the bank a moment to process (optional, but UI feedback is good)
+                await Task.Delay(1000);
+
+                var transaction = await _bankStatementService.VerifyPaymentAsync(totalAmount, CurrentQRDescription);
+
+                if (transaction != null)
+                {
+                    VerificationStatusText = "✅ Đã nhận tiền!";
+                    PaidText = totalAmount.ToString("N0");
+                    UpdateTotals();
+                    
+                    MessageBox.Show($"Xác nhận: Đã nhận {transaction.Amount:N0}đ từ giao dịch {transaction.ReferenceCode}.\nHóa đơn đã sẵn sàng để lưu.", 
+                                    "Thanh toán thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    VerificationStatusText = "❌ Chưa tìm thấy giao dịch.";
+                    MessageBox.Show("Chưa tìm thấy giao dịch khớp với nội dung và số tiền này.\nVui lòng đợi 1-2 phút sau khi chuyển và thử lại.", 
+                                    "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                VerificationStatusText = "⚠️ Lỗi khi kiểm tra.";
+                MessageBox.Show($"Lỗi kết nối ngân hàng: {ex.Message}");
+            }
+            finally
+            {
+                IsVerifyingPayment = false;
             }
         }
 
@@ -949,14 +1034,16 @@ namespace FashionStore.App.ViewModels
                 MessageBox.Show("Vui lòng thêm ít nhất một sản phẩm.", "Xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            if (SelectedCustomer == null)
-            {
-                MessageBox.Show("Vui lòng chọn khách hàng.", "Xác thực", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
             try
             {
+                // -- BANK TRANSFER FLOW --
+                if (SelectedPaymentMethod.Contains("Chuyển khoản"))
+                {
+                    var bw = new BankTransferWindow(this);
+                    var dialogResult = bw.ShowDialog();
+                    if (dialogResult != true) return; // User cancelled or payment not verified
+                }
+
                 var subtotal = InvoiceItems.Sum(item => item.LineTotal);
                 var discountVal = decimal.TryParse(DiscountValueText, out var dv) ? dv : 0m;
                 var manualDiscount = SelectedDiscountMode == "%" ? Math.Round(subtotal * (discountVal / 100m), 2) : discountVal;
@@ -976,6 +1063,13 @@ namespace FashionStore.App.ViewModels
                     })
                     .ToList();
                 var voucherId = SelectedVoucher?.Id;
+                
+                // Safety check for Customer
+                if (SelectedCustomer == null)
+                {
+                    MessageBox.Show("Vui lòng chọn khách hàng trước khi thanh toán.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
                 var customerId = SelectedCustomer.Id;
 
                 var currentUser = Application.Current.Resources["CurrentUser"]?.ToString() ?? "admin";
@@ -1048,7 +1142,7 @@ namespace FashionStore.App.ViewModels
 
                 // Loyalty is already updated in invoice repository transaction.
 
-                ClearInvoice();
+                ClearInvoice(false);
                 DiscountValueText = "0";
                 PaidText = "0";
                 UpdateTotals();
@@ -1076,11 +1170,28 @@ namespace FashionStore.App.ViewModels
 
         private void OpenHistory()
         {
-            // Now switching to the "Quản lý đơn" tab or showing dialog - prefer tab index
-            if (Application.Current.MainWindow?.FindName("MainTabs") is System.Windows.Controls.TabControl tc)
+            try
             {
-                tc.SelectedIndex = 1;
-                _ = LoadInvoicesAsync();
+                // Navigate by opening the dedicated TransactionHistoryWindow as a popup
+                // instead of trying to find a missing TabControl index.
+                var historyWin = new FashionStore.App.Views.TransactionHistoryWindow(SelectedCustomer?.Id);
+                
+                // Try to set owner to the current dashboard if possible
+                if (Application.Current.MainWindow is FashionStore.App.Views.DashboardWindow dashboard)
+                {
+                    historyWin.Owner = dashboard;
+                    historyWin.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                }
+                else
+                {
+                    historyWin.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                }
+                
+                historyWin.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Không thể mở lịch sử giao dịch: {ex.Message}");
             }
         }
 
@@ -1104,17 +1215,25 @@ namespace FashionStore.App.ViewModels
         private void SuspendCurrentOrder()
         {
             if (InvoiceItems.Count == 0) return;
+
+            // Use underlying raw values instead of parsing formatted UI strings
+            var subtotal = InvoiceItems.Sum(item => item.LineTotal);
+            var discountVal = decimal.TryParse(DiscountValueText, out var dv) ? dv : 0m;
+            var discount = _calculationService.CalculateDiscount(subtotal, SelectedDiscountMode, discountVal);
+            var (tier, _) = SelectedCustomer != null ? CustomerService.GetCustomerLoyalty(SelectedCustomer.Id) : ("Regular", 0);
+            var tierDiscount = _calculationService.CalculateTierDiscount(subtotal, TierSettingsManager.GetTierDiscount(tier));
+            var taxAmount = InvoiceItems.Sum(i => _calculationService.CalculateTaxAmount(i.LineTotal, subtotal > 0 ? (discount + tierDiscount) / subtotal : 0, i.CategoryTaxPercent));
             
             var suspended = new SuspendedOrder
             {
                 Customer = SelectedCustomer,
                 Items = InvoiceItems.ToList(),
-                Total = decimal.TryParse(TotalText.Replace("₫", "").Replace(".", "").Replace(",", ""), out var t) ? t : 0,
+                Total = Math.Max(0, subtotal + taxAmount - (discount + tierDiscount)),
                 Note = InvoiceNote
             };
             
             SuspendedOrders.Add(suspended);
-            ClearInvoice();
+            ClearInvoice(false); // Successfully bypasses confirmation and updates ItemCountText
             UpdateTotals();
             MessageBox.Show("Đã tạm dừng đơn hàng.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
         }
@@ -1150,11 +1269,14 @@ namespace FashionStore.App.ViewModels
         #endregion
 
         #region Order Management Logic
-        private async System.Threading.Tasks.Task LoadInvoicesAsync()
+        private async System.Threading.Tasks.Task LoadInvoicesAsync(int? customerId = null)
         {
             try
             {
-                var invoicesTask = _invoiceService.SearchInvoicesAsync(null, null, null, "");
+                // Optionally clear dates when searching for a specific customer history from the POS
+                if (customerId.HasValue) SelectedOrderDate = null;
+
+                var invoicesTask = _invoiceService.SearchInvoicesAsync(null, null, customerId, "");
                 _allInvoices = (await invoicesTask).ToList();
                 FilterOrders();
             }
@@ -1247,6 +1369,69 @@ namespace FashionStore.App.ViewModels
             if (uiText.Contains("Thẻ", StringComparison.OrdinalIgnoreCase)) return "Card";
             return "Cash";
         }
+        private void SelectProductByBarcode(string? barcode)
+        {
+            if (string.IsNullOrWhiteSpace(barcode)) return;
+            barcode = barcode.Trim();
+
+            // 1. Search in local products list (Code)
+            var product = _allProducts.FirstOrDefault(p => p.Code?.Trim() == barcode);
+            if (product != null)
+            {
+                AddProductDirectly(product);
+                BarcodeText = "";
+                return;
+            }
+
+            // 2. Search variants in service
+            _ = System.Threading.Tasks.Task.Run(async () =>
+            {
+                var variant = await _productService.GetVariantByBarcodeAsync(barcode);
+                if (variant != null)
+                {
+                    // Find the base product for this variant in our list
+                    var baseProduct = _allProducts.FirstOrDefault(p => p.Id == variant.ProductId);
+                    if (baseProduct != null)
+                    {
+                        // Update UI on main thread
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            var listProduct = new ProductListItem
+                            {
+                                Id = baseProduct.Id,
+                                Name = $"{baseProduct.Name} - {variant.Color} {variant.Size}",
+                                UnitPrice = baseProduct.UnitPrice + variant.PriceAdjustment,
+                                Code = variant.Barcode,
+                                CategoryId = baseProduct.CategoryId,
+                                CategoryTaxPercent = baseProduct.CategoryTaxPercent
+                            };
+                            AddProductDirectly(listProduct);
+                            BarcodeText = "";
+                        });
+                        return;
+                    }
+                }
+                
+                // NOT FOUND
+                System.Windows.Application.Current.Dispatcher.Invoke(() => 
+                {
+                    System.Windows.MessageBox.Show($"Không tìm thấy sản phẩm có mã vạch: {barcode}", "Thông báo", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                    BarcodeText = "";
+                });
+            });
+        }
+        private void OpenWebcamScanner()
+        {
+            var scannerWindow = new BarcodeScannerWindow();
+            if (scannerWindow.ShowDialog() == true)
+            {
+                BarcodeText = scannerWindow.ScannedBarcode;
+                SelectProductByBarcode(BarcodeText);
+                
+                // Play a simple beep if success
+                try { System.Media.SystemSounds.Beep.Play(); } catch { }
+            }
+        }
         #endregion
     }
 
@@ -1289,6 +1474,7 @@ namespace FashionStore.App.ViewModels
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string Code { get; set; } = string.Empty;
         public decimal UnitPrice { get; set; }
         public decimal PromoDiscountPercent { get; set; }
         public DateTime? PromoStartDate { get; set; }

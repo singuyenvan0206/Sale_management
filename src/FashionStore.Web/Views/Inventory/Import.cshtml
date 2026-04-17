@@ -1,0 +1,186 @@
+@{
+    ViewData["Title"] = "Nhập hàng mới";
+}
+
+<div class="animate-in" style="display: grid; grid-template-columns: 1fr 400px; gap: 1.5rem; height: calc(100vh - 150px);">
+    
+    <!-- Left: Product Selection -->
+    <div class="glass" style="display: flex; flex-direction: column; overflow: hidden;">
+        <div style="padding: 1.5rem; border-bottom: 1px solid var(--glass-border);">
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <h2 class="gradient-text">Chọn sản phẩm nhập</h2>
+                <div class="glass" style="flex: 1; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-search" style="color: var(--text-muted);"></i>
+                    <input type="text" id="productSearch" placeholder="Tìm tên hoặc mã sản phẩm..." style="background: transparent; border: none; color: white; width: 100%; outline: none;" />
+                </div>
+            </div>
+        </div>
+        
+        <div id="productGrid" style="flex: 1; overflow-y: auto; padding: 1.5rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem;">
+            @foreach (var p in ViewBag.Products as IEnumerable<FashionStore.Core.Models.Product>)
+            {
+                <div class="glass glass-hover product-card" 
+                     data-id="@p.Id" 
+                     data-name="@p.Name" 
+                     data-code="@p.Code" 
+                     onclick="addToImportList(this)"
+                     style="padding: 1rem; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--primary-color); font-weight: 700;">@p.Code</div>
+                        <div style="font-weight: 600; margin-top: 0.25rem;">@p.Name</div>
+                    </div>
+                    <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="font-size: 0.875rem; color: var(--text-muted);">Tồn: @p.StockQuantity</div>
+                        <div class="btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;"><i class="fas fa-plus"></i> Chọn</div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Right: Import Summary -->
+    <div class="glass" style="display: flex; flex-direction: column; overflow: hidden; border-left: 2px solid var(--secondary-color);">
+        <div style="padding: 1.5rem; border-bottom: 1px solid var(--glass-border);">
+            <h3>Đơn nhập hàng</h3>
+        </div>
+
+        <div id="importList" style="flex: 1; overflow-y: auto; padding: 1rem;">
+            <div id="emptyImport" style="text-align: center; color: var(--text-muted); padding-top: 3rem;">
+                <i class="fas fa-truck-loading" style="font-size: 3rem; opacity: 0.2; margin-bottom: 1rem;"></i>
+                <p>Chưa chọn sản phẩm nào</p>
+            </div>
+        </div>
+
+        <div style="padding: 1.5rem; background: rgba(0,0,0,0.2); border-top: 1px solid var(--glass-border);">
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">Nhà cung cấp</label>
+                <select id="supplierSelect" class="glass" style="width: 100%; padding: 0.75rem; background: var(--bg-color); color: white; border-color: var(--glass-border);">
+                    <option value="0">-- Chọn nhà cung cấp --</option>
+                    @foreach (var s in ViewBag.Suppliers as IEnumerable<FashionStore.Core.Models.Supplier>)
+                    {
+                        <option value="@s.Id">@s.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">Ghi chú</label>
+                <textarea id="importNotes" class="glass" placeholder="Ghi chú đợt nhập hàng..." style="width: 100%; padding: 0.75rem; background: var(--bg-color); color: white; border-color: var(--glass-border); min-height: 80px;"></textarea>
+            </div>
+
+            <button onclick="processImport()" class="btn-primary" style="width: 100%; padding: 1rem; background: var(--secondary-color);">
+                HOÀN TẤT NHẬP KHO <i class="fas fa-check-circle" style="margin-left: 0.5rem;"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let importItems = [];
+
+        function addToImportList(el) {
+            const id = parseInt(el.dataset.id);
+            const name = el.dataset.name;
+            
+            const existing = importItems.find(i => i.productId === id);
+            if (existing) {
+                existing.quantity++;
+            } else {
+                importItems.push({
+                    productId: id,
+                    productName: name,
+                    quantity: 1
+                });
+            }
+            renderImportList();
+        }
+
+        function updateQty(id, delta) {
+            const item = importItems.find(i => i.productId === id);
+            if (item) {
+                item.quantity += delta;
+                if (item.quantity <= 0) {
+                    importItems = importItems.filter(i => i.productId !== id);
+                }
+            }
+            renderImportList();
+        }
+
+        function renderImportList() {
+            const container = document.getElementById('importList');
+            const empty = document.getElementById('emptyImport');
+            
+            if (importItems.length === 0) {
+                container.innerHTML = '';
+                container.appendChild(empty);
+                return;
+            }
+
+            container.innerHTML = importItems.map(item => `
+                <div class="glass" style="padding: 1rem; margin-bottom: 0.75rem; border-left: 3px solid var(--secondary-color);">
+                    <div style="font-weight: 600; font-size: 0.875rem;">${item.productName}</div>
+                    <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 0.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem; background: rgba(255,255,255,0.05); padding: 0.25rem 0.5rem; border-radius: 8px;">
+                            <button onclick="updateQty(${item.productId}, -1)" style="background:transparent; border:none; color:white; cursor:pointer;"><i class="fas fa-minus-circle"></i></button>
+                            <span style="font-weight: 700; min-width: 30px; text-align:center;">${item.quantity}</span>
+                            <button onclick="updateQty(${item.productId}, 1)" style="background:transparent; border:none; color:white; cursor:pointer;"><i class="fas fa-plus-circle"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function processImport() {
+            if (importItems.length === 0) {
+                alert('Vui lòng chọn ít nhất một sản phẩm');
+                return;
+            }
+
+            const supplierId = parseInt(document.getElementById('supplierSelect').value);
+            if (supplierId === 0) {
+                alert('Vui lòng chọn nhà cung cấp');
+                return;
+            }
+
+            const request = {
+                supplierId: supplierId,
+                notes: document.getElementById('importNotes').value,
+                items: importItems
+            };
+
+            try {
+                const response = await fetch('/Inventory/ProcessImport', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(request)
+                });
+
+                if (response.ok) {
+                    alert('Nhập kho thành công!');
+                    location.href = '/Inventory/History';
+                } else {
+                    alert('Lỗi khi thực hiện nhập kho');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Đã xảy ra lỗi kết nối');
+            }
+        }
+
+        // Search logic
+        document.getElementById('productSearch').addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.product-card');
+            cards.forEach(card => {
+                const name = card.dataset.name.toLowerCase();
+                const code = card.dataset.code.toLowerCase();
+                if (name.includes(term) || code.includes(term)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    </script>
+}

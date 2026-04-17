@@ -1,0 +1,147 @@
+@model FashionStore.Core.Settings.PaymentSettings
+@{
+    ViewData["Title"] = "Cấu hình thanh toán QR";
+}
+
+<div class="animate-in">
+    <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1 class="gradient-text">Cấu hình Thanh toán</h1>
+            <p style="color: var(--text-muted);">Thiết lập thông tin tài khoản ngân hàng và tích hợp SePay để tự động check giao dịch.</p>
+        </div>
+        @if (TempData["Success"] != null)
+        {
+            <div class="glass" style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600;">
+                <i class="fas fa-check-circle"></i> @TempData["Success"]
+            </div>
+        }
+    </div>
+
+    <!-- Tab Navigation -->
+    <div style="display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">
+        <a asp-action="Tiers" class="nav-link" style="padding: 0.5rem 1.5rem; color: var(--text-muted); text-decoration: none;">
+            <i class="fas fa-users-cog"></i> Hội viên & Tích điểm
+        </a>
+        <a asp-action="Payment" class="nav-link active" style="padding: 0.5rem 1.5rem; color: var(--primary-color); text-decoration: none; border-bottom: 2px solid var(--primary-color); font-weight: 700;">
+            <i class="fas fa-qrcode"></i> Thanh toán QR
+        </a>
+    </div>
+
+    <form asp-action="Payment" method="post" class="glass" style="padding: 2.5rem; max-width: 800px;">
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+            <div>
+                <h3 style="margin-bottom: 1.5rem; font-size: 1.1rem; color: var(--primary-color);"><i class="fas fa-university"></i> THÔNG TIN NGÂN HÀNG</h3>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Ngân hàng thụ hưởng</label>
+                    <select asp-for="BankCode" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border);">
+                        <option value="mbbank">MB Bank (Ngân hàng Quân đội)</option>
+                        <option value="vcb">Vietcombank</option>
+                        <option value="tcb">Techcombank</option>
+                        <option value="acb">ACB (Á Châu)</option>
+                        <option value="bidv">BIDV</option>
+                        <option value="ctg">Vietinbank</option>
+                        <option value="tpb">TPBank</option>
+                        <option value="vpb">VPBank</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Số tài khoản</label>
+                    <input asp-for="BankAccount" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border);" placeholder="Nhập số tài khoản..." />
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Tên chủ tài khoản (Không dấu)</label>
+                    <input asp-for="AccountHolder" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border);" placeholder="VD: NGUYEN VAN A" />
+                </div>
+            </div>
+
+            <div style="border-left: 1px solid var(--glass-border); padding-left: 2rem;">
+                <h3 style="margin-bottom: 1.5rem; font-size: 1.1rem; color: var(--secondary-color);"><i class="fas fa-key"></i> TỰ ĐỘNG CHECK GD (SEPAY)</h3>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">API Token</label>
+                    <input asp-for="SePayToken" type="password" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border);" placeholder="Token từ sepay.vn..." />
+                    <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem;">Token này dùng để gọi API kiểm tra giao dịch chuyển khoản thực tế.</p>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 1rem; margin-top: 2rem;">
+                    <label class="switch">
+                        <input type="checkbox" asp-for="EnableQRCode">
+                        <span class="slider round"></span>
+                    </label>
+                    <span style="font-weight: 600;">Hiển thị mã QR khi thanh toán</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--glass-border); text-align: right;">
+            <button type="submit" class="btn-primary" style="padding: 1rem 4rem; font-weight: 700;">
+                <i class="fas fa-save" style="margin-right: 0.5rem;"></i> LƯU THAY ĐỔI
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+
+    .switch input { 
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #2d3748;
+      -webkit-transition: .4s;
+      transition: .4s;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      -webkit-transition: .4s;
+      transition: .4s;
+    }
+
+    input:checked + .slider {
+      background-color: var(--primary-color);
+    }
+
+    input:focus + .slider {
+      box-shadow: 0 0 1px var(--primary-color);
+    }
+
+    input:checked + .slider:before {
+      -webkit-transform: translateX(26px);
+      -ms-transform: translateX(26px);
+      transform: translateX(26px);
+    }
+
+    .slider.round {
+      border-radius: 34px;
+    }
+
+    .slider.round:before {
+      border-radius: 50%;
+    }
+</style>

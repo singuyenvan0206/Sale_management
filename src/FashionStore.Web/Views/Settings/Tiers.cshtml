@@ -1,0 +1,131 @@
+@model FashionStore.Core.Models.TierSettings
+@{
+    ViewData["Title"] = "Cài đặt phân hạng";
+}
+
+<div class="animate-in">
+    <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1 class="gradient-text">Cấu hình Hội viên</h1>
+            <p style="color: var(--text-muted);">Thiết lập ngưỡng điểm và đặc quyền cho từng hạng thành viên.</p>
+        </div>
+        @if (TempData["Success"] != null)
+        {
+            <div class="glass" style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600;">
+                <i class="fas fa-check-circle"></i> @TempData["Success"]
+            </div>
+        }
+    </div>
+
+    <!-- Tab Navigation -->
+    <div style="display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">
+        <a asp-action="Tiers" class="nav-link active" style="padding: 0.5rem 1.5rem; color: var(--primary-color); text-decoration: none; border-bottom: 2px solid var(--primary-color); font-weight: 700;">
+            <i class="fas fa-users-cog"></i> Hội viên & Tích điểm
+        </a>
+        <a asp-action="Payment" class="nav-link" style="padding: 0.5rem 1.5rem; color: var(--text-muted); text-decoration: none;">
+            <i class="fas fa-qrcode"></i> Thanh toán QR
+        </a>
+    </div>
+
+    <form asp-action="Tiers" method="post" class="glass" style="padding: 2.5rem;">
+        
+        <div style="margin-bottom: 2.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">
+            <h3>Cài đặt chung</h3>
+            <div style="margin-top: 1rem; width: 300px;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Tỷ lệ: 1 điểm = X VNĐ</label>
+                <input asp-for="SpendPerPoint" type="number" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" />
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+            
+            <!-- Regular Tier -->
+            <div class="glass" style="padding: 1.5rem; border-top: 4px solid var(--text-muted);">
+                <h4 style="margin-bottom: 1.5rem;"><i class="fas fa-user"></i> Hạng THƯỜNG</h4>
+                <div class="input-group" style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.75rem; color: var(--text-muted);">Điểm tối thiểu</label>
+                    <input asp-for="RegularMinPoints" type="number" class="glass" style="width: 100%; padding: 0.5rem; background: var(--bg-color); color: white;" readonly />
+                </div>
+                <div class="input-group" style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.75rem; color: var(--text-muted);">Giảm giá (%)</label>
+                    <input asp-for="RegularDiscountPercent" type="number" step="0.1" class="glass" style="width: 100%; padding: 0.5rem; background: #fff; color: var(--text-main);" />
+                </div>
+                <div class="input-group">
+                    <label style="font-size: 0.75rem; color: var(--text-muted);">Đặc quyền</label>
+                    <textarea asp-for="RegularBenefits" class="glass" style="width: 100%; height: 60px; padding: 0.5rem; background: #fff; color: var(--text-main);"></textarea>
+                </div>
+            </div>
+
+            <!-- Silver Tier -->
+            <div class="glass" style="padding: 1.5rem; border-top: 4px solid #94a3b8;">
+                <h4 style="margin-bottom: 1.5rem; color: #94a3b8;"><i class="fas fa-medal"></i> Hạng BẠC</h4>
+                <div class="input-group" style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.75rem; color: var(--text-muted);">Điểm tối thiểu</label>
+                    <input asp-for="SilverMinPoints" type="number" class="glass" style="width: 100%; padding: 0.5rem; background: #fff; color: var(--text-main);" />
+                </div>
+                <div class="input-group" style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.75rem; color: var(--text-muted);">Giảm giá (%)</label>
+                    <input asp-for="SilverDiscountPercent" type="number" step="0.1" class="glass" style="width: 100%; padding: 0.5rem; background: #fff; color: var(--text-main);" />
+                </div>
+                <div class="input-group">
+                    <label style="font-size: 0.75rem; color: var(--text-muted);">Đặc quyền</label>
+                    <textarea asp-for="SilverBenefits" class="glass" style="width: 100%; height: 60px; padding: 0.5rem; background: #fff; color: var(--text-main);"></textarea>
+                </div>
+            </div>
+
+            <!-- Gold Tier -->
+            <div class="glass" style="padding: 1.5rem; border-top: 4px solid #f59e0b;">
+                <h4 style="margin-bottom: 1.5rem; color: #f59e0b;"><i class="fas fa-crown"></i> Hạng VÀNG</h4>
+                <div class="input-group" style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.75rem; color: var(--text-muted);">Điểm tối thiểu</label>
+                    <input asp-for="GoldMinPoints" type="number" class="glass" style="width: 100%; padding: 0.5rem; background: #fff; color: var(--text-main);" />
+                </div>
+                <div class="input-group" style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.75rem; color: var(--text-muted);">Giảm giá (%)</label>
+                    <input asp-for="GoldDiscountPercent" type="number" step="0.1" class="glass" style="width: 100%; padding: 0.5rem; background: #fff; color: var(--text-main);" />
+                </div>
+                <div class="input-group">
+                    <label style="font-size: 0.75rem; color: var(--text-muted);">Đặc quyền</label>
+                    <textarea asp-for="GoldBenefits" class="glass" style="width: 100%; height: 60px; padding: 0.5rem; background: #fff; color: var(--text-main);"></textarea>
+                </div>
+            </div>
+
+            <!-- VIP Tier -->
+            <div class="glass" style="padding: 1.5rem; border-top: 4px solid #ef4444;">
+                <h4 style="margin-bottom: 1.5rem; color: #ef4444;"><i class="fas fa-gem"></i> Hạng VIP</h4>
+                <div class="input-group" style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.75rem; color: var(--text-muted);">Điểm tối thiểu</label>
+                    <input asp-for="VIPMinPoints" type="number" class="glass" style="width: 100%; padding: 0.5rem; background: #fff; color: var(--text-main);" />
+                </div>
+                <div class="input-group" style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.75rem; color: var(--text-muted);">Giảm giá (%)</label>
+                    <input asp-for="VIPDiscountPercent" type="number" step="0.1" class="glass" style="width: 100%; padding: 0.5rem; background: #fff; color: var(--text-main);" />
+                </div>
+                <div class="input-group">
+                    <label style="font-size: 0.75rem; color: var(--text-muted);">Đặc quyền</label>
+                    <textarea asp-for="VIPBenefits" class="glass" style="width: 100%; height: 60px; padding: 0.5rem; background: #fff; color: var(--text-main);"></textarea>
+                </div>
+            </div>
+
+        </div>
+
+        <div style="margin-top: 2.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <button type="button" onclick="confirmSync()" class="glass" style="padding: 1rem 2rem; color: #f59e0b; border-color: #f59e0b; cursor: pointer;">
+                <i class="fas fa-sync-alt"></i> CẬP NHẬT HẠNG TOÀN HỆ THỐNG
+            </button>
+            <button type="submit" class="btn-primary" style="padding: 1rem 3rem; font-weight: 700;">
+                <i class="fas fa-save"></i> LƯU CẤU HÌNH HỘI VIÊN
+            </button>
+        </div>
+    </form>
+
+    <form id="syncForm" asp-action="RefreshLoyalty" method="post" style="display: none;"></form>
+</div>
+
+<script>
+    function confirmSync() {
+        if (confirm("Hệ thống sẽ tính toán lại điểm tích luỹ và hạng của TẤT CẢ khách hàng dựa trên lịch sử mua hàng thực tế. Bạn có chắc chắn muốn tiếp tục?")) {
+            document.getElementById('syncForm').submit();
+        }
+    }
+</script>

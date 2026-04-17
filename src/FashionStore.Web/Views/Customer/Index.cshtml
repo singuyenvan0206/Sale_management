@@ -1,0 +1,91 @@
+@model IEnumerable<FashionStore.Core.Models.Customer>
+@{
+    ViewData["Title"] = "Quản lý khách hàng";
+}
+
+<div class="header-actions animate-in" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+        <h1 class="gradient-text">Quản lý khách hàng</h1>
+        <p style="color: var(--text-muted);">Theo dõi thành viên và phân hạng khách hàng.</p>
+    </div>
+    <div style="display: flex; gap: 1rem; align-items: center;">
+        <a asp-action="ExportCsv" class="nav-link glass" style="padding: 0.5rem 1rem; border: none; font-weight: 600; color: var(--primary-color);">
+            <i class="fas fa-file-export"></i> Xuất CSV
+        </a>
+        <form asp-action="ImportCsv" method="post" enctype="multipart/form-data" style="display: flex; align-items: center; gap: 0.5rem;">
+            <label for="csvCustomerImport" style="cursor: pointer; color: var(--primary-color); font-size: 0.875rem; font-weight: 600;">
+                <i class="fas fa-file-import"></i> Nhập CSV
+            </label>
+            <input type="file" id="csvCustomerImport" name="file" onchange="this.form.submit()" style="display: none;" accept=".csv" />
+        </form>
+        <a asp-action="Create" class="btn-primary" style="text-decoration: none; padding: 0.75rem 1.5rem;"><i class="fas fa-user-plus"></i> Thêm khách hàng</a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="glass animate-in" style="background: rgba(16, 185, 129, 0.1); border-color: #10b981; color: #10b981; padding: 1rem; border-radius: 12px; margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem;">
+        <i class="fas fa-check-circle"></i> @TempData["Success"]
+    </div>
+}
+
+<div class="glass animate-in" style="animation-delay: 0.1s;">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Tên khách hàng</th>
+                    <th>Số điện thoại</th>
+                    <th>Email</th>
+                    <th>Hạng</th>
+                    <th>Điểm tích luỹ</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var customer in Model)
+                {
+                    <tr class="glass-hover-row">
+                        <td style="font-weight: 600;">@customer.Name</td>
+                        <td>@customer.Phone</td>
+                        <td style="color: var(--text-muted);">@customer.Email</td>
+                        <td>
+                            @switch (customer.CustomerType)
+                            {
+                                case "VIP":
+                                    <span style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">VIP</span>
+                                    break;
+                                case "Gold":
+                                    <span style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">Vàng</span>
+                                    break;
+                                case "Silver":
+                                    <span style="background: rgba(148, 163, 184, 0.2); color: #94a3b8; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">Bạc</span>
+                                    break;
+                                default:
+                                    <span style="background: rgba(255, 255, 255, 0.05); color: var(--text-muted); padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem;">Thường</span>
+                                    break;
+                            }
+                        </td>
+                        <td style="font-weight: 700; color: var(--primary-color);">@customer.Points.ToString("N0")</td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <a asp-action="Edit" asp-route-id="@customer.Id" class="nav-link" style="padding: 0.4rem; color: var(--text-muted);">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a asp-action="Details" asp-route-id="@customer.Id" class="nav-link" style="padding: 0.4rem; color: var(--text-muted);">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .glass-hover-row:hover {
+        background: rgba(255, 255, 255, 0.02);
+    }
+</style>

@@ -51,5 +51,12 @@ namespace FashionStore.Services
         {
             return (lineTotal * (1 - discountRatio)) * (categoryTaxPercent / 100m);
         }
+
+        public decimal GetTierDiscountPercent(string customerType)
+        {
+            if (string.IsNullOrWhiteSpace(customerType)) return 0m;
+            // Use the centralized settings manager so web and desktop always stay in sync
+            return FashionStore.Core.Models.TierSettingsManager.GetTierDiscount(customerType);
+        }
     }
 }

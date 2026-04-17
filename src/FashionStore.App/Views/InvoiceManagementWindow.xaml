@@ -3,741 +3,411 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:oxy="http://oxyplot.org/wpf"
         xmlns:local="clr-namespace:FashionStore.App"
-        xmlns:conv="clr-namespace:FashionStore.App.Converters"
-        Title="Fashion Pro POS - Bán Hàng" Height="850" Width="1366"
-        WindowStartupLocation="CenterScreen"
-        Background="#0F172A">
+        xmlns:core="clr-namespace:FashionStore.App.Core"
+        Title="Quản Lý Hóa Đơn" Height="800" Width="1280"
+        WindowStartupLocation="CenterScreen">
     
     <Window.InputBindings>
-        <KeyBinding Key="F1" Command="{Binding SaveInvoiceCommand}"/>
-        <KeyBinding Key="F5" Command="{Binding ClearInvoiceCommand}"/>
+        <KeyBinding Key="Enter" Command="{Binding AddItemCommand}"/>
+        <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveInvoiceCommand}"/>
     </Window.InputBindings>
     
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        <conv:LessThanConverter x:Key="LessThanConverter"/>
-        <conv:GreaterThanConverter x:Key="GreaterThanConverter"/>
-        
-        <!-- ... (Existing Resource Colors & Brushes) ... -->
-        <Color x:Key="DeepNavy">#0F172A</Color>
-        <Color x:Key="SlateNavy">#1E293B</Color>
-        <Color x:Key="GoldAccent">#D4AF37</Color>
-        <Color x:Key="BorderSlate">#334155</Color>
-        <Color x:Key="TextMuted">#94A3B8</Color>
-        
-        <SolidColorBrush x:Key="DeepNavyBrush" Color="{StaticResource DeepNavy}"/>
-        <SolidColorBrush x:Key="GoldBrush" Color="{StaticResource GoldAccent}"/>
-        <SolidColorBrush x:Key="MutedBrush" Color="{StaticResource TextMuted}"/>
-        
-        <LinearGradientBrush x:Key="PremiumBgGradient" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#0F172A" Offset="0"/>
-            <GradientStop Color="#1E2235" Offset="1"/>
-        </LinearGradientBrush>
-
-        <!-- Premium TabControl Style -->
-        <Style TargetType="TabControl">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TabControl">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="15,10,15,0" IsItemsHost="True"/>
-                            <ContentPresenter Grid.Row="1" ContentSource="SelectedContent"/>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style TargetType="TabItem">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#94A3B8"/>
-            <Setter Property="HeaderTemplate">
-                <Setter.Value>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding}" FontSize="16" FontWeight="Bold" Margin="20,10"/>
-                    </DataTemplate>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TabItem">
-                        <Border x:Name="border" BorderThickness="0,0,0,3" BorderBrush="Transparent">
-                            <ContentPresenter ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#D4AF37"/>
-                                <Setter Property="Foreground" Value="White"/>
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Foreground" Value="White"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- ... (Rest of existing Input Styles, Buttons, etc.) ... -->
-        <Style TargetType="TextBox">
-            <Setter Property="Background" Value="#1E293B"/>
-            <Setter Property="BorderBrush" Value="#334155"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="10,5"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Border x:Name="border" CornerRadius="8" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
-                            <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsFocused" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#D4AF37"/>
-                                <Setter TargetName="border" Property="BorderThickness" Value="1.5"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#D4AF37"/>
-            <Setter Property="Foreground" Value="#0F172A"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="12">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Opacity" Value="0.9"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Opacity" Value="0.7"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="ProductCardStyle" TargetType="Button">
-            <Setter Property="Background" Value="#1E293B"/>
-            <Setter Property="BorderBrush" Value="#334155"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Margin" Value="6"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
-                                BorderBrush="{TemplateBinding BorderBrush}" 
-                                BorderThickness="{TemplateBinding BorderThickness}" 
-                                CornerRadius="16">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="120"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
-                                
-                                <Border Grid.Row="0" Background="#2D3748" CornerRadius="15,15,5,5" Margin="5">
-                                    <Grid>
-                                        <TextBlock Text="👗" FontSize="56" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                        <!-- Stock Badge -->
-                                        <Border x:Name="StockBadge" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="10" Padding="8,4" CornerRadius="6" Visibility="Collapsed">
-                                            <TextBlock x:Name="StockBadgeText" Foreground="White" FontSize="10" FontWeight="Bold"/>
-                                        </Border>
-                                    </Grid>
-                                </Border>
-                                
-                                <Border Grid.Row="1" Padding="12,8">
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="Bold" FontSize="13" TextWrapping="Wrap" Height="36"/>
-                                        <Grid Margin="0,5,0,0">
-                                            <TextBlock Text="{Binding UnitPrice, StringFormat=N0}" Foreground="#D4AF37" FontWeight="ExtraBold" FontSize="15"/>
-                                            <TextBlock Text="{Binding StockQuantity, StringFormat='Kho: {0}'}" HorizontalAlignment="Right" Foreground="#64748B" FontSize="10" VerticalAlignment="Center"/>
-                                        </Grid>
-                                    </StackPanel>
-                                </Border>
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Grid>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#2D3748"/>
-                                <Setter Property="BorderBrush" Value="#D4AF37"/>
-                            </Trigger>
-                            <DataTrigger Binding="{Binding StockQuantity}" Value="0">
-                                <Setter TargetName="StockBadge" Property="Visibility" Value="Visible"/>
-                                <Setter TargetName="StockBadge" Property="Background" Value="#EF4444"/>
-                                <Setter TargetName="StockBadgeText" Property="Text" Value="HẾT HÀNG"/>
-                                <Setter Property="IsEnabled" Value="False"/>
-                                <Setter Property="Opacity" Value="0.6"/>
-                            </DataTrigger>
-                            <MultiDataTrigger>
-                                <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding StockQuantity, Converter={StaticResource LessThanConverter}, ConverterParameter=5}" Value="True"/>
-                                    <Condition Binding="{Binding StockQuantity, Converter={StaticResource GreaterThanConverter}, ConverterParameter=0}" Value="True"/>
-                                </MultiDataTrigger.Conditions>
-                                <Setter TargetName="StockBadge" Property="Visibility" Value="Visible"/>
-                                <Setter TargetName="StockBadge" Property="Background" Value="#F59E0B"/>
-                                <Setter TargetName="StockBadgeText" Property="Text" Value="SẮP HẾT"/>
-                            </MultiDataTrigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="CategoryTabStyle" TargetType="RadioButton">
-            <Setter Property="Height" Value="38"/>
-            <Setter Property="Padding" Value="18,0"/>
-            <Setter Property="Margin" Value="0,0,10,0"/>
-            <Setter Property="Foreground" Value="#94A3B8"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="TabBorder" Background="Transparent" CornerRadius="19" BorderBrush="#334155" BorderThickness="1">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="TabBorder" Property="Background" Value="#D4AF37"/>
-                                <Setter Property="Foreground" Value="#0F172A"/>
-                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="#D4AF37"/>
-                                <Setter Property="FontWeight" Value="Bold"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <core:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
     </Window.Resources>
 
-    <Grid Background="{StaticResource PremiumBgGradient}">
-        <TabControl x:Name="MainTabs">
-            <TabItem Header="🛒 BÁN HÀNG">
-                <!-- Sale Tab (Current POS Workspace) -->
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="420"/>
-                    </Grid.ColumnDefinitions>
+	<Grid Background="#F5F5F5" PreviewMouseWheel="Grid_PreviewMouseWheel">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+
+		<!-- Header -->
+		<Border Grid.Row="0" Effect="{StaticResource SubtleShadow}">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#1CB5E0" Offset="0"/>
+                    <GradientStop Color="#000046" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid Margin="20,15">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="Auto"/>
+				</Grid.ColumnDefinitions>
+				<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+					<TextBlock Text="🧾" FontSize="28" VerticalAlignment="Center" Margin="0,0,10,0"/>
+					<StackPanel>
+                        <TextBlock Text="Fashion Store ERP" FontSize="12" Foreground="#B3E5FC" FontWeight="Bold"/>
+                        <TextBlock Text="HỆ THỐNG BÁN HÀNG" FontSize="20" FontWeight="ExtraBold" Foreground="White"/>
+                    </StackPanel>
+                </StackPanel>
+				<StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+					<TextBlock Text="👤 KHÁCH HÀNG:" Foreground="White" VerticalAlignment="Center" FontWeight="Bold" FontSize="11" Margin="0,0,10,0"/>
+					<Grid Width="300" Height="36">
+						<TextBox x:Name="CustomerSearchTextBox"
+						         Height="36" FontSize="14" Padding="10,0" VerticalContentAlignment="Center"
+						         Text="{Binding CustomerSearchText, UpdateSourceTrigger=PropertyChanged}"
+						         ToolTip="Gõ tên / SĐT để tìm khách hàng"
+                                 BorderThickness="0">
+                            <TextBox.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="18"/>
+                                </Style>
+                            </TextBox.Resources>
+                        </TextBox>
+						<Popup x:Name="CustomerSuggestionsPopup"
+						       PlacementTarget="{Binding ElementName=CustomerSearchTextBox}"
+						       Placement="Bottom" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Slide"
+                               IsOpen="{Binding IsCustomerPopupOpen, Mode=TwoWay}">
+							<Border Background="White" CornerRadius="8" Padding="2" Margin="0,5,0,0" Effect="{StaticResource CardShadow}">
+								<ListBox x:Name="CustomerSuggestionsListBox"
+								         Width="{Binding ElementName=CustomerSearchTextBox, Path=ActualWidth}"
+								         MaxHeight="300" BorderThickness="0"
+                                         ItemsSource="{Binding FilteredCustomers}"
+                                         SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}"
+								         PreviewMouseWheel="ListBox_PreviewMouseWheel">
+									<ListBox.ItemTemplate>
+										<DataTemplate>
+											<Border Padding="10,8" BorderBrush="#F5F5F5" BorderThickness="0,0,0,1">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="👤" Margin="0,0,8,0" Foreground="#1CB5E0"/>
+                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="#333"/>
+                                                    <TextBlock Text=" - " Foreground="#999"/>
+                                                    <TextBlock Text="{Binding Phone}" Foreground="#1CB5E0"/>
+                                                </StackPanel>
+                                            </Border>
+										</DataTemplate>
+									</ListBox.ItemTemplate>
+								</ListBox>
+							</Border>
+						</Popup>
+					</Grid>
+					<Button Content="📜 Lịch sử" Width="110" Height="36" Margin="15,0,0,0" 
+							Style="{StaticResource WarningButton}" Command="{Binding OpenHistoryCommand}"/>
+					
+                    <Border Background="White" Opacity="0.15" Width="1" Height="30" Margin="15,0"/>
                     
-                    <!-- LEFT: POS Workspace -->
-        <Grid Grid.Column="0" Margin="15">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/> <!-- Search & Filter -->
-                <RowDefinition Height="*"/>    <!-- Product Grid -->
-            </Grid.RowDefinitions>
+                    <Border Background="#20000000" CornerRadius="18" Padding="12,6" VerticalAlignment="Center">
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="💎 " VerticalAlignment="Center"/>
+							<TextBlock Text="{Binding LoyaltyTierText}" Foreground="White" FontWeight="Bold" FontSize="13"/>
+							<TextBlock Text=" • " Foreground="#B3E5FC"/>
+							<TextBlock Text="{Binding LoyaltyPointsText}" Foreground="#FFEB3B" FontWeight="Bold"/>
+						</StackPanel>
+					</Border>
+				</StackPanel>
+			</Grid>
+		</Border>
 
-            <!-- Search & Filter Bar -->
-            <StackPanel Grid.Row="0" Margin="0,0,0,15">
-                <Grid Margin="0,0,0,15">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    
-                    <Border Background="#1E293B" CornerRadius="25" Padding="15,5" BorderBrush="#334155" BorderThickness="1">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="🔍" VerticalAlignment="Center" Margin="0,0,10,0" Foreground="#94A3B8"/>
-                            <TextBox Grid.Column="1" Background="Transparent" BorderThickness="0" Foreground="White" 
-                                     VerticalContentAlignment="Center" FontSize="16" 
-                                     Text="{Binding ProductSearchText, UpdateSourceTrigger=PropertyChanged}"
-                                     GotFocus="TextBox_GotFocus"/>
-                        </Grid>
-                    </Border>
-                    
-                    <Button Grid.Column="1" Content="📜 Lịch sử đơn" Width="140" Height="45" Margin="15,0,0,0" 
-                            Background="#D4AF37" Foreground="#0F172A" FontWeight="Bold" Command="{Binding OpenHistoryCommand}">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="22"/>
-                            </Style>
-                        </Button.Resources>
-                    </Button>
-                </Grid>
+		<!--Main Content -->
+		<Grid Grid.Row="1" Margin="20">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="*"/>
+			</Grid.RowDefinitions>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width="380"/>
+			</Grid.ColumnDefinitions>
 
-                <!-- Category Tabs (Horizontal Scroll) -->
-                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-                    <ItemsControl ItemsSource="{Binding Categories}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <RadioButton Content="{Binding Name}" 
-                                             Style="{StaticResource CategoryTabStyle}"
-                                             GroupName="CategoryTabs"
-                                             Command="{Binding DataContext.FilterByCategoryCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                             CommandParameter="{Binding}"/>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
-            </StackPanel>
+			<!-- Product selector -->
+			<Border Grid.Row="0" Background="White" CornerRadius="12" Padding="20" Margin="0,0,0,15" BorderBrush="#E0E0E0" BorderThickness="1" Effect="{StaticResource SubtleShadow}">
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="Auto"/>
+					</Grid.RowDefinitions>
+					
+					<!-- Barcode Scan Field -->
+					<Border Grid.Row="0" Background="#F0F7F9" CornerRadius="10" Padding="15" Margin="0,0,0,15" BorderBrush="#1CB5E0" BorderThickness="1">
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto"/>
+								<ColumnDefinition Width="*"/>
+								<ColumnDefinition Width="Auto"/>
+								<ColumnDefinition Width="Auto"/>
+							</Grid.ColumnDefinitions>
+							<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,20,0">
+                                <TextBlock Text="🚀" FontSize="20" Margin="0,0,10,0"/>
+                                <TextBlock Text="QUÉT MÃ VẠCH NHANH:" FontWeight="ExtraBold" Foreground="#1CB5E0" VerticalAlignment="Center" FontSize="13"/>
+                            </StackPanel>
+							<TextBox x:Name="BarcodeTextBox" Grid.Column="1" Height="42" FontSize="18" FontWeight="Bold" Padding="15,6" 
+									 Background="White" BorderBrush="#1CB5E0" BorderThickness="2"
+									 Text="{Binding BarcodeText, UpdateSourceTrigger=PropertyChanged}"
+									 ToolTip="Quét mã vạch hoặc nhập mã sản phẩm tại đây rồi nhấn Enter">
+                                <TextBox.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="21"/>
+                                    </Style>
+                                </TextBox.Resources>
+								<TextBox.InputBindings>
+									<KeyBinding Key="Enter" Command="{Binding ScanBarcodeCommand}"/>
+								</TextBox.InputBindings>
+							</TextBox>
+							
+							<Button Grid.Column="2" Command="{Binding OpenWebcamScannerCommand}" 
+									Width="50" Height="42" Margin="10,0,0,0"
+									Style="{StaticResource ModernButton}" ToolTip="Quét bằng Webcam">
+								<TextBlock Text="📷" FontSize="20"/>
+							</Button>
 
-            <!-- Product Grid -->
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                <ItemsControl ItemsSource="{Binding FilteredProducts}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <UniformGrid Columns="4"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Button Style="{StaticResource ProductCardStyle}" 
-                                    Command="{Binding DataContext.AddProductDirectlyCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" 
-                                    CommandParameter="{Binding}"/>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
-        </Grid>
+							<TextBlock Grid.Column="3" Text="⚡ Hệ thống sẽ tự động thêm vào giỏ hàng" Margin="15,0,0,0" VerticalAlignment="Center" Foreground="#607D8B" FontStyle="Italic" FontSize="11"/>
+						</Grid>
+					</Border>
 
-                <Border Grid.Column="1" Background="#1E293B" BorderBrush="#334155" BorderThickness="1,0,0,0" Padding="20">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/> <!-- Customer Info -->
-                            <RowDefinition Height="2*"/>    <!-- Cart Items -->
-                            <RowDefinition Height="3*"/>    <!-- Totals & Pay (Scrollable) -->
-                        </Grid.RowDefinitions>
+					<Grid Grid.Row="1">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="100"/>
+							<ColumnDefinition Width="130"/>
+							<ColumnDefinition Width="Auto"/>
+						</Grid.ColumnDefinitions>
+						<StackPanel Grid.Column="0" Margin="0,0,15,0">
+							<TextBlock Text="🔍 TÌM KIẾM THỦ CÔNG" FontWeight="Bold" Margin="5,0,0,6" Foreground="#555" FontSize="11"/>
+							<ComboBox x:Name="ProductComboBox" Height="36" IsEditable="True" StaysOpenOnEdit="True"
+									DisplayMemberPath="Name"
+									ItemsSource="{Binding Products}"
+									SelectedItem="{Binding SelectedProduct, Mode=TwoWay}"
+									IsTextSearchEnabled="True" FontSize="14" Padding="10,6" ToolTip="Gõ để tìm sản phẩm theo tên hoặc mã"/>
+						</StackPanel>
+						<StackPanel Grid.Column="1" Margin="0,0,10,0" VerticalAlignment="Bottom">
+							<TextBlock Text="📦 SỐ LƯỢNG" FontWeight="Bold" Margin="5,0,0,6" Foreground="#555" FontSize="11"/>
+							<TextBox Height="36" Text="{Binding QuantityText, UpdateSourceTrigger=PropertyChanged}" FontSize="14" Padding="8,6" TextAlignment="Center" ToolTip="Số lượng"/>
+						</StackPanel>
+						<StackPanel Grid.Column="2" Margin="0,0,15,0" VerticalAlignment="Bottom">
+							<TextBlock Text="💰 ĐƠN GIÁ" FontWeight="Bold" Margin="5,0,0,6" Foreground="#555" FontSize="11"/>
+							<TextBox Height="36" FontSize="14" Padding="10,6" TextAlignment="Right" ToolTip="Đơn giá bán" Text="{Binding UnitPriceText, UpdateSourceTrigger=PropertyChanged}" Foreground="#2E7D32" FontWeight="Bold"/>
+						</StackPanel>
+						<Button Grid.Column="3" Content="✚ THÊM VÀO GIỎ" Width="200" Height="42" 
+								Style="{StaticResource SuccessButton}" FontSize="14" 
+								Command="{Binding AddItemCommand}" VerticalAlignment="Bottom"/>
+					</Grid>
+				</Grid>
+			</Border>
 
-                        <!-- Customer Section -->
-                        <Border Grid.Row="0" Background="#0F172A" CornerRadius="12" Padding="15" Margin="0,0,0,15">
-                            <StackPanel>
-                                <TextBlock Text="👤 KHÁCH HÀNG" Foreground="#94A3B8" FontSize="11" FontWeight="Bold" Margin="0,0,0,10"/>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBox x:Name="CustomerSearchTextBox" Height="40" Background="#1E293B" BorderBrush="#334155" 
-                                             Foreground="White" VerticalContentAlignment="Center" Padding="10,0"
-                                             Text="{Binding CustomerSearchText, UpdateSourceTrigger=PropertyChanged}"/>
-                                    <Button Grid.Column="1" Content="+" Width="40" Height="40" Margin="5,0,0,0"
-                                            Background="#334155" Foreground="#D4AF37" FontWeight="Bold" FontSize="18"
-                                            Command="{Binding AddCustomerCommand}">
-                                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="8"/></Style></Button.Resources>
-                                    </Button>
-                                    <Popup IsOpen="{Binding IsCustomerPopupOpen}" PlacementTarget="{Binding ElementName=CustomerSearchTextBox}" Placement="Bottom">
-                                        <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" Width="380">
-                                            <ListBox ItemsSource="{Binding FilteredCustomers}" SelectedItem="{Binding SelectedCustomer}" Background="Transparent" Foreground="White">
-                                                <ListBox.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <StackPanel>
-                                                            <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
-                                                            <TextBlock Text="{Binding Phone}" Foreground="#94A3B8" FontSize="11"/>
-                                                        </StackPanel>
-                                                    </DataTemplate>
-                                                </ListBox.ItemTemplate>
-                                            </ListBox>
-                                        </Border>
-                                    </Popup>
-                                </Grid>
-                                <Grid Margin="0,10,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Border Background="#D4AF37" CornerRadius="4" Padding="6,2" Margin="0,0,10,0">
-                                        <TextBlock Text="{Binding LoyaltyTierText}" Foreground="#0F172A" FontWeight="Bold" FontSize="11"/>
+			<!-- Items grid -->
+			<Border Grid.Row="1" Background="White" CornerRadius="12" BorderBrush="#E0E0E0" BorderThickness="1">
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="*"/>
+					</Grid.RowDefinitions>
+					
+					<!-- Grid Header -->
+					<Border Grid.Row="0" Background="#1CB5E0" CornerRadius="12,12,0,0" Padding="16,12">
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*"/>
+								<ColumnDefinition Width="Auto"/>
+							</Grid.ColumnDefinitions>
+							<TextBlock Text="🛒 Danh sách sản phẩm" FontSize="16" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+							<StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+								<TextBlock Text="Tổng:" Foreground="White" FontWeight="SemiBold" Margin="0,0,5,0"/>
+								<TextBlock Text="{Binding ItemCountText}" Foreground="White" FontWeight="Bold"/>
+							</StackPanel>
+						</Grid>
+					</Border>
+					
+					<DataGrid Grid.Row="1"
+					          x:Name="InvoiceItemsDataGrid"
+					          AutoGenerateColumns="False"
+					          CanUserAddRows="False"
+					          SelectionMode="Single"
+					          Background="White"
+					          RowHeaderWidth="0"
+					          EnableRowVirtualization="True"
+					          EnableColumnVirtualization="False"
+					          BorderThickness="0"
+					          GridLinesVisibility="Horizontal"
+					          HeadersVisibility="Column"
+					          MinHeight="400"
+                              ItemsSource="{Binding InvoiceItems}"
+					          PreviewMouseWheel="ListBox_PreviewMouseWheel"
+                              RowHeight="45"
+                              AlternatingRowBackground="#FAFAFA">
+				<DataGrid.Resources>
+					<Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="#F5F5F5"/>
+                        <Setter Property="Foreground" Value="#555"/>
+                        <Setter Property="Padding" Value="10,12"/>
+                        <Setter Property="FontWeight" Value="ExtraBold"/>
+                        <Setter Property="FontSize" Value="12"/>
+                        <Setter Property="BorderThickness" Value="0,0,0,2"/>
+                        <Setter Property="BorderBrush" Value="#1CB5E0"/>
+                    </Style>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Padding" Value="10,0"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="DataGridCell">
+                                    <Border Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" SnapsToDevicePixels="True">
+                                        <ContentPresenter VerticalAlignment="Center"/>
                                     </Border>
-                                    <TextBlock Grid.Column="1" Text="{Binding LoyaltyPointsText}" Foreground="#D4AF37" VerticalAlignment="Center" FontSize="12"/>
-                                    
-                                    <CheckBox Grid.Column="2" Content="Dùng điểm" VerticalAlignment="Center" Foreground="#94A3B8"
-                                              IsChecked="{Binding IsRedeemingPoints}" Visibility="{Binding SelectedCustomer, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                </Grid>
-                            </StackPanel>
-                        </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+				</DataGrid.Resources>
+				<DataGrid.Columns>
+ 					<DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="40" IsReadOnly="True"/>
+ 					<DataGridTextColumn Header="SẢN PHẨM" Binding="{Binding ProductName}" Width="*" IsReadOnly="True">
+                         <DataGridTextColumn.ElementStyle>
+                             <Style TargetType="TextBlock">
+                                 <Setter Property="FontWeight" Value="Bold"/>
+                                 <Setter Property="VerticalAlignment" Value="Center"/>
+                             </Style>
+                         </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+ 					<DataGridTextColumn Header="GIÁ BÁN" Binding="{Binding UnitPrice, StringFormat=N0}" Width="100" IsReadOnly="True">
+ 						<DataGridTextColumn.ElementStyle>
+ 							<Style TargetType="TextBlock">
+ 								<Setter Property="TextAlignment" Value="Right"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+ 							</Style>
+ 						</DataGridTextColumn.ElementStyle>
+ 					</DataGridTextColumn>
+ 					<DataGridTextColumn Header="KM %" Binding="{Binding PromoDiscountPercent, StringFormat=N1}" Width="70" IsReadOnly="True">
+ 						<DataGridTextColumn.ElementStyle>
+ 							<Style TargetType="TextBlock">
+ 								<Setter Property="TextAlignment" Value="Right"/>
+ 								<Setter Property="FontWeight" Value="Bold"/>
+ 								<Setter Property="Foreground" Value="#E91E63"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+ 							</Style>
+ 						</DataGridTextColumn.ElementStyle>
+ 					</DataGridTextColumn>
+ 					<DataGridTextColumn Header="SL" Binding="{Binding Quantity}" Width="60" IsReadOnly="True">
+ 						<DataGridTextColumn.ElementStyle>
+ 							<Style TargetType="TextBlock">
+ 								<Setter Property="TextAlignment" Value="Center"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+ 							</Style>
+ 						</DataGridTextColumn.ElementStyle>
+ 					</DataGridTextColumn>
+ 					<DataGridTextColumn Header="THÀNH TIỀN" Binding="{Binding LineTotal, StringFormat=N0}" Width="120" IsReadOnly="True">
+ 						<DataGridTextColumn.ElementStyle>
+ 							<Style TargetType="TextBlock">
+ 								<Setter Property="TextAlignment" Value="Right"/>
+                                <Setter Property="FontWeight" Value="ExtraBold"/>
+                                <Setter Property="Foreground" Value="#1CB5E0"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+ 							</Style>
+ 						</DataGridTextColumn.ElementStyle>
+ 					</DataGridTextColumn>
+ 					<DataGridTemplateColumn Header="⚙️" Width="130">
+ 						<DataGridTemplateColumn.CellTemplate>
+ 							<DataTemplate>
+ 								<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+ 									<Button Content="✚" Width="30" Height="30" Margin="0,0,5,0" 
+ 											Style="{StaticResource SuccessButton}" Padding="0"
+                                            Command="{Binding DataContext.IncreaseQtyCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"/>
+ 									<Button Content="➖" Width="30" Height="30" Margin="0,0,5,0" 
+ 											Style="{StaticResource WarningButton}" Padding="0"
+                                            Command="{Binding DataContext.DecreaseQtyCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"/>
+ 									<Button Content="🗑" Width="35" Height="30" 
+ 											Style="{StaticResource DangerButton}" Padding="0"
+                                            Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"/>
+ 								</StackPanel>
+ 							</DataTemplate>
+ 						</DataGridTemplateColumn.CellTemplate>
+ 					</DataGridTemplateColumn>
+ 				</DataGrid.Columns>
+ 			</DataGrid>
+				</Grid>
+			</Border>
 
-                        <!-- Cart Items -->
-                        <Grid Grid.Row="1">
-                            <DataGrid ItemsSource="{Binding InvoiceItems}" AutoGenerateColumns="False" CanUserAddRows="False" 
-                                      Background="Transparent" BorderThickness="0" RowBackground="Transparent" Foreground="White"
-                                      GridLinesVisibility="None" HeadersVisibility="Column" SelectionMode="Single"
-                                      RowHeaderWidth="0" VerticalScrollBarVisibility="Auto">
-                                <DataGrid.ColumnHeaderStyle>
-                                    <Style TargetType="DataGridColumnHeader">
-                                        <Setter Property="Background" Value="Transparent"/>
-                                        <Setter Property="Foreground" Value="#94A3B8"/>
-                                        <Setter Property="Padding" Value="0,15"/>
-                                        <Setter Property="FontWeight" Value="Bold"/>
-                                        <Setter Property="FontSize" Value="11"/>
-                                    </Style>
-                                </DataGrid.ColumnHeaderStyle>
-                                <DataGrid.RowStyle>
-                                    <Style TargetType="DataGridRow">
-                                        <Setter Property="Background" Value="Transparent"/>
-                                        <Setter Property="BorderBrush" Value="#334155"/>
-                                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                                        <Style.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#334155"/>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </DataGrid.RowStyle>
-                                <DataGrid.Columns>
-                                    <DataGridTemplateColumn Header="SẢN PHẨM" Width="*">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <StackPanel Margin="5,10">
-                                                    <TextBlock Text="{Binding ProductName}" Foreground="White" FontWeight="Bold" FontSize="13"/>
-                                                    <TextBlock Text="{Binding UnitPrice, StringFormat=N0}" Foreground="#94A3B8" FontSize="11" Margin="0,2,0,0"/>
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
 
-                                    <DataGridTemplateColumn Header="SỐ LƯỢNG" Width="100">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                    <Button Content="-" Width="24" Height="24" Background="#334155" Foreground="White" 
-                                                            BorderThickness="0" Command="{Binding DataContext.DecreaseQtyCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
-                                                            CommandParameter="{Binding}" VerticalAlignment="Center">
-                                                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="12"/></Style></Button.Resources>
-                                                    </Button>
-                                                    <TextBlock Text="{Binding Quantity}" Foreground="White" FontWeight="Bold" Width="30" 
-                                                               TextAlignment="Center" VerticalAlignment="Center" Margin="5,0"/>
-                                                    <Button Content="+" Width="24" Height="24" Background="#334155" Foreground="White" 
-                                                            BorderThickness="0" Command="{Binding DataContext.IncreaseQtyCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
-                                                            CommandParameter="{Binding}" VerticalAlignment="Center">
-                                                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="12"/></Style></Button.Resources>
-                                                    </Button>
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
+			<!-- Right Summary Panel -->
+			<Border Grid.Row="0" Grid.Column="1" Grid.RowSpan="3" Background="White" CornerRadius="15" Padding="25" Margin="15,0,0,0" BorderBrush="#E0E0E0" BorderThickness="1" Effect="{StaticResource CardShadow}">
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+					</Grid.RowDefinitions>
+					
+					<!-- Summary Header -->
+					<StackPanel Grid.Row="0" Margin="0,0,0,10">
+						<TextBlock Text="THANH TOÁN" FontSize="18" FontWeight="ExtraBold" Foreground="#1CB5E0" HorizontalAlignment="Center"/>
+                        <Border Background="#1CB5E0" Height="3" Width="50" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+					</StackPanel>
+					
+					<!-- Totals Content -->
+					<StackPanel Grid.Row="1">
+						<Grid Margin="0,0,0,8">
+							<TextBlock Text="Tạm tính:" Foreground="#777" FontSize="13"/>
+							<TextBlock Text="{Binding SubtotalText}" Foreground="#333" FontSize="15" FontWeight="Bold" HorizontalAlignment="Right"/>
+						</Grid>
 
-                                    <DataGridTextColumn Header="THÀNH TIỀN" Binding="{Binding LineTotal, StringFormat=N0}" Width="100">
-                                        <DataGridTextColumn.ElementStyle>
-                                            <Style TargetType="TextBlock"><Setter Property="TextAlignment" Value="Right"/><Setter Property="VerticalAlignment" Value="Center"/><Setter Property="FontWeight" Value="ExtraBold"/><Setter Property="Foreground" Value="#D4AF37"/></Style>
-                                        </DataGridTextColumn.ElementStyle>
-                                    </DataGridTextColumn>
+                        <Grid Margin="0,0,0,8">
+							<TextBlock Text="Thuế GTGT:" Foreground="#777" FontSize="13"/>
+							<TextBlock Text="{Binding TaxAmountText}" Foreground="#333" FontSize="13" FontWeight="Bold" HorizontalAlignment="Right"/>
+						</Grid>
 
-                                    <DataGridTemplateColumn Width="40">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <Button Content="📝" Foreground="#64748B" Background="Transparent" BorderThickness="0" ToolTip="{Binding Note}"
-                                                        Command="{Binding DataContext.EditItemNoteCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"/>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-
-                                    <DataGridTemplateColumn Width="40">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <Button Content="✕" Foreground="#64748B" Background="Transparent" BorderThickness="0" FontSize="14" FontWeight="Bold"
-                                                        Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}">
-                                                    <Button.Style><Style TargetType="Button"><Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="Foreground" Value="#EF4444"/></Trigger></Style.Triggers></Style></Button.Style>
-                                                </Button>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-                                </DataGrid.Columns>
-                            </DataGrid>
-                        </Grid>
-
-                        <!-- Checkout Summary (RIGHT SIDEBAR) -->
-                        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="0,15,0,0">
+						<!-- Voucher Section -->
+						<Border Background="#F8F9FA" CornerRadius="8" Padding="10,8" Margin="0,0,0,8">
                             <StackPanel>
-                                <!-- Voucher & Discount Section -->
-                                <Border Background="#0F172A" CornerRadius="12" Padding="15" Margin="0,0,0,10">
-                                    <StackPanel>
-                                        <TextBlock Text="🎫 VOUCHER &amp; GIẢM GIÁ" Foreground="#94A3B8" FontSize="11" FontWeight="Bold" Margin="0,0,0,10"/>
-                                        <Grid Margin="0,0,0,10">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <ComboBox ItemsSource="{Binding Vouchers}" SelectedItem="{Binding SelectedVoucher}" DisplayMemberPath="Code"
-                                                      Background="#1E293B" Foreground="White" BorderBrush="#334155" Height="35" VerticalContentAlignment="Center"/>
-                                            <Button Grid.Column="1" Content="✕" Width="35" Height="35" Margin="5,0,0,0"
-                                                    Background="#334155" Foreground="#64748B" BorderThickness="0" Command="{Binding ClearVoucherCommand}">
-                                                <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="4"/></Style></Button.Resources>
-                                            </Button>
-                                        </Grid>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="80"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <ComboBox ItemsSource="{Binding DiscountModes}" SelectedItem="{Binding SelectedDiscountMode}"
-                                                      Background="#1E293B" Foreground="White" BorderBrush="#334155" Height="35" VerticalContentAlignment="Center"/>
-                                            <TextBox Grid.Column="1" Text="{Binding DiscountValueText, UpdateSourceTrigger=PropertyChanged}"
-                                                     Margin="10,0,0,0" Height="35" Background="#1E293B" Foreground="White" 
-                                                     BorderBrush="#334155" VerticalContentAlignment="Center" Padding="10,0"/>
-                                        </Grid>
-                                    </StackPanel>
-                                </Border>
-
-                                <!-- Totals Section -->
-                                <Border Background="#0F172A" CornerRadius="12" Padding="20" Margin="0,0,0,10">
-                                    <StackPanel>
-                                        <Grid Margin="0,0,0,8">
-                                            <TextBlock Text="Tạm tính" Foreground="#94A3B8"/>
-                                            <TextBlock Text="{Binding SubtotalText}" Foreground="White" HorizontalAlignment="Right" FontWeight="Bold"/>
-                                        </Grid>
-                                        <Grid Margin="0,0,0,8">
-                                            <TextBlock Text="Ưu đãi hạng" Foreground="#94A3B8"/>
-                                            <TextBlock Text="{Binding TierDiscountInlineText}" Foreground="#10B981" HorizontalAlignment="Right" FontSize="11"/>
-                                        </Grid>
-                                        <Grid Margin="0,0,0,8">
-                                            <TextBlock Text="Giảm giá" Foreground="#94A3B8"/>
-                                            <TextBlock Text="{Binding DiscountValueText, StringFormat='-{0}'}" Foreground="#EF4444" HorizontalAlignment="Right" FontWeight="Bold"/>
-                                        </Grid>
-                                        <Grid Margin="0,0,0,8">
-                                            <TextBlock Text="Thuế (VAT)" Foreground="#94A3B8"/>
-                                            <TextBlock Text="{Binding TaxAmountText}" Foreground="White" HorizontalAlignment="Right"/>
-                                        </Grid>
-                                        <Separator Background="#334155" Margin="0,10"/>
-                                        <Grid>
-                                            <TextBlock Text="TỔNG CỘNG" Foreground="#D4AF37" FontWeight="Black" FontSize="18"/>
-                                            <TextBlock Text="{Binding TotalText}" Foreground="#D4AF37" HorizontalAlignment="Right" FontWeight="Black" FontSize="24"/>
-                                        </Grid>
-                                    </StackPanel>
-                                </Border>
-
-                                <!-- Payment Section -->
-                                <Border Background="#0F172A" CornerRadius="12" Padding="15" Margin="0,0,0,15">
-                                    <StackPanel>
-                                        <TextBlock Text="💳 THANH TOÁN" Foreground="#94A3B8" FontSize="11" FontWeight="Bold" Margin="0,0,0,10"/>
-                                        <ComboBox ItemsSource="{Binding PaymentMethods}" SelectedItem="{Binding SelectedPaymentMethod}"
-                                                  Background="#1E293B" Foreground="White" BorderBrush="#334155" Height="40"
-                                                  VerticalContentAlignment="Center" Margin="0,0,0,15"/>
-                                        
-                                        <Grid Margin="0,0,0,10">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel Margin="0,0,5,0">
-                                                <TextBlock Text="KHÁCH ĐƯA" Foreground="#94A3B8" FontSize="10" Margin="0,0,0,5"/>
-                                                <TextBox Text="{Binding PaidText, UpdateSourceTrigger=PropertyChanged}" Height="40" 
-                                                         Background="#1E293B" Foreground="White" BorderBrush="#334155" 
-                                                         FontSize="16" FontWeight="Bold" VerticalContentAlignment="Center" Padding="10,0"/>
-                                            </StackPanel>
-                                            <StackPanel Grid.Column="1" Margin="5,0,0,0">
-                                                <TextBlock Text="TIỀN THỪA" Foreground="#94A3B8" FontSize="10" Margin="0,0,0,5"/>
-                                                <Border Height="40" Background="#1E293B" CornerRadius="4">
-                                                    <TextBlock Text="{Binding ChangeText}" Foreground="#D4AF37" FontWeight="Bold" 
-                                                               FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                                </Border>
-                                            </StackPanel>
-                                        </Grid>
-
-                                        <Border x:Name="QRSection" Visibility="{Binding IsQRCodeVisible, Converter={StaticResource BooleanToVisibilityConverter}}" 
-                                                Background="#F8FAFC" CornerRadius="16" Padding="15" Margin="0,15,0,0" Height="180">
-                                            <Grid>
-                                                <Image Source="{Binding QRCodeImage}" Stretch="Uniform"/>
-                                                <TextBlock Text="{Binding QRPlaceholderText}" Foreground="#1E293B" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap"
-                                                           Visibility="{Binding IsQRPlaceholderVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                            </Grid>
-                                        </Border>
-                                        <StackPanel Margin="0,10,0,15">
-                                            <TextBlock Text="GHI CHÚ HÓA ĐƠN" Foreground="#94A3B8" FontSize="11" FontWeight="Bold" Margin="0,0,0,5"/>
-                                            <TextBox Text="{Binding InvoiceNote}" Height="60" TextWrapping="Wrap" AcceptsReturn="True"
-                                                     Background="#1E293B" Foreground="White" BorderBrush="#334155" Padding="10"/>
-                                        </StackPanel>
-
-                                        <Grid Margin="0,5,0,10">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Button Content="⏸️ TẠM DỪNG" Height="40" Margin="0,0,5,0" Background="#334155" Foreground="#94A3B8" Command="{Binding SuspendOrderCommand}">
-                                                <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="8"/></Style></Button.Resources>
-                                            </Button>
-                                            <Button Content="📂 TREO" Height="40" Margin="5,0,0,0" Background="#334155" Foreground="#D4AF37" Command="{Binding TogglePendingOrdersCommand}">
-                                                <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="8"/></Style></Button.Resources>
-                                            </Button>
-                                        </Grid>
-
-                                        <Grid Margin="0,0,0,0">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Button Content="HỦY (F5)" Grid.Column="0" Height="50" Margin="0,0,5,0" Background="#1E293B" Foreground="#94A3B8" BorderBrush="#334155" BorderThickness="1" Command="{Binding ClearInvoiceCommand}">
-                                                <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="10"/></Style></Button.Resources>
-                                            </Button>
-                                            <Button Content="XONG (F1)" Grid.Column="1" Height="50" Margin="5,0,0,0" Style="{StaticResource PrimaryButtonStyle}" FontSize="16" Command="{Binding SaveInvoiceCommand}"/>
-                                        </Grid>
-                                    </StackPanel>
-                                </Border>
+                                <TextBlock Text="MÃ GIẢM GIÁ / VOUCHER" FontSize="9" FontWeight="Bold" Foreground="#999" Margin="0,0,0,6"/>
+                                <Grid>
+                                    <ComboBox x:Name="VoucherComboBox" Height="32" 
+                                              DisplayMemberPath="Code" BorderThickness="1" BorderBrush="#DDD"
+                                              ItemsSource="{Binding Vouchers}" SelectedItem="{Binding SelectedVoucher, Mode=TwoWay}"/>
+                                </Grid>
+                                <TextBlock Text="{Binding TierDiscountInlineText}" Foreground="#4CAF50" FontWeight="Bold" FontSize="10" Margin="0,5,0,0"/>
                             </StackPanel>
-                        </ScrollViewer>
-                    </Grid>
-                </Border>
-                </Grid>
-            </TabItem>
-
-            <TabItem Header="📋 QUẢN LÝ ĐƠN">
-                <!-- Order Management Tab -->
-                <Grid Margin="15">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="380"/>
-                    </Grid.ColumnDefinitions>
-
-                    <Grid Grid.Column="0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-
-                        <!-- Filter Bar -->
-                        <Border Grid.Row="0" Margin="0,0,0,15" Background="#1E293B" CornerRadius="12" Padding="15">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-
-                                <Border Background="#0F172A" BorderBrush="#334155" BorderThickness="1" CornerRadius="10" Height="40" Padding="12,0">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Text="🔎" VerticalAlignment="Center" Foreground="#94A3B8" Margin="0,0,8,0"/>
-                                        <TextBox Grid.Column="1"
-                                                 Text="{Binding OrderSearchText, UpdateSourceTrigger=PropertyChanged}"
-                                                 Background="Transparent"
-                                                 BorderThickness="0"
-                                                 VerticalContentAlignment="Center"
-                                                 Foreground="White"
-                                                 FontSize="13"/>
-                                    </Grid>
-                                </Border>
-
-                                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="10,0,0,0">
-                                    <DatePicker Background="#0F172A" Foreground="White" Width="130" Height="40" VerticalContentAlignment="Center"
-                                                SelectedDate="{Binding SelectedOrderDate}"/>
-                                    <Button Content="🔄 Tải lại" Command="{Binding RefreshOrdersCommand}" Width="105" Margin="10,0,0,0"
-                                            Background="#334155" Foreground="White" FontWeight="SemiBold">
-                                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="8"/></Style></Button.Resources>
-                                    </Button>
-                                </StackPanel>
-                            </Grid>
                         </Border>
 
-                        <!-- Invoice Table -->
-                        <DataGrid Grid.Row="1" ItemsSource="{Binding FilteredInvoices}" SelectedItem="{Binding SelectedInvoice}"
-                                  AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
-                                  Background="#1E293B" BorderThickness="0" RowBackground="Transparent" Foreground="White"
-                                  GridLinesVisibility="None" HeadersVisibility="Column" SelectionMode="Single"
-                                  RowHeaderWidth="0" ColumnHeaderHeight="42" RowHeight="40"
-                                  AlternationCount="2" AlternatingRowBackground="#233044">
-                            <DataGrid.ColumnHeaderStyle>
-                                <Style TargetType="DataGridColumnHeader">
-                                    <Setter Property="Background" Value="#0F172A"/>
-                                    <Setter Property="Foreground" Value="#94A3B8"/>
-                                    <Setter Property="BorderBrush" Value="#334155"/>
-                                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                                    <Setter Property="FontWeight" Value="Bold"/>
-                                    <Setter Property="FontSize" Value="11"/>
-                                    <Setter Property="Padding" Value="8,0"/>
-                                </Style>
-                            </DataGrid.ColumnHeaderStyle>
-                            <DataGrid.RowStyle>
-                                <Style TargetType="DataGridRow">
-                                    <Setter Property="Background" Value="Transparent"/>
-                                    <Setter Property="Foreground" Value="White"/>
-                                    <Setter Property="BorderBrush" Value="#334155"/>
-                                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#334155"/>
-                                        </Trigger>
-                                        <Trigger Property="IsSelected" Value="True">
-                                            <Setter Property="Background" Value="#1D4ED8"/>
-                                            <Setter Property="Foreground" Value="White"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </DataGrid.RowStyle>
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="MÃ HĐ" Binding="{Binding Id}" Width="80"/>
-                                <DataGridTextColumn Header="THỜI GIAN" Binding="{Binding CreatedDate, StringFormat=\{0:dd/MM HH:mm\}}" Width="120"/>
-                                <DataGridTextColumn Header="KHÁCH HÀNG" Binding="{Binding CustomerName}" Width="*"/>
-                                <DataGridTextColumn Header="TỔNG TIỀN" Binding="{Binding Total, StringFormat=N0}" Width="120">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock"><Setter Property="TextAlignment" Value="Right"/><Setter Property="FontWeight" Value="Bold"/><Setter Property="Foreground" Value="#D4AF37"/></Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-                                <DataGridTextColumn Header="PTTT" Binding="{Binding PaymentMethod}" Width="100"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </Grid>
+                        <!-- Manual Discount -->
+						<Grid Margin="0,0,0,8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Giảm trực tiếp:" Foreground="#777" FontSize="13" VerticalAlignment="Center"/>
+                                <ComboBox x:Name="DiscountModeComboBox" Width="60" Height="28" Margin="8,0,0,0" ItemsSource="{Binding DiscountModes}" SelectedItem="{Binding SelectedDiscountMode, Mode=TwoWay}"/>
+                            </StackPanel>
+							<TextBox Width="90" Height="28" HorizontalAlignment="Right" TextAlignment="Right" Text="{Binding DiscountValueText, UpdateSourceTrigger=PropertyChanged}" FontWeight="Bold"/>
+						</Grid>
 
-                    <!-- Order Detail Sidebar -->
-                    <Border Grid.Column="1" Margin="15,0,0,0" Background="#1E293B" CornerRadius="12" Padding="20">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
+                        <Border Background="#EEE" Height="1" Margin="0,5,0,10"/>
 
-                            <StackPanel Grid.Row="0">
-                                <TextBlock Text="CHI TIẾT ĐƠN HÀNG" Foreground="#94A3B8" FontSize="11" FontWeight="Bold" Margin="0,0,0,15"/>
-                                <Grid Visibility="{Binding SelectedInvoice, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding SelectedInvoice.Id, StringFormat='Mã: #{0}'}" Foreground="White" FontSize="18" FontWeight="Black"/>
-                                        <TextBlock Text="{Binding SelectedInvoice.CustomerName}" Foreground="#D4AF37" FontSize="14" Margin="0,5"/>
-                                        <TextBlock Text="{Binding SelectedInvoice.CreatedDate, StringFormat='Thời gian: {0:dd/MM/yyyy HH:mm}'}" Foreground="#94A3B8" FontSize="12"/>
-                                        <TextBlock Text="{Binding SelectedInvoice.PaymentMethod, StringFormat='Thanh toán: {0}'}" Foreground="#94A3B8" FontSize="12" Margin="0,3,0,0"/>
-                                    </StackPanel>
+						<TextBlock Text="TỔNG TIỀN PHẢI TRẢ" HorizontalAlignment="Center" FontSize="11" FontWeight="Bold" Foreground="#D32F2F" Margin="0,0,0,2"/>
+						<TextBlock Text="{Binding TotalText}" HorizontalAlignment="Center" FontWeight="ExtraBold" FontSize="32" Foreground="#D32F2F" Margin="0,0,0,10"/>
+
+                        <!-- Payment info -->
+						<Border Background="#F0FBF2" CornerRadius="8" Padding="12,8" Margin="0,0,0,8">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,6">
+                                    <TextBlock Text="PT Thanh toán:" VerticalAlignment="Center" FontWeight="Bold" FontSize="12"/>
+                                    <ComboBox x:Name="PaymentMethodComboBox" Width="130" Height="28" HorizontalAlignment="Right" ItemsSource="{Binding PaymentMethods}" SelectedItem="{Binding SelectedPaymentMethod, Mode=TwoWay}"/>
+                                </Grid>
+                                <Grid>
+                                    <TextBlock Text="Khách đã trả:" VerticalAlignment="Center" FontWeight="Bold" FontSize="12"/>
+                                    <TextBox Width="130" Height="28" HorizontalAlignment="Right" TextAlignment="Right" FontSize="14" FontWeight="Bold" Text="{Binding PaidText, UpdateSourceTrigger=PropertyChanged}" BorderThickness="0" Background="Transparent" Foreground="#2E7D32"/>
                                 </Grid>
                             </StackPanel>
+                        </Border>
 
-                            <DataGrid Grid.Row="1" ItemsSource="{Binding SelectedInvoiceItems}" AutoGenerateColumns="False"
-                                      Background="Transparent" BorderThickness="0" RowBackground="Transparent" Foreground="White"
-                                      HeadersVisibility="None" SelectionMode="Single" Margin="0,15">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Binding="{Binding ProductName}" Width="*"/>
-                                    <DataGridTextColumn Binding="{Binding Quantity, StringFormat='x{0}'}" Width="40"/>
-                                    <DataGridTextColumn Binding="{Binding LineTotal, StringFormat=N0}" Width="80">
-                                        <DataGridTextColumn.ElementStyle><Style TargetType="TextBlock"><Setter Property="TextAlignment" Value="Right"/></Style></DataGridTextColumn.ElementStyle>
-                                    </DataGridTextColumn>
-                                </DataGrid.Columns>
-                            </DataGrid>
+						<Grid Margin="10,0,10,8">
+							<TextBlock Text="Tiền thối lại:" FontSize="13" Foreground="#777"/>
+							<TextBlock Text="{Binding ChangeText}" FontSize="16" FontWeight="ExtraBold" Foreground="#388E3C" HorizontalAlignment="Right"/>
+						</Grid>
+					</StackPanel>
 
-                            <StackPanel Grid.Row="2" Margin="0,15,0,0">
-                                <Button Content="🖨️ IN LẠI HÓA ĐƠN" Height="45" Margin="0,0,0,10"
-                                        Background="#334155" Foreground="White" Command="{Binding ReprintInvoiceCommand}">
-                                    <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="10"/></Style></Button.Resources>
-                                </Button>
-                                <Button Content="↩️ HỦY &amp; TRẢ HÀNG" Height="45"
-                                        Style="{StaticResource PrimaryButtonStyle}" Background="#EF4444" Foreground="White"
-                                        Command="{Binding RefundInvoiceCommand}"/>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-                </Grid>
-            </TabItem>
-        </TabControl>
-    </Grid>
+                    <!-- Save Buttons -->
+                    <StackPanel Grid.Row="2" Margin="0,8,0,0">
+                        <Button Content="THANH TOÁN" Height="52" 
+                                Style="{StaticResource SuccessButton}" FontSize="18" FontWeight="ExtraBold"
+                                Command="{Binding SaveInvoiceCommand}" Margin="0,0,0,8"/>
+                        <Button Content="HỦY / LÀM MỚI" Height="36"
+                                Style="{StaticResource DangerButton}" Opacity="0.8" FontSize="12"
+                                Command="{Binding ClearInvoiceCommand}"/>
+                    </StackPanel>
+				</Grid>
+			</Border>
+
+		</Grid>
+	</Grid>
 </Window>

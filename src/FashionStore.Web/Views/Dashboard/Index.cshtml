@@ -1,0 +1,265 @@
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="dashboard-header animate-in">
+    <h1 class="gradient-text">Chào mừng trở lại, Admin</h1>
+    <p style="color: var(--text-muted);">Tổng quan hoạt động kinh doanh của bạn hôm nay.</p>
+</div>
+
+<div class="stats-grid animate-in" style="animation-delay: 0.1s;">
+    <div class="stat-card glass glass-hover">
+        <div class="stat-icon" style="color: var(--primary-color); font-size: 1.5rem;"><i class="fas fa-wallet"></i></div>
+        <div class="stat-value">@ViewBag.TotalRevenue.ToString("N0")</div>
+        <div class="stat-label">Tổng doanh thu</div>
+    </div>
+
+    <div class="stat-card glass glass-hover">
+        <div class="stat-icon" style="color: #f59e0b; font-size: 1.5rem;"><i class="fas fa-hand-holding-usd"></i></div>
+        <div class="stat-value">@ViewBag.MonthlyCost.ToString("N0")</div>
+        <div class="stat-label">Giá vốn (Tháng này)</div>
+    </div>
+
+    <div class="stat-card glass glass-hover">
+        <div class="stat-icon" style="color: #10b981; font-size: 1.5rem;"><i class="fas fa-chart-line"></i></div>
+        <div class="stat-value">@ViewBag.MonthlyProfit.ToString("N0")</div>
+        <div class="stat-label">Lợi nhuận (Tháng này)</div>
+    </div>
+    
+    <div class="stat-card glass glass-hover">
+        <div class="stat-icon" style="color: #6366f1; font-size: 1.5rem;"><i class="fas fa-file-invoice"></i></div>
+        <div class="stat-value">@ViewBag.TotalInvoices</div>
+        <div class="stat-label">Hoá đơn đã lập</div>
+    </div>
+    
+    <div class="stat-card glass glass-hover">
+        <div class="stat-icon" style="color: #8b5cf6; font-size: 1.5rem;"><i class="fas fa-boxes"></i></div>
+        <div class="stat-value">@ViewBag.TotalProducts</div>
+        <div class="stat-label">Sản phẩm trong kho</div>
+    </div>
+    
+    <div class="stat-card glass glass-hover">
+        <div class="stat-icon" style="color: var(--secondary-color); font-size: 1.5rem;"><i class="fas fa-user-friends"></i></div>
+        <div class="stat-value">@ViewBag.TotalCustomers</div>
+        <div class="stat-label">Khách hàng</div>
+    </div>
+</div>
+
+<div class="analytics-grid animate-in" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-top: 2rem; animation-delay: 0.15s;">
+    <div class="glass" style="padding: 1.5rem;">
+        <h3 style="margin-bottom: 1.25rem;"><i class="fas fa-chart-line" style="color: var(--primary-color);"></i> Xu hướng doanh thu (30 ngày gần đây)</h3>
+        <div style="height: 320px;">
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
+    <div class="glass" style="padding: 1.5rem;">
+        <h3 style="margin-bottom: 1.25rem;"><i class="fas fa-chart-pie" style="color: #a855f7;"></i> Cơ cấu theo danh mục</h3>
+        <div style="height: 320px;">
+            <canvas id="categoryChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-secondary-grid animate-in" style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; margin-top: 1.5rem; animation-delay: 0.2s;">
+    <div class="glass" style="padding: 1.5rem;">
+        <h3 style="margin-bottom: 1.25rem;"><i class="fas fa-trophy" style="color: #f59e0b;"></i> Top 5 sản phẩm bán chạy</h3>
+        <div style="height: 320px;">
+            <canvas id="topProductsChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="glass" style="padding: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <h3><i class="fas fa-history" style="color: #6366f1;"></i> Hoá đơn gần đây</h3>
+            <a asp-controller="Invoice" asp-action="Index" class="btn-primary" style="font-size: 0.8rem; padding: 0.4rem 0.8rem; text-decoration: none; border-radius: 6px;">Xem tất cả</a>
+        </div>
+        
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã HĐ</th>
+                        <th>Ngày tạo</th>
+                        <th>Khách hàng</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var invoice in ViewBag.RecentInvoices as IEnumerable<FashionStore.Core.Models.Invoice>)
+                    {
+                        <tr class="glass-hover-row">
+                            <td>
+                                <a asp-controller="Invoice" asp-action="Details" asp-route-id="@invoice.Id" style="text-decoration: none; font-weight: 600; color: var(--primary-color);">
+                                    #@invoice.Id.ToString("D5")
+                                </a>
+                            </td>
+                            <td style="font-size: 0.85rem; color: var(--text-muted);">@invoice.CreatedDate.ToString("dd/MM HH:mm")</td>
+                            <td style="font-weight: 500;">@invoice.CustomerName</td>
+                            <td style="font-weight: 700; color: var(--secondary-color);">@invoice.Total.ToString("N0")₫</td>
+                            <td>
+                                @{
+                                    var statusColor = invoice.Status == "Completed" ? "#10b981" : "#f59e0b";
+                                }
+                                <span style="background: @(statusColor)22; color: @statusColor; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">
+                                    @invoice.Status
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Chart.defaults.color = '#94a3b8';
+            Chart.defaults.font.family = "'Inter', sans-serif";
+
+            // --- REVENUE TREND CHART ---
+            const revCtx = document.getElementById('revenueChart').getContext('2d');
+            const revDataRaw = @Html.Raw(ViewBag.RevenueByDayJson ?? "[]");
+            
+            const gradient = revCtx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(14, 165, 233, 0.3)');
+            gradient.addColorStop(1, 'rgba(14, 165, 233, 0)');
+
+            new Chart(revCtx, {
+                type: 'line',
+                data: {
+                    labels: revDataRaw.map(d => {
+                        const date = new Date(d.Date);
+                        return date.getDate() + '/' + (date.getMonth() + 1);
+                    }),
+                    datasets: [{
+                        label: 'Doanh thu',
+                        data: revDataRaw.map(d => d.Revenue),
+                        borderColor: '#0ea5e9',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#0ea5e9',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        backgroundColor: gradient,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            bodyFont: { weight: 'bold' },
+                            padding: 12,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return ' ' + context.parsed.y.toLocaleString('vi-VN') + ' ₫';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,0.03)' },
+                            ticks: {
+                                callback: value => (value >= 1000000) ? (value / 1000000).toFixed(1) + 'M' : (value / 1000).toFixed(0) + 'K'
+                            }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // --- CATEGORY MIX CHART ---
+            const catCtx = document.getElementById('categoryChart').getContext('2d');
+            const catDataRaw = @Html.Raw(ViewBag.RevenueByCategoryJson ?? "[]");
+            
+            new Chart(catCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: catDataRaw.map(d => d.Category),
+                    datasets: [{
+                        data: catDataRaw.map(d => d.Revenue),
+                        backgroundColor: ['#0ea5e9', '#a855f7', '#10b981', '#f59e0b', '#ef4444', '#6366f1'],
+                        hoverOffset: 15,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: { size: 11 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                                    return ` ${context.label}: ${percentage}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // --- TOP PRODUCTS CHART ---
+            const topCtx = document.getElementById('topProductsChart').getContext('2d');
+            const topDataRaw = @Html.Raw(ViewBag.TopProductsJson ?? "[]");
+
+            new Chart(topCtx, {
+                type: 'bar',
+                data: {
+                    labels: topDataRaw.map(d => d.Name.length > 15 ? d.Name.substring(0, 15) + '...' : d.Name),
+                    datasets: [{
+                        label: 'Số lượng bán',
+                        data: topDataRaw.map(d => d.Qty),
+                        backgroundColor: '#f59e0b',
+                        borderRadius: 6,
+                        barThickness: 20
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,0.03)' },
+                            ticks: { precision: 0 }
+                        },
+                        y: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}

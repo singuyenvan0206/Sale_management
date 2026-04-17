@@ -124,5 +124,64 @@ namespace FashionStore.Data.Repositories
                 WHERE Id = @Id;";
             return await connection.ExecuteAsync(sql, new { Spend = spendPerPoint, VIP = vipMin, Gold = goldMin, Silver = silverMin, Id = customerId }) > 0;
         }
+
+        public async Task<int> BulkImportCustomersAsync(List<Customer> customers)
+        {
+            if (customers.Count == 0) return 0;
+            using var connection = GetConnection();
+            await connection.OpenAsync();
+            using var tx = await connection.BeginTransactionAsync();
+
+            try
+            {
+                const string sql = @"INSERT INTO Customers (Name, Phone, Email, Address, CustomerType, Points) 
+                                   VALUES (@Name, @Phone, @Email, @Address, @CustomerType, @Points);";
+
+                // Chunk into 500 records per batch for efficiency
+                for (int i = 0; i < customers.Count; i += 500)
+                {
+                    var chunk = customers.Skip(i).Take(500);
+                    await connection.ExecuteAsync(sql, chunk, transaction: tx);
+                }
+
+                await tx.CommitAsync();
+                return customers.Count;
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                return -1;
+            }
+        }
+
+        public async Task<IEnumerable<(int InvoiceId, DateTime CreatedAt, int ItemCount, decimal Total)>> GetCustomerPurchaseHistoryAsync(int customerId)
+        {
+            var sql = @"
+                SELECT 
+                    i.Id AS InvoiceId, 
+                    i.CreatedDate AS CreatedAt, 
+                    CAST(COALESCE(SUM(ii.Quantity), 0) AS SIGNED) AS ItemCount, 
+                    i.Total AS Total 
+                FROM Invoices i
+                LEFT JOIN InvoiceItems ii ON i.Id = ii.InvoiceId
+                WHERE i.CustomerId = @CustomerId
+                GROUP BY i.Id, i.CreatedDate, i.Total
+                ORDER BY i.Id ASC;";
+            
+            using var connection = GetConnection();
+            var result = await connection.QueryAsync<dynamic>(sql, new { CustomerId = customerId });
+            
+            var list = new List<(int InvoiceId, DateTime CreatedAt, int ItemCount, decimal Total)>();
+            foreach (var r in result)
+            {
+                list.Add((
+                    (int)r.InvoiceId, 
+                    (DateTime)r.CreatedAt, 
+                    (int)r.ItemCount, 
+                    Convert.ToDecimal(r.Total)
+                ));
+            }
+            return list;
+        }
     }
 }

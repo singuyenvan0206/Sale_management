@@ -1,5 +1,6 @@
 using FashionStore.Core.Interfaces;
 using FashionStore.Core.Models;
+using FashionStore.Core.Utils;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FashionStore.Services
@@ -21,6 +22,12 @@ namespace FashionStore.Services
             var products = await _productRepository.GetAllWithCategoriesAsync();
             _cacheService.Set(CacheKey, products, TimeSpan.FromMinutes(5));
             return products;
+        }
+
+        public async Task<PaginatedList<Product>> GetPagedProductsAsync(int pageIndex, int pageSize)
+        {
+            var (items, totalCount) = await _productRepository.GetPagedWithCategoriesAsync(pageIndex, pageSize);
+            return PaginatedList<Product>.Create(items, totalCount, pageIndex, pageSize);
         }
 
         public async Task<Product?> GetProductByCodeAsync(string code)
@@ -59,12 +66,10 @@ namespace FashionStore.Services
             return await _productRepository.GetLowStockProductsAsync(threshold);
         }
 
-        public async Task<bool> UpdateProductStockAsync(int productId, int newQuantity)
+        public async Task<bool> UpdateProductStockAsync(int productId, int delta)
         {
-            var product = await GetProductByIdAsync(productId);
-            if (product == null) return false;
-            product.StockQuantity = newQuantity;
-            bool success = await _productRepository.UpdateAsync(product);
+            // Use the atomic repository method to prevent race conditions during concurrent sales
+            bool success = await _productRepository.AdjustStockAsync(productId, delta);
             if (success) _cacheService.Remove(CacheKey);
             return success;
         }
@@ -156,24 +161,132 @@ namespace FashionStore.Services
         public async Task<int> FindProductIdByNameAsync(string productName) => await _productRepository.FindProductIdByNameAsync(productName);
         public static int FindProductIdByName(string productName) => RunSync(() => GetService().FindProductIdByNameAsync(productName));
 
+        // Variant Support Implementation
+        public async Task<IEnumerable<ProductVariant>> GetProductVariantsAsync(int productId)
+        {
+            return await _productRepository.GetVariantsAsync(productId);
+        }
+
+        public async Task<ProductVariant?> GetVariantByBarcodeAsync(string barcode)
+        {
+            return await _productRepository.GetVariantByBarcodeAsync(barcode);
+        }
+
+        public async Task<ProductVariant?> GetVariantByIdAsync(int variantId)
+        {
+            return await _productRepository.GetVariantByIdAsync(variantId);
+        }
+
+        public async Task<bool> AddVariantAsync(ProductVariant variant)
+        {
+            bool success = await _productRepository.AddVariantAsync(variant);
+            if (success) _cacheService.Remove(CacheKey);
+            return success;
+        }
+
+        public async Task<bool> UpdateVariantAsync(ProductVariant variant)
+        {
+            bool success = await _productRepository.UpdateVariantAsync(variant);
+            if (success) _cacheService.Remove(CacheKey);
+            return success;
+        }
+
+        public async Task<bool> DeleteVariantAsync(int variantId)
+        {
+            bool success = await _productRepository.DeleteVariantAsync(variantId);
+            if (success) _cacheService.Remove(CacheKey);
+            return success;
+        }
+
+        public async Task<bool> UpdateVariantStockAsync(int variantId, int delta)
+        {
+            // Use atomic adjustment for variants too
+            bool success = await _productRepository.AdjustVariantStockAsync(variantId, delta);
+            if (success) _cacheService.Remove(CacheKey);
+            return success;
+        }
+
         public static Product? GetProductByCode(string code) => RunSync(() => GetService().GetProductByCodeAsync(code));
 
         public static bool UpdateProductStock(int id, int qty) => RunSync(() => GetService().UpdateProductStockAsync(id, qty));
         public static Product? GetProductById(int id) => RunSync(() => GetService().GetProductByIdAsync(id));
 
-        // Note: CSV Import/Export methods left as-is for now (static) or moved to another service if needed.
-        // To keep this refactoring manageable, I'm focusing on the DB interaction layer.
+        public static int ImportProductsFromCsv(string filePath) => RunSync(() => GetService().ImportProductsFromCsvAsync(filePath));
+        public static bool ExportProductsToCsv(string filePath) => RunSync(() => GetService().ExportProductsToCsvAsync(filePath));
 
-        public static int ImportProductsFromCsv(string filePath)
+        public async Task<bool> ExportProductsToCsvAsync(string filePath)
         {
-            // Placeholder/Legacy - should be refactored to instance service
-            return -1;
+            try
+            {
+                var products = await _productRepository.GetAllWithCategoriesAsync();
+                var lines = new List<string> { "Mã,Tên,Danh mục,Giá bán,Giá nhập,Đơn vị,Số lượng,Tồn kho,Mô tả,Giảm giá,Bắt đầu KM,Kết thúc KM,Nhà cung cấp" };
+                foreach (var p in products)
+                {
+                    lines.Add($"{CsvHelper.Escape(p.Code)},{CsvHelper.Escape(p.Name)},{CsvHelper.Escape(p.CategoryName)},{p.SalePrice:F0},{p.PurchasePrice:F0},{CsvHelper.Escape(p.PurchaseUnit)},{p.ImportQuantity},{p.StockQuantity},{CsvHelper.Escape(p.Description)},{p.PromoDiscountPercent:F0},{p.PromoStartDate:dd/MM/yyyy},{p.PromoEndDate:dd/MM/yyyy},{CsvHelper.Escape(p.SupplierName)}");
+                }
+
+                await File.WriteAllLinesAsync(filePath, lines, System.Text.Encoding.UTF8);
+                return true;
+            }
+            catch { return false; }
         }
 
-        public static bool ExportProductsToCsv(string filePath)
+        public async Task<int> ImportProductsFromCsvAsync(string filePath)
         {
-            // Placeholder/Legacy - should be refactored to instance service
-            return false;
+            try
+            {
+                var lines = await File.ReadAllLinesAsync(filePath, System.Text.Encoding.UTF8);
+                if (lines.Length < 2) return 0;
+
+                var categories = (await _productRepository.GetAllWithCategoriesAsync())
+                    .Select(p => new { p.CategoryId, p.CategoryName })
+                    .Distinct()
+                    .ToDictionary(x => x.CategoryName ?? "", x => x.CategoryId);
+
+                int count = 0;
+                foreach (var line in lines.Skip(1))
+                {
+                    if (string.IsNullOrWhiteSpace(line)) continue;
+                    var cols = CsvHelper.ParseLine(line);
+                    if (cols.Length < 8) continue;
+
+                    string code = cols[0].Trim();
+                    string name = cols[1].Trim();
+                    string catName = cols[2].Trim();
+                    
+                    if (!categories.TryGetValue(catName, out int catId)) catId = 1; // Default category
+
+                    var product = new Product
+                    {
+                        Code = code,
+                        Name = name,
+                        CategoryId = catId,
+                        SalePrice = decimal.TryParse(cols[3], out var sp) ? sp : 0,
+                        PurchasePrice = decimal.TryParse(cols[4], out var pp) ? pp : 0,
+                        PurchaseUnit = cols[5].Trim(),
+                        ImportQuantity = int.TryParse(cols[6], out var iq) ? iq : 0,
+                        StockQuantity = int.TryParse(cols[7], out var sq) ? sq : 0,
+                        Description = cols.Length > 8 ? cols[8].Trim() : ""
+                    };
+
+                    // Update existing or add new
+                    var existing = await _productRepository.GetByCodeAsync(code);
+                    if (existing != null)
+                    {
+                        product.Id = existing.Id;
+                        await _productRepository.UpdateAsync(product);
+                    }
+                    else
+                    {
+                        await _productRepository.AddAsync(product);
+                    }
+                    count++;
+                }
+
+                _cacheService.Remove(CacheKey);
+                return count;
+            }
+            catch { return -1; }
         }
     }
 }

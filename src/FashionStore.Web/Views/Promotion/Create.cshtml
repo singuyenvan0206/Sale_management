@@ -1,0 +1,128 @@
+@model FashionStore.Core.Models.Promotion
+@{
+    ViewData["Title"] = "Tạo chương trình khuyến mãi";
+}
+
+<div class="animate-in">
+    <div style="margin-bottom: 2rem;">
+        <a asp-action="Index" style="color: var(--text-muted); text-decoration: none;"><i class="fas fa-arrow-left"></i> Quay lại danh sách</a>
+    </div>
+
+    <div class="glass" style="max-width: 900px; margin: 0 auto; padding: 2.5rem;">
+        <h2 class="gradient-text" style="margin-bottom: 2rem;">Cấu hình chương trình</h2>
+        
+        <form asp-action="Create" method="post" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            
+            <div style="grid-column: span 2;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Tên chương trình (VD: Xả hàng hè 2026)</label>
+                <input asp-for="Name" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" required />
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Loại hình</label>
+                <select asp-for="Type" id="promoType" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" onchange="toggleFields()">
+                    <option value="FlashSale">Flash Sale (Giảm giá trực tiếp)</option>
+                    <option value="BOGO">BOGO (Mua X tặng Y)</option>
+                    <option value="Combo">Combo ưu đãi</option>
+                </select>
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Trạng thái</label>
+                <div style="display: flex; align-items: center; gap: 0.5rem; height: 100%;">
+                    <input asp-for="IsActive" type="checkbox" style="width: 20px; height: 20px;" checked />
+                    <span>Kích hoạt ngay</span>
+                </div>
+            </div>
+
+            <div class="flash-sale-fields" style="grid-column: span 2; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div style="border-top: 1px solid var(--glass-border); grid-column: span 2; padding-top: 1rem; margin-top: 1rem;">
+                    <h4 style="color: var(--primary-color);">Cấu hình Flash Sale</h4>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Giảm theo %</label>
+                    <input asp-for="DiscountPercent" type="number" step="0.1" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" />
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Giảm số tiền cố định (đ)</label>
+                    <input asp-for="DiscountAmount" type="number" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" />
+                </div>
+                <div style="grid-column: span 2;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Áp dụng cho Danh mục (Tuỳ chọn)</label>
+                    <select asp-for="TargetCategoryId" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;">
+                        <option value="">-- Tất cả danh mục --</option>
+                        @foreach (var cat in ViewBag.Categories as IEnumerable<FashionStore.Core.Models.Category>)
+                        {
+                            <option value="@cat.Id">@cat.Name</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="bogo-fields" style="grid-column: span 2; display: none; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div style="border-top: 1px solid var(--glass-border); grid-column: span 2; padding-top: 1rem; margin-top: 1rem;">
+                    <h4 style="color: #ec4899;">Cấu hình Mua X tặng Y</h4>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Số lượng mua (X)</label>
+                    <input asp-for="RequiredQuantity" type="number" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" />
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Số lượng tặng (Y)</label>
+                    <input asp-for="RewardQuantity" type="number" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" />
+                </div>
+                <div style="grid-column: span 2;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Sản phẩm chính</label>
+                    <select asp-for="RequiredProductId" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;">
+                        <option value="">-- Chọn sản phẩm --</option>
+                        @foreach (var p in ViewBag.Products as IEnumerable<FashionStore.Core.Models.Product>)
+                        {
+                            <option value="@p.Id">@p.Name (@p.Code)</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div style="grid-column: span 2; border-top: 1px solid var(--glass-border); padding-top: 1rem; margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Ngày bắt đầu</label>
+                    <input asp-for="StartDate" type="datetime-local" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Ngày kết thúc</label>
+                    <input asp-for="EndDate" type="datetime-local" class="glass" style="width: 100%; padding: 0.75rem; background: #fff; color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 8px;" value="@DateTime.Now.AddDays(7).ToString("yyyy-MM-ddTHH:mm")" />
+                </div>
+            </div>
+
+            <div style="grid-column: span 2; margin-top: 1rem;">
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 1rem; font-weight: 700; letter-spacing: 1px;">
+                    <i class="fas fa-save"></i> LƯU CHƯƠNG TRÌNH KHUYẾN MÃI
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleFields() {
+            const type = document.getElementById('promoType').value;
+            const flash = document.querySelector('.flash-sale-fields');
+            const bogo = document.querySelector('.bogo-fields');
+            
+            if (type === 'FlashSale') {
+                flash.style.display = 'grid';
+                bogo.style.display = 'none';
+            } else if (type === 'BOGO') {
+                flash.style.display = 'none';
+                bogo.style.display = 'grid';
+            } else {
+                flash.style.display = 'grid';
+                bogo.style.display = 'grid';
+            }
+        }
+        
+        // Initial call
+        toggleFields();
+    </script>
+}

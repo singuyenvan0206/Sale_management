@@ -330,3 +330,15 @@ WpfApp1/products.csv
 fashion-store-web/.env
 .claude
 temp_runner/
+
+
+# Python Virtual Environment
+.venv/
+.env
+*.tmp
+
+# FashionStore Specific
+src/FashionStore.Web/bin/
+src/FashionStore.Web/obj/
+src/FashionStore.App/bin/
+src/FashionStore.App/obj/

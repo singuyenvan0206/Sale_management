@@ -7,6 +7,7 @@ namespace FashionStore.Core.Models
         public string Code { get; set; } = string.Empty;
         public int CategoryId { get; set; }
         public string CategoryName { get; set; } = string.Empty;
+        public string ImageUrl { get; set; } = string.Empty;
 
         public decimal SalePrice { get; set; }
         public decimal PurchasePrice { get; set; }
@@ -24,5 +25,7 @@ namespace FashionStore.Core.Models
         public decimal CategoryTaxPercent { get; set; }
         public int SupplierId { get; set; }
         public string SupplierName { get; set; } = string.Empty;
+
+        public List<ProductVariant> Variants { get; set; } = new();
     }
 }
