@@ -1,0 +1,95 @@
+@model FashionStore.Core.Models.PurchaseOrder
+@{
+    ViewData["Title"] = "Chi tiết đơn nhập #PO-" + Model.Id.ToString("D5");
+}
+
+<div class="header-actions animate-in" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+        <a asp-action="PurchaseOrders" style="text-decoration: none; color: var(--text-muted); font-size: 0.875rem;">
+            <i class="fas fa-arrow-left"></i> Quay lại danh sách
+        </a>
+        <h1 class="gradient-text">Chi tiết đơn nhập #PO-@Model.Id.ToString("D5")</h1>
+    </div>
+    <div style="display: flex; gap: 1rem;">
+        @if (Model.Status == "Draft" || Model.Status == "Pending")
+        {
+            <form asp-action="ReceivePO" method="post">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button type="submit" class="btn-primary" style="padding: 0.75rem 1.5rem;">
+                    <i class="fas fa-check-double"></i> Xác nhận nhập kho
+                </button>
+            </form>
+        }
+    </div>
+</div>
+
+<div class="dashboard-grid animate-in" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+    <div class="glass" style="padding: 1.5rem;">
+        <h3>Danh mục sản phẩm</h3>
+        <div class="table-container" style="margin-top: 1rem;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Số lượng</th>
+                        <th>Đơn giá</th>
+                        <th>Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>
+                                <div style="font-weight: 600;">@item.ProductName</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">@item.ProductCode</div>
+                            </td>
+                            <td>@item.Quantity</td>
+                            <td>@item.UnitPrice.ToString("C0")</td>
+                            <td style="font-weight: 600;">@item.LineTotal.ToString("C0")</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr style="border-top: 2px solid var(--glass-border);">
+                        <td colspan="3" style="text-align: right; font-weight: 700;">TỔNG CỘNG:</td>
+                        <td style="font-weight: 700; color: var(--primary-color); font-size: 1.2rem;">@Model.TotalAmount.ToString("C0")</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <div class="glass" style="padding: 1.5rem;">
+        <h3>Thông tin chung</h3>
+        <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+            <div>
+                <label style="color: var(--text-muted); font-size: 0.8rem;">Nhà cung cấp:</label>
+                <div style="font-weight: 600;">@Model.SupplierName</div>
+            </div>
+            <div>
+                <label style="color: var(--text-muted); font-size: 0.8rem;">Nhân viên lập:</label>
+                <div>@Model.EmployeeName</div>
+            </div>
+            <div>
+                <label style="color: var(--text-muted); font-size: 0.8rem;">Ngày tạo:</label>
+                <div>@Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")</div>
+            </div>
+            <div>
+                <label style="color: var(--text-muted); font-size: 0.8rem;">Trạng thái:</label>
+                <div>
+                     @{
+                        var statusStyle = "color: #94a3b8;";
+                        if (Model.Status == "Received") statusStyle = "color: #10b981;";
+                        if (Model.Status == "Cancelled") statusStyle = "color: #ef4444;";
+                    }
+                    <strong style="@statusStyle">@Model.Status</strong>
+                </div>
+            </div>
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--glass-border);">
+                <label style="color: var(--text-muted); font-size: 0.8rem;">Ghi chú:</label>
+                <div style="font-style: italic;">@(string.IsNullOrEmpty(Model.Notes) ? "Không có ghi chú" : Model.Notes)</div>
+            </div>
+        </div>
+    </div>
+</div>

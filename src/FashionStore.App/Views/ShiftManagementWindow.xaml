@@ -1,0 +1,131 @@
+<Window x:Class="FashionStore.App.Views.ShiftManagementWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:FashionStore.App.ViewModels"
+        Title="Ca Làm Việc" Height="700" Width="1000"
+        WindowStartupLocation="CenterScreen">
+    <Window.DataContext>
+        <vm:ShiftManagementViewModel/>
+    </Window.DataContext>
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="8"
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </Window.Resources>
+    <Grid Background="#F5F5F5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#1CB5E0" Padding="20">
+            <TextBlock Text="⏰ Quản Lý Ca Làm Việc" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="360"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: Clock In/Out Panel -->
+            <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                <!-- Status Card -->
+                <Border Background="White" CornerRadius="12" Padding="20" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="Nhân viên" Foreground="#64748B" FontSize="12"/>
+                        <TextBlock Text="{Binding EmployeeName}" FontSize="20" FontWeight="Bold" Foreground="#1E293B" Margin="0,4,0,16"/>
+
+                        <!-- Active Shift Info -->
+                        <Border Visibility="{Binding HasActiveShift, Converter={StaticResource BoolToVis}}"
+                                Background="#DCFCE7" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="✅ Đang trong ca làm việc" FontWeight="Bold" Foreground="#16A34A"/>
+                                <TextBlock Text="{Binding ActiveShift.ClockIn, StringFormat='Bắt đầu: {0:dd/MM/yyyy HH:mm}'}" 
+                                           Foreground="#15803D" FontSize="13" Margin="0,4,0,0"/>
+                                <TextBlock Text="{Binding ActiveShift.OpeningBalance, StringFormat='Tiền đầu ca: {0:C0}'}" 
+                                           Foreground="#15803D" FontSize="13"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Visibility="{Binding NoActiveShift, Converter={StaticResource BoolToVis}}"
+                                Background="#FEF2F2" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                            <TextBlock Text="⏸ Chưa bắt đầu ca" FontWeight="Bold" Foreground="#DC2626"/>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Clock In Form -->
+                <Border Background="White" CornerRadius="12" Padding="20" BorderBrush="#E0E0E0" BorderThickness="1"
+                        Visibility="{Binding NoActiveShift, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <TextBlock Text="Bắt đầu Ca Mới" FontSize="16" FontWeight="Bold" Margin="0,0,0,16" Foreground="#1E293B"/>
+                        <TextBlock Text="Tiền đầu ca (đ)" Foreground="#64748B"/>
+                        <TextBox Text="{Binding OpeningBalance, UpdateSourceTrigger=PropertyChanged}" 
+                                 Padding="8,6" Margin="0,4,0,12" BorderBrush="#E0E0E0" BorderThickness="1" FontSize="14"/>
+                        <TextBlock Text="Ghi chú" Foreground="#64748B"/>
+                        <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}" 
+                                 Padding="8,6" Margin="0,4,0,16" BorderBrush="#E0E0E0" BorderThickness="1" FontSize="14"
+                                 TextWrapping="Wrap" Height="60"/>
+                        <Button Content="▶ Bắt đầu ca" Background="#10B981" Foreground="White" 
+                                Command="{Binding ClockInCommand}" Height="40"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Clock Out Form -->
+                <Border Background="White" CornerRadius="12" Padding="20" BorderBrush="#E0E0E0" BorderThickness="1"
+                        Visibility="{Binding HasActiveShift, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <TextBlock Text="Kết thúc Ca" FontSize="16" FontWeight="Bold" Margin="0,0,0,16" Foreground="#1E293B"/>
+                        <TextBlock Text="Tiền cuối ca (đ)" Foreground="#64748B"/>
+                        <TextBox Text="{Binding ClosingBalance, UpdateSourceTrigger=PropertyChanged}" 
+                                 Padding="8,6" Margin="0,4,0,12" BorderBrush="#E0E0E0" BorderThickness="1" FontSize="14"/>
+                        <TextBlock Text="Ghi chú kết ca" Foreground="#64748B"/>
+                        <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}" 
+                                 Padding="8,6" Margin="0,4,0,16" BorderBrush="#E0E0E0" BorderThickness="1" FontSize="14"
+                                 TextWrapping="Wrap" Height="60"/>
+                        <Button Content="⏹ Kết thúc ca" Background="#EF4444" Foreground="White" 
+                                Command="{Binding ClockOutCommand}" Height="40"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- Right: Shift History -->
+            <Border Grid.Column="1" Background="White" CornerRadius="12" Padding="20" BorderBrush="#E0E0E0" BorderThickness="1">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,16">
+                        <TextBlock Text="📋 Lịch Sử Ca Làm Việc" FontSize="18" FontWeight="Bold" Foreground="#1E293B"/>
+                        <Button Content="🔄" Background="Transparent" Foreground="#64748B" Padding="8,4"
+                                Command="{Binding RefreshCommand}" Margin="8,0,0,0" FontSize="18"/>
+                    </StackPanel>
+                    <DataGrid ItemsSource="{Binding Shifts}" IsReadOnly="True" AutoGenerateColumns="False"
+                              HeadersVisibility="Column" GridLinesVisibility="None" BorderThickness="0"
+                              RowHeaderWidth="0" CanUserAddRows="False" AlternatingRowBackground="#F8FAFC">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Nhân viên" Binding="{Binding EmployeeName}" Width="120"/>
+                            <DataGridTextColumn Header="Giờ vào" Binding="{Binding ClockIn, StringFormat={}{0:dd/MM HH:mm}}" Width="110"/>
+                            <DataGridTextColumn Header="Giờ ra" Binding="{Binding ClockOut, StringFormat={}{0:dd/MM HH:mm}}" Width="110"/>
+                            <DataGridTextColumn Header="Tiền đầu ca" Binding="{Binding OpeningBalance, StringFormat={}{0:C0}}" Width="120"/>
+                            <DataGridTextColumn Header="Tiền cuối ca" Binding="{Binding ClosingBalance, StringFormat={}{0:C0}}" Width="120"/>
+                            <DataGridTextColumn Header="Ghi chú" Binding="{Binding Notes}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

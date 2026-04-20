@@ -31,9 +31,9 @@ namespace FashionStore.Services
             return await _customerRepository.GetByPhoneAsync(phone);
         }
 
-        public async Task<IEnumerable<Customer>> SearchCustomersAsync(string query)
+        public async Task<IEnumerable<Customer>> SearchCustomersAsync(string? query = null, string? sortBy = null, bool isDescending = false)
         {
-            return await _customerRepository.SearchAsync(query);
+            return await _customerRepository.SearchAsync(query, sortBy, isDescending);
         }
 
         public async Task<bool> AddCustomerAsync(Customer customer)

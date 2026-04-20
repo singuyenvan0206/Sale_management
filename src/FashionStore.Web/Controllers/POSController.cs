@@ -108,7 +108,17 @@ namespace FashionStore.Web.Controllers
         {
             if (request == null || request.Items == null || !request.Items.Any())
             {
-                return BadRequest("Cart is empty");
+                return BadRequest("Giỏ hàng đang trống.");
+            }
+
+            if (request.Items.Any(i => i.Quantity <= 0 || i.UnitPrice < 0))
+            {
+                return BadRequest("Số lượng sản phẩm phải lớn hơn 0 và đơn giá không được âm.");
+            }
+
+            if (request.Total < 0)
+            {
+                return BadRequest("Tổng số tiền không hợp lệ.");
             }
 
             try

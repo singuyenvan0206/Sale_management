@@ -219,7 +219,10 @@ namespace FashionStore.App.ViewModels
                 
                 LastUpdateText = DateTime.Now.ToString("HH:mm:ss dd/MM/yyyy");
             }
-            catch { }
+            catch (Exception ex)
+            {
+                AppLogger.Log(ex, "ReportsViewModel.RefreshKPIs");
+            }
         }
 
         private void GoToPage(string? text)

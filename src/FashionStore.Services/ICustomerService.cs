@@ -7,7 +7,7 @@ namespace FashionStore.Services
         Task<IEnumerable<Customer>> GetAllCustomersAsync();
         Task<Customer?> GetCustomerByIdAsync(int id);
         Task<Customer?> GetCustomerByPhoneAsync(string phone);
-        Task<IEnumerable<Customer>> SearchCustomersAsync(string query);
+        Task<IEnumerable<Customer>> SearchCustomersAsync(string? query = null, string? sortBy = null, bool isDescending = false);
         Task<bool> AddCustomerAsync(Customer customer);
         Task<bool> UpdateCustomerAsync(Customer customer);
         Task<bool> DeleteCustomerAsync(int id);

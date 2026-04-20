@@ -25,9 +25,9 @@ namespace FashionStore.Services
             return await _invoiceRepository.SaveInvoiceAsync(invoice, voucherId);
         }
 
-        public async Task<IEnumerable<Invoice>> SearchInvoicesAsync(DateTime? from, DateTime? to, int? customerId, string search)
+        public async Task<IEnumerable<Invoice>> SearchInvoicesAsync(DateTime? from, DateTime? to, int? customerId, string search, string? status = null, string? sortBy = null, bool isDescending = true)
         {
-            return await _invoiceRepository.SearchInvoicesAsync(from, to, customerId, search);
+            return await _invoiceRepository.SearchInvoicesAsync(from, to, customerId, search, status, sortBy, isDescending);
         }
 
         public async Task<(Invoice Header, List<InvoiceItem> Items)> GetInvoiceDetailsAsync(int invoiceId)

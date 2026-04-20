@@ -94,6 +94,10 @@ namespace FashionStore.App
             services.AddScoped<IInvoiceRepository, InvoiceRepository>();
             services.AddScoped<ISupplierRepository, SupplierRepository>();
             services.AddScoped<IPromotionRepository, PromotionRepository>();
+            services.AddScoped<IStockMovementRepository, StockMovementRepository>();
+            services.AddScoped<IPurchaseOrderRepository, PurchaseOrderRepository>();
+            services.AddScoped<IFinanceRepository, FinanceRepository>();
+            services.AddScoped<IShiftRepository, ShiftRepository>();
 
             // Services
             services.AddScoped<ISystemSettingsService, SystemSettingsService>();
@@ -107,9 +111,14 @@ namespace FashionStore.App
             services.AddScoped<IPromotionService, PromotionService>();
             services.AddScoped<ICalculationService, CalculationService>();
             services.AddScoped<IBankStatementService, SePayBankService>();
+            services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
+            services.AddScoped<IFinanceService, FinanceService>();
+            services.AddScoped<IShiftService, ShiftService>();
+            services.AddScoped<StockMovementService>();
 
             // Infrastructure
             services.AddSingleton<ICacheService, InMemoryCacheService>();
+            services.AddSingleton<FashionStore.Core.Interfaces.INotificationService, FashionStore.Services.NotificationService>();
 
             // ViewModels
             services.AddTransient<InvoiceManagementViewModel>();
@@ -153,22 +162,31 @@ namespace FashionStore.App
                 Log.Information("--- DONG UNG DUNG ---");
                 Log.CloseAndFlush();
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Error while closing Serilog on exit");
+            }
 
             try
             {
                 foreach (Window w in Current.Windows)
                 {
-                    try { w.Close(); } catch { }
+                    try { w.Close(); } catch (Exception ex) { Log.Warning(ex, "Error closing window {Window}", w.GetType().Name); }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Error while closing windows on exit");
+            }
 
             try
             {
                 MySql.Data.MySqlClient.MySqlConnection.ClearAllPools();
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Error clearing connection pools");
+            }
 
             try
             {
@@ -176,7 +194,10 @@ namespace FashionStore.App
                 System.GC.WaitForPendingFinalizers();
                 System.GC.Collect();
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Error during GC collect on exit");
+            }
 
             base.OnExit(e);
 

@@ -27,26 +27,42 @@ namespace FashionStore.Core.Settings
 
         public static SettingsConfig Load()
         {
+            var config = new SettingsConfig();
             try
             {
                 if (File.Exists(SettingsPath))
                 {
                     var json = File.ReadAllText(SettingsPath);
-                    var config = System.Text.Json.JsonSerializer.Deserialize<SettingsConfig>(json) ?? new SettingsConfig();
+                    config = System.Text.Json.JsonSerializer.Deserialize<SettingsConfig>(json) ?? new SettingsConfig();
 
                     if (config.IsPasswordEncrypted && !string.IsNullOrEmpty(config.Password))
                     {
                         config.Password = DecryptPassword(config.Password);
                     }
-
-                    return config;
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error loading settings: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error loading settings from file: {ex.Message}");
             }
-            return new SettingsConfig();
+
+            // Environment variable overrides (useful for production/docker/scripts)
+            var envServer = Environment.GetEnvironmentVariable("FS_DB_SERVER");
+            if (!string.IsNullOrEmpty(envServer)) config.Server = envServer;
+
+            var envPort = Environment.GetEnvironmentVariable("FS_DB_PORT");
+            if (!string.IsNullOrEmpty(envPort) && uint.TryParse(envPort, out var p)) config.Port = p;
+
+            var envDb = Environment.GetEnvironmentVariable("FS_DB_NAME");
+            if (!string.IsNullOrEmpty(envDb)) config.Database = envDb;
+
+            var envUser = Environment.GetEnvironmentVariable("FS_DB_USER");
+            if (!string.IsNullOrEmpty(envUser)) config.UserId = envUser;
+
+            var envPass = Environment.GetEnvironmentVariable("FS_DB_PASS");
+            if (!string.IsNullOrEmpty(envPass)) config.Password = envPass;
+
+            return config;
         }
 
         public static bool Save(SettingsConfig config, out string error)

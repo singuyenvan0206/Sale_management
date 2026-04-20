@@ -188,6 +188,23 @@ namespace FashionStore.App.Views
             catch { }
         }
 
+        private void NavList_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            // Forward mouse wheel events up to the parent ScrollViewer
+            // because ListBox swallows them by default
+            if (!e.Handled)
+            {
+                e.Handled = true;
+                var args = new System.Windows.Input.MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta)
+                {
+                    RoutedEvent = UIElement.MouseWheelEvent,
+                    Source = sender
+                };
+                var parent = ((System.Windows.Controls.Control)sender).Parent as UIElement;
+                parent?.RaiseEvent(args);
+            }
+        }
+
         private void NavList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (MainContentHost == null || DefaultContentScrollViewer == null)
@@ -212,11 +229,14 @@ namespace FashionStore.App.Views
                     "🔎 Tìm Kiếm Sản Phẩm" or "🔎 Search Products" => new ProductManagementWindow { DataContext = new ProductManagementViewModel { IsSearchMode = true } },
                     "📂 Danh Mục" or "📂 Categories" => new CategoryManagementWindow(),
                     "🏭 Nhà Cung Cấp" or "🏭 Suppliers" => new SupplierManagementWindow(),
+                    "📋 Quản Lý Kho" => new InventoryHubWindow(),
                     "🎟️ Mã Giảm Giá" or "🎟️ Vouchers" => new VoucherManagementWindow(),
                     "🎁 Chương Trình KM" or "🎁 Promotions" => new PromotionManagementWindow(),
                     "👥 Khách Hàng" or "👥 Customers" => new CustomerManagementWindow(),
                     "🧾 Hóa Đơn" or "🧾 Invoices" => new InvoiceManagementWindow(),
+                    "⏰ Ca Làm Việc" => new ShiftManagementWindow(),
                     "📊 Báo Cáo" or "📊 Reports" => new ReportsWindow(),
+                    "💰 Chi Phí & Tài Chính" => new FinanceManagementWindow(),
                     "👤 Quản Lý Người Dùng" or "👤 Users" => new UserManagementWindow(),
                     "⚙️ Cài Đặt" or "⚙️ Settings" => new SettingsWindow(),
                     "🚪 Đăng Xuất" or "Logout" => null,

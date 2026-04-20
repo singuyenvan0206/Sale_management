@@ -9,7 +9,7 @@ namespace FashionStore.Core.Interfaces
         Task<int> BulkImportInvoicesAsync(List<Invoice> invoices);
         Task<List<(Invoice Header, List<InvoiceItem> Items)>> GetAllInvoicesWithItemsAsync();
         Task<IEnumerable<Invoice>> GetInvoicesByDateRangeAsync(DateTime from, DateTime to);
-        Task<IEnumerable<Invoice>> SearchInvoicesAsync(DateTime? from, DateTime? to, int? customerId, string search);
+        Task<IEnumerable<Invoice>> SearchInvoicesAsync(DateTime? from, DateTime? to, int? customerId, string search, string? status = null, string? sortBy = null, bool isDescending = true);
         Task<decimal> GetTotalRevenueAsync(DateTime from, DateTime to);
         Task<decimal> GetTotalCostAsync(DateTime from, DateTime to);
         Task<decimal> GetTotalProfitAsync(DateTime from, DateTime to);

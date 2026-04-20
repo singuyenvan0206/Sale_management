@@ -126,7 +126,10 @@ namespace FashionStore.App.ViewModels
 
                 LoadHomeCharts(monthStart, monthEnd);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                AppLogger.Log(ex, "DashboardViewModel.LoadKpis");
+            }
         }
 
         private void LoadHomeCharts(DateTime monthStart, DateTime monthEnd)
@@ -205,7 +208,10 @@ namespace FashionStore.App.ViewModels
                 LowStockAlertCount = count.ToString();
                 IsLowStockAlertEnabled = count > 0;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                AppLogger.Log(ex, "DashboardViewModel.LoadLowStockAlert");
+            }
         }
 
         private void ExecuteLogout(object? parameter)

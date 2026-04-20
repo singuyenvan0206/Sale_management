@@ -11,15 +11,18 @@ namespace FashionStore.Web.Controllers
         private readonly IInvoiceService _invoiceService;
         private readonly IProductService _productService;
         private readonly ICustomerService _customerService;
+        private readonly IFinanceService _financeService;
 
         public DashboardController(
             IInvoiceService invoiceService,
             IProductService productService,
-            ICustomerService customerService)
+            ICustomerService customerService,
+            IFinanceService financeService)
         {
             _invoiceService = invoiceService;
             _productService = productService;
             _customerService = customerService;
+            _financeService = financeService;
         }
 
         public async Task<IActionResult> Index()
@@ -36,8 +39,14 @@ namespace FashionStore.Web.Controllers
             // Financial Metrics for current month
             var firstOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
             var now = DateTime.Now;
+            
+            decimal grossProfit = await _invoiceService.GetProfitAsync(firstOfMonth, now);
+            decimal totalExpenses = await _financeService.GetTotalExpensesAsync(firstOfMonth, now);
+            
             ViewBag.MonthlyCost = await _invoiceService.GetCostAsync(firstOfMonth, now);
-            ViewBag.MonthlyProfit = await _invoiceService.GetProfitAsync(firstOfMonth, now);
+            ViewBag.MonthlyExpenses = totalExpenses;
+            ViewBag.MonthlyNetProfit = grossProfit - totalExpenses;
+            ViewBag.ProfitMargin = (ViewBag.TotalRevenue > 0) ? (ViewBag.MonthlyNetProfit / ViewBag.TotalRevenue * 100) : 0;
 
             // Analytics data for charts
             var last30Days = DateTime.Now.AddDays(-30);

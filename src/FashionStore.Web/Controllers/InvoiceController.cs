@@ -15,9 +15,17 @@ namespace FashionStore.Web.Controllers
             _invoiceService = invoiceService;
         }
 
-        public async Task<IActionResult> Index(DateTime? from, DateTime? to, string search = "")
+        public async Task<IActionResult> Index(DateTime? from, DateTime? to, string search = "", string? status = null, string? sortBy = null, bool isDescending = true)
         {
-            var invoices = await _invoiceService.SearchInvoicesAsync(from, to, null, search);
+            var invoices = await _invoiceService.SearchInvoicesAsync(from, to, null, search, status, sortBy, isDescending);
+            
+            ViewBag.CurrentFrom = from?.ToString("yyyy-MM-dd");
+            ViewBag.CurrentTo = to?.ToString("yyyy-MM-dd");
+            ViewBag.CurrentSearch = search;
+            ViewBag.CurrentStatus = status;
+            ViewBag.CurrentSortBy = sortBy;
+            ViewBag.IsDescending = isDescending;
+
             return View(invoices);
         }
 

@@ -1,6 +1,7 @@
 using Dapper;
 using FashionStore.Core.Interfaces;
 using FashionStore.Core.Models;
+using System.Text;
 
 namespace FashionStore.Data.Repositories
 {
@@ -28,13 +29,32 @@ namespace FashionStore.Data.Repositories
             return await connection.QueryFirstOrDefaultAsync<Customer>(sql, new { Phone = phone });
         }
 
-        public async Task<IEnumerable<Customer>> SearchAsync(string query)
+        public async Task<IEnumerable<Customer>> SearchAsync(string? query = null, string? sortBy = null, bool isDescending = false)
         {
             using var connection = GetConnection();
-            string sql = @"SELECT Id, Name, Phone, Email, Address, CustomerType, Points, IFNULL(TotalSpent, 0) AS TotalSpent 
-                           FROM Customers WHERE Name LIKE @Q OR Phone LIKE @Q OR Email LIKE @Q 
-                           ORDER BY Id ASC LIMIT 100;";
-            return await connection.QueryAsync<Customer>(sql, new { Q = $"%{query}%" });
+            var sb = new StringBuilder();
+            sb.Append(@"SELECT Id, Name, Phone, Email, Address, CustomerType, Points, IFNULL(TotalSpent, 0) AS TotalSpent 
+                        FROM Customers WHERE 1=1");
+            
+            var p = new DynamicParameters();
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                sb.Append(" AND (Name LIKE @Q OR Phone LIKE @Q OR Email LIKE @Q)");
+                p.Add("Q", $"%{query}%");
+            }
+
+            string sortField = "Id";
+            switch (sortBy?.ToLower())
+            {
+                case "name": sortField = "Name"; break;
+                case "spent": sortField = "TotalSpent"; break;
+                case "points": sortField = "Points"; break;
+                case "type": sortField = "CustomerType"; break;
+            }
+            string direction = isDescending ? "DESC" : "ASC";
+            sb.Append($" ORDER BY {sortField} {direction} LIMIT 1000;");
+
+            return await connection.QueryAsync<Customer>(sb.ToString(), p);
         }
 
         public async Task<bool> AddAsync(Customer entity)

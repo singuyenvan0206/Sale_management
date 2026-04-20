@@ -22,7 +22,56 @@
     </div>
 </div>
 
-<div class="glass animate-in" style="animation-delay: 0.1s;">
+<div class="glass animate-in" style="animation-delay: 0.1s; margin-bottom: 2rem; padding: 1.5rem; border: 1px solid var(--glass-border);">
+    <form method="get" style="display: flex; gap: 1.5rem; align-items: flex-end; flex-wrap: wrap;">
+        <div style="flex: 2; min-width: 250px;">
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Tìm kiếm</label>
+            <div style="position: relative;">
+                <i class="fas fa-search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--primary-color); opacity: 0.7;"></i>
+                <input type="text" name="search" value="@ViewBag.CurrentSearch" placeholder="Tên hoặc mã sản phẩm..." 
+                       style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.8rem; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03); color: var(--text-main); outline: none; transition: all 0.3s;" 
+                       onfocus="this.style.borderColor='var(--primary-color)'; this.style.background='rgba(255,255,255,0.07)'"
+                       onblur="this.style.borderColor='var(--glass-border)'; this.style.background='rgba(255,255,255,0.03)'"/>
+            </div>
+        </div>
+        <div style="flex: 1; min-width: 180px;">
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Danh mục</label>
+            <select name="categoryId" style="width: 100%; padding: 0.75rem; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03); color: var(--text-main); outline: none; cursor: pointer;">
+                <option value="">Tất cả danh mục</option>
+                @foreach (var cat in ViewBag.Categories)
+                {
+                    <option value="@cat.Id" selected="@(ViewBag.CurrentCategoryId == cat.Id)">@cat.Name</option>
+                }
+            </select>
+        </div>
+        <div style="flex: 1; min-width: 180px;">
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Sắp xếp</label>
+            <select name="sortBy" style="width: 100%; padding: 0.75rem; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03); color: var(--text-main); outline: none; cursor: pointer;">
+                <option value="id" selected="@(ViewBag.CurrentSortBy == "id")">Mặc định</option>
+                <option value="name" selected="@(ViewBag.CurrentSortBy == "name")">Tên sản phẩm</option>
+                <option value="price" selected="@(ViewBag.CurrentSortBy == "price")">Giá bán</option>
+                <option value="stock" selected="@(ViewBag.CurrentSortBy == "stock")">Tồn kho</option>
+            </select>
+        </div>
+        <div style="width: 120px;">
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Thứ tự</label>
+            <select name="isDescending" style="width: 100%; padding: 0.75rem; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03); color: var(--text-main); outline: none; cursor: pointer;">
+                <option value="false" selected="@(ViewBag.IsDescending == false)">Tăng dần</option>
+                <option value="true" selected="@(ViewBag.IsDescending == true)">Giảm dần</option>
+            </select>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+            <button type="submit" class="btn-primary" style="padding: 0.75rem 1.5rem; height: 48px; border-radius: 12px; font-weight: 600;">
+                <i class="fas fa-filter"></i> Lọc
+            </button>
+            <a asp-action="Index" class="nav-link glass" style="padding: 0.75rem 1rem; border-radius: 12px; display: flex; align-items: center; justify-content: center; height: 48px; border: none; background: rgba(255,255,255,0.05);">
+                <i class="fas fa-sync-alt"></i>
+            </a>
+        </div>
+    </form>
+</div>
+
+<div class="glass animate-in" style="animation-delay: 0.15s;">
     <div class="table-container">
         <table id="productTable">
             <thead>
@@ -91,6 +140,10 @@
             <div class="pagination-controls" style="display: flex; gap: 0.5rem;">
                 <a asp-action="Index" 
                    asp-route-page="@(Model.PageIndex - 1)" 
+                   asp-route-search="@ViewBag.CurrentSearch"
+                   asp-route-categoryId="@ViewBag.CurrentCategoryId"
+                   asp-route-sortBy="@ViewBag.CurrentSortBy"
+                   asp-route-isDescending="@ViewBag.IsDescending"
                    class="nav-link glass @(Model.HasPreviousPage ? "" : "disabled")" 
                    style="padding: 0.5rem 1rem; text-decoration: none; border-radius: 8px; @(Model.HasPreviousPage ? "" : "opacity: 0.3; pointer-events: none;")">
                     <i class="fas fa-chevron-left"></i> Trước
@@ -102,6 +155,10 @@
                     {
                         <a asp-action="Index" 
                            asp-route-page="@i" 
+                           asp-route-search="@ViewBag.CurrentSearch"
+                           asp-route-categoryId="@ViewBag.CurrentCategoryId"
+                           asp-route-sortBy="@ViewBag.CurrentSortBy"
+                           asp-route-isDescending="@ViewBag.IsDescending"
                            class="nav-link glass @(i == Model.PageIndex ? "active" : "")" 
                            style="padding: 0.5rem 1rem; text-decoration: none; border-radius: 8px; @(i == Model.PageIndex ? "background: var(--primary-color); color: white;" : "")">
                             @i
@@ -115,6 +172,10 @@
 
                 <a asp-action="Index" 
                    asp-route-page="@(Model.PageIndex + 1)" 
+                   asp-route-search="@ViewBag.CurrentSearch"
+                   asp-route-categoryId="@ViewBag.CurrentCategoryId"
+                   asp-route-sortBy="@ViewBag.CurrentSortBy"
+                   asp-route-isDescending="@ViewBag.IsDescending"
                    class="nav-link glass @(Model.HasNextPage ? "" : "disabled")" 
                    style="padding: 0.5rem 1rem; text-decoration: none; border-radius: 8px; @(Model.HasNextPage ? "" : "opacity: 0.3; pointer-events: none;")">
                     Tiếp <i class="fas fa-chevron-right"></i>

@@ -34,6 +34,7 @@ namespace FashionStore.Data
                 CreateCustomerVoucherUsageTable(connection);
                 CreatePromotionsTable(connection);
                 MigratePromotionsTable(connection);
+                CreateErpTables(connection);
                 
                 SeedSampleData(connection);
                 FixIncorrectProductCategories(connection);
@@ -955,20 +956,93 @@ namespace FashionStore.Data
             }
         }
 
-        private static bool ColumnExists(MySqlConnection connection, string tableName, string columnName)
+        private static void CreateErpTables(MySqlConnection connection)
         {
             try
             {
-                // Note: Table and Column names cannot be parameterized in MySQL SHOW commands using standard parameters,
-                // but since these are coming from internal migration literals, we keep them but clean the usage.
-                string checkCmd = "SHOW COLUMNS FROM " + tableName + " LIKE @Col;";
-                var result = connection.ExecuteScalar<string>(checkCmd, new { Col = columnName });
-                return result != null;
+                connection.Execute(@"CREATE TABLE IF NOT EXISTS PurchaseOrders (
+                    Id INT AUTO_INCREMENT PRIMARY KEY,
+                    SupplierId INT NOT NULL,
+                    EmployeeId INT NOT NULL,
+                    TotalAmount DECIMAL(15,2) NOT NULL,
+                    PaidAmount DECIMAL(15,2) NOT NULL DEFAULT 0,
+                    Status VARCHAR(50) DEFAULT 'Draft',
+                    Notes TEXT,
+                    CreatedDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    ReceivedDate DATETIME NULL,
+                    FOREIGN KEY (SupplierId) REFERENCES Suppliers(Id),
+                    FOREIGN KEY (EmployeeId) REFERENCES Accounts(Id)
+                );");
+
+                connection.Execute(@"CREATE TABLE IF NOT EXISTS PurchaseOrderItems (
+                    Id INT AUTO_INCREMENT PRIMARY KEY,
+                    PurchaseOrderId INT NOT NULL,
+                    ProductId INT NOT NULL,
+                    Quantity INT NOT NULL,
+                    UnitPrice DECIMAL(15,2) NOT NULL,
+                    LineTotal DECIMAL(15,2) NOT NULL,
+                    FOREIGN KEY (PurchaseOrderId) REFERENCES PurchaseOrders(Id) ON DELETE CASCADE,
+                    FOREIGN KEY (ProductId) REFERENCES Products(Id)
+                );");
+
+                connection.Execute(@"CREATE TABLE IF NOT EXISTS Expenses (
+                    Id INT AUTO_INCREMENT PRIMARY KEY,
+                    Category VARCHAR(100) NOT NULL,
+                    Amount DECIMAL(15,2) NOT NULL,
+                    CreatedDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    Description TEXT,
+                    EmployeeId INT NOT NULL,
+                    FOREIGN KEY (EmployeeId) REFERENCES Accounts(Id)
+                );");
+
+                // Ensure CreatedDate exists if the table was created with 'Date' before
+                if (TableExists(connection, "Expenses") && ColumnExists(connection, "Expenses", "Date") && !ColumnExists(connection, "Expenses", "CreatedDate"))
+                {
+                    connection.Execute("ALTER TABLE Expenses CHANGE COLUMN Date CreatedDate DATETIME DEFAULT CURRENT_TIMESTAMP;");
+                }
+
+                connection.Execute(@"CREATE TABLE IF NOT EXISTS EmployeeShifts (
+                    Id INT AUTO_INCREMENT PRIMARY KEY,
+                    EmployeeId INT NOT NULL,
+                    ClockIn DATETIME NOT NULL,
+                    ClockOut DATETIME NULL,
+                    OpeningBalance DECIMAL(15,2) NOT NULL DEFAULT 0,
+                    ClosingBalance DECIMAL(15,2) NULL,
+                    Notes TEXT,
+                    FOREIGN KEY (EmployeeId) REFERENCES Accounts(Id)
+                );");
+
+                // Ensure columns match if created with different names before
+                if (TableExists(connection, "EmployeeShifts"))
+                {
+                    if (ColumnExists(connection, "EmployeeShifts", "StartTime"))
+                        connection.Execute("ALTER TABLE EmployeeShifts CHANGE COLUMN StartTime ClockIn DATETIME NOT NULL;");
+                    if (ColumnExists(connection, "EmployeeShifts", "EndTime"))
+                        connection.Execute("ALTER TABLE EmployeeShifts CHANGE COLUMN EndTime ClockOut DATETIME NULL;");
+                    if (ColumnExists(connection, "EmployeeShifts", "StartCash"))
+                        connection.Execute("ALTER TABLE EmployeeShifts CHANGE COLUMN StartCash OpeningBalance DECIMAL(15,2) NOT NULL DEFAULT 0;");
+                    if (ColumnExists(connection, "EmployeeShifts", "EndCash"))
+                        connection.Execute("ALTER TABLE EmployeeShifts CHANGE COLUMN EndCash ClosingBalance DECIMAL(15,2) NULL;");
+                }
+
+                Debug.WriteLine("ERP tables checked/created.");
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                Debug.WriteLine($"Error creating ERP tables: {ex.Message}");
             }
+        }
+
+        private static bool TableExists(MySqlConnection connection, string tableName)
+        {
+            string sql = "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = @TableName AND table_schema = DATABASE();";
+            return connection.ExecuteScalar<int>(sql, new { TableName = tableName }) > 0;
+        }
+
+        private static bool ColumnExists(MySqlConnection connection, string tableName, string columnName)
+        {
+            string sql = "SELECT COUNT(*) FROM information_schema.columns WHERE table_name = @TableName AND column_name = @ColumnName AND table_schema = DATABASE();";
+            return connection.ExecuteScalar<int>(sql, new { TableName = tableName, ColumnName = columnName }) > 0;
         }
 
         private static int ExecuteNonQuery(MySqlConnection connection, string sql, object? param = null)

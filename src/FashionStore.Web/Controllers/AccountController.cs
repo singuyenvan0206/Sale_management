@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
 namespace FashionStore.Web.Controllers
@@ -10,10 +11,12 @@ namespace FashionStore.Web.Controllers
     public class AccountController : Controller
     {
         private readonly IUserService _userService;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(IUserService userService)
+        public AccountController(IUserService userService, ILogger<AccountController> logger)
         {
             _userService = userService;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -24,6 +27,7 @@ namespace FashionStore.Web.Controllers
         }
 
         [HttpPost]
+        [EnableRateLimiting("LoginPolicy")]
         public async Task<IActionResult> Login(string username, string password, string? returnUrl = null)
         {
             var loginResult = await _userService.ValidateLoginAsync(username, password);
@@ -48,6 +52,9 @@ namespace FashionStore.Web.Controllers
                     new ClaimsPrincipal(claimsIdentity),
                     authProperties);
 
+                _logger.LogInformation("User '{Username}' logged in from {IP}",
+                    username, HttpContext.Connection.RemoteIpAddress);
+
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 {
                     return Redirect(returnUrl);
@@ -55,6 +62,8 @@ namespace FashionStore.Web.Controllers
                 return RedirectToAction("Index", "Dashboard");
             }
 
+            _logger.LogWarning("Failed login attempt for username '{Username}' from {IP}",
+                username, HttpContext.Connection.RemoteIpAddress);
             ModelState.AddModelError(string.Empty, "Tên đăng nhập hoặc mật khẩu không chính xác.");
             return View();
         }
@@ -62,10 +71,12 @@ namespace FashionStore.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
+            var username = User.Identity?.Name;
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            _logger.LogInformation("User '{Username}' logged out", username);
             return RedirectToAction("Login");
         }
-        
+
         [HttpGet]
         public IActionResult AccessDenied()
         {

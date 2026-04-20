@@ -21,12 +21,56 @@
                 <input type="file" id="csvImport" name="file" onchange="this.form.submit()" style="display: none;" accept=".csv" />
             </form>
         </div>
-        
-        <form method="get" style="display: flex; gap: 0.5rem;" class="glass" style="padding: 0.5rem; border-radius: 12px; border: 1px solid var(--glass-border); background: #fff;">
-            <input type="text" name="search" placeholder="Số điện thoại / Tên khách..." style="background: transparent; border: none; color: var(--text-main); padding: 0.5rem; outline: none;" />
-            <button type="submit" class="btn-primary" style="padding: 0.5rem 1rem;"><i class="fas fa-search"></i></button>
-        </form>
     </div>
+</div>
+
+<div class="glass animate-in" style="animation-delay: 0.1s; margin-bottom: 2rem; padding: 1.5rem; border: 1px solid var(--glass-border);">
+    <form method="get" style="display: flex; gap: 1.5rem; align-items: flex-end; flex-wrap: wrap;">
+        <div style="flex: 2; min-width: 250px;">
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Tìm kiếm</label>
+            <div style="position: relative;">
+                <i class="fas fa-search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--primary-color); opacity: 0.7;"></i>
+                <input type="text" name="search" value="@ViewBag.CurrentSearch" placeholder="Mã HĐ, tên hoặc SĐT khách..." 
+                       style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.8rem; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03); color: var(--text-main); outline: none;" />
+            </div>
+        </div>
+        <div style="width: 160px;">
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Từ ngày</label>
+            <input type="date" name="from" value="@ViewBag.CurrentFrom" 
+                   style="width: 100%; padding: 0.75rem; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03); color: var(--text-main); outline: none;" />
+        </div>
+        <div style="width: 160px;">
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Đến ngày</label>
+            <input type="date" name="to" value="@ViewBag.CurrentTo" 
+                   style="width: 100%; padding: 0.75rem; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03); color: var(--text-main); outline: none;" />
+        </div>
+        <div style="width: 160px;">
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Trạng thái</label>
+            <select name="status" style="width: 100%; padding: 0.75rem; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03); color: var(--text-main); outline: none; cursor: pointer;">
+                <option value="">Tất cả</option>
+                <option value="Completed" selected="@(ViewBag.CurrentStatus == "Completed")">Hoàn thành</option>
+                <option value="Draft" selected="@(ViewBag.CurrentStatus == "Draft")">Bản nháp</option>
+                <option value="Refunded" selected="@(ViewBag.CurrentStatus == "Refunded")">Đã hoàn tiền</option>
+                <option value="Cancelled" selected="@(ViewBag.CurrentStatus == "Cancelled")">Đã huỷ</option>
+            </select>
+        </div>
+        <div style="width: 160px;">
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Sắp xếp</label>
+            <select name="sortBy" style="width: 100%; padding: 0.75rem; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03); color: var(--text-main); outline: none; cursor: pointer;">
+                <option value="date" selected="@(ViewBag.CurrentSortBy == "date")">Ngày tạo</option>
+                <option value="total" selected="@(ViewBag.CurrentSortBy == "total")">Tổng tiền</option>
+                <option value="id" selected="@(ViewBag.CurrentSortBy == "id")">Mã hoá đơn</option>
+            </select>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+            <button type="submit" class="btn-primary" style="padding: 0.75rem 1.5rem; height: 48px; border-radius: 12px; font-weight: 600;">
+                <i class="fas fa-filter"></i> Lọc
+            </button>
+            <a asp-action="Index" class="nav-link glass" style="padding: 0.75rem 1rem; border-radius: 12px; display: flex; align-items: center; justify-content: center; height: 48px; border: none; background: rgba(255,255,255,0.05);">
+                <i class="fas fa-sync-alt"></i>
+            </a>
+        </div>
+    </form>
 </div>
 
 @if (TempData["Success"] != null)
@@ -36,7 +80,7 @@
     </div>
 }
 
-<div class="glass animate-in" style="animation-delay: 0.1s;">
+<div class="glass animate-in" style="animation-delay: 0.15s;">
     <div class="table-container">
         <table id="invoiceTable">
             <thead>
@@ -44,8 +88,8 @@
                     <th>Mã HĐ</th>
                     <th>Thời gian</th>
                     <th>Khách hàng</th>
+                    <th>Thanh toán</th>
                     <th>Tổng tiền</th>
-                    <th>Đã thanh toán</th>
                     <th>Trạng thái</th>
                     <th>Thao tác</th>
                 </tr>
@@ -55,22 +99,36 @@
                 {
                     <tr class="glass-hover-row">
                         <td style="font-weight: 600; color: var(--primary-color);">#@invoice.Id.ToString("D5")</td>
-                        <td>@invoice.CreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
                         <td>
-                            <div>@invoice.CustomerName</div>
-                            <div style="font-size: 0.75rem; color: var(--text-muted);">@invoice.CustomerPhone</div>
+                            <div>@invoice.CreatedDate.ToString("dd/MM/yyyy")</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">@invoice.CreatedDate.ToString("HH:mm")</div>
                         </td>
-                        <td style="font-weight: 700;">@invoice.Total.ToString("C0")</td>
-                        <td style="color: #10b981;">@invoice.Paid.ToString("C0")</td>
                         <td>
-                            <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                            <div style="font-weight: 600;">@invoice.CustomerName</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);"><i class="fas fa-phone-alt"></i> @invoice.CustomerPhone</div>
+                        </td>
+                        <td>
+                            <div style="font-size: 0.875rem;">@invoice.PaymentMethod</div>
+                            <div style="font-size: 0.75rem; color: #10b981;">Đã trả: @invoice.Paid.ToString("C0")</div>
+                        </td>
+                        <td style="font-weight: 700; font-size: 1.1rem; color: var(--primary-color);">@invoice.Total.ToString("C0")</td>
+                        <td>
+                            @{
+                                var statusStyle = "background: rgba(16, 185, 129, 0.1); color: #10b981;";
+                                if (invoice.Status == "Cancelled") statusStyle = "background: rgba(239, 68, 68, 0.1); color: #ef4444;";
+                                if (invoice.Status == "Draft") statusStyle = "background: rgba(245, 158, 11, 0.1); color: #f59e0b;";
+                                if (invoice.Status == "Refunded") statusStyle = "background: rgba(99, 102, 241, 0.1); color: #6366f1;";
+                            }
+                            <span style="@statusStyle padding: 0.35rem 0.85rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em;">
                                 @invoice.Status
                             </span>
                         </td>
                         <td>
-                            <a asp-action="Details" asp-route-id="@invoice.Id" class="nav-link" style="padding: 0.4rem; display: inline-flex; border: none; background: transparent;">
-                                <i class="fas fa-eye"></i>
-                            </a>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <a asp-action="Details" asp-route-id="@invoice.Id" class="nav-link glass" style="padding: 0.5rem; border: none; background: rgba(255,255,255,0.05); color: var(--text-muted);">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                 }

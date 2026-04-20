@@ -132,10 +132,11 @@
                     </Border>
                     
                     <!-- Navigation Menu -->
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden">
                         <StackPanel Margin="0,20,0,0">
                             <ListBox x:Name="NavList" 
-                                     SelectionChanged="NavList_SelectionChanged" 
+                                     SelectionChanged="NavList_SelectionChanged"
+                                     PreviewMouseWheel="NavList_PreviewMouseWheel"
                                      Background="Transparent" 
                                      BorderThickness="0" 
                                      Foreground="#CBD5E1">
@@ -188,12 +189,15 @@
                                 <ListBoxItem x:Name="ProductsNavItem" Content="📦 Sản Phẩm" />
                                 <ListBoxItem x:Name="CategoriesNavItem" Content="📂 Danh Mục"/>
                                 <ListBoxItem x:Name="SuppliersNavItem" Content="🏭 Nhà Cung Cấp"/>
+                                <ListBoxItem x:Name="InventoryNavItem" Content="📋 Quản Lý Kho"/>
                                 <ListBoxItem x:Name="VouchersNavItem" Content="🎟️ Mã Giảm Giá"/>
                                 <ListBoxItem x:Name="PromotionsNavItem" Content="🎁 Chương Trình KM"/>
                                 <ListBoxItem x:Name="ProductSearchNavItem" Content="🔎 Tìm Kiếm Sản Phẩm" Visibility="Visible"/>
                                 <ListBoxItem x:Name="CustomersNavItem" Content="👥 Khách Hàng"/>
                                 <ListBoxItem x:Name="InvoicesNavItem" Content="🧾 Hóa Đơn"/>
+                                <ListBoxItem x:Name="ShiftsNavItem" Content="⏰ Ca Làm Việc"/>
                                 <ListBoxItem x:Name="ReportsNavItem" Content="📊 Báo Cáo"/>
+                                <ListBoxItem x:Name="FinanceNavItem" Content="💰 Chi Phí &amp; Tài Chính"/>
                                 <ListBoxItem x:Name="UserManagementNavItem" Content="👤 Quản Lý Người Dùng"/>
                                 <ListBoxItem x:Name="SettingsNavItem" Content="⚙️ Cài Đặt"/>
                             </ListBox>

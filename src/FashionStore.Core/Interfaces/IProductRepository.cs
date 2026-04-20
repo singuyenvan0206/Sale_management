@@ -5,7 +5,7 @@ namespace FashionStore.Core.Interfaces
     public interface IProductRepository
     {
         Task<IEnumerable<Product>> GetAllWithCategoriesAsync();
-        Task<(IEnumerable<Product> Items, int TotalCount)> GetPagedWithCategoriesAsync(int pageIndex, int pageSize);
+        Task<(IEnumerable<Product> Items, int TotalCount)> GetPagedWithCategoriesAsync(int pageIndex, int pageSize, string? search = null, int? categoryId = null, string? sortBy = null, bool isDescending = false);
         Task<Product?> GetByCodeAsync(string code);
         Task<Product?> GetByIdAsync(int id);
         Task<bool> AddAsync(Product product);

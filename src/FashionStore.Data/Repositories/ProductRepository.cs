@@ -4,6 +4,7 @@ using FashionStore.Core.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text;
 
 namespace FashionStore.Data.Repositories
 {
@@ -24,29 +25,60 @@ namespace FashionStore.Data.Repositories
             return MapProductsWithVariants(result);
         }
 
-        public async Task<(IEnumerable<Product> Items, int TotalCount)> GetPagedWithCategoriesAsync(int pageIndex, int pageSize)
+        public async Task<(IEnumerable<Product> Items, int TotalCount)> GetPagedWithCategoriesAsync(int pageIndex, int pageSize, string? search = null, int? categoryId = null, string? sortBy = null, bool isDescending = false)
         {
             using var connection = GetConnection();
             int offset = (pageIndex - 1) * pageSize;
 
-            // 1. Get total count
-            int totalCount = await connection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Products;");
+            var parameters = new DynamicParameters();
+            parameters.Add("PageSize", pageSize);
+            parameters.Add("Offset", offset);
 
-            // 2. Get paged product ids first (to avoid duplications when joining with variants)
-            string idSql = "SELECT Id FROM Products ORDER BY Id ASC LIMIT @PageSize OFFSET @Offset;";
-            var productIds = await connection.QueryAsync<int>(idSql, new { PageSize = pageSize, Offset = offset });
+            string whereClause = " WHERE 1=1 ";
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                whereClause += " AND (p.Name LIKE @Search OR p.Code LIKE @Search) ";
+                parameters.Add("Search", $"%{search}%");
+            }
+            if (categoryId.HasValue)
+            {
+                whereClause += " AND p.CategoryId = @CategoryId ";
+                parameters.Add("CategoryId", categoryId.Value);
+            }
+
+            string sortField = "p.Id";
+            switch (sortBy?.ToLower())
+            {
+                case "name": sortField = "p.Name"; break;
+                case "price": sortField = "p.SalePrice"; break;
+                case "stock": sortField = "p.StockQuantity"; break;
+                case "code": sortField = "p.Code"; break;
+            }
+            string direction = isDescending ? "DESC" : "ASC";
+            string orderClause = $" ORDER BY {sortField} {direction}";
+
+            // 1. Get total count
+            string countSql = $"SELECT COUNT(*) FROM Products p {whereClause};";
+            int totalCount = await connection.ExecuteScalarAsync<int>(countSql, parameters);
+
+            // 2. Get paged product ids first
+            string idSql = $@"SELECT p.Id FROM Products p 
+                            {whereClause} 
+                            {orderClause} 
+                            LIMIT @PageSize OFFSET @Offset;";
+            var productIds = await connection.QueryAsync<int>(idSql, parameters);
 
             if (!productIds.Any()) return (Enumerable.Empty<Product>(), totalCount);
 
             // 3. Get full details for these specific ids
-            string sql = @"SELECT p.*, c.Name as CategoryName, c.TaxPercent as TaxPercent, s.Name as SupplierName,
+            string sql = $@"SELECT p.*, c.Name as CategoryName, c.TaxPercent as TaxPercent, s.Name as SupplierName,
                                    v.Id AS VariantId, v.Size, v.Color, v.Barcode as VariantBarcode, v.StockQuantity AS VariantStock
                             FROM Products p 
                             LEFT JOIN Categories c ON p.CategoryId = c.Id 
                             LEFT JOIN Suppliers s ON p.SupplierId = s.Id
                             LEFT JOIN ProductVariants v ON v.ProductId = p.Id
                             WHERE p.Id IN @Ids
-                            ORDER BY p.Id ASC;";
+                            {orderClause}, v.Id ASC;";
 
             var result = await connection.QueryAsync<dynamic>(sql, new { Ids = productIds });
             return (MapProductsWithVariants(result), totalCount);

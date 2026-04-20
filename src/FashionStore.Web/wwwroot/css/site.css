@@ -62,10 +62,27 @@ body {
     background: var(--sidebar-bg);
     backdrop-filter: blur(20px);
     border-right: 1px solid var(--glass-border);
-    padding: 2rem;
+    padding: 1.5rem;
     display: flex;
     flex-direction: column;
     z-index: 1000;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Custom Scrollbar for Sidebar */
+.sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+.sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.sidebar::-webkit-scrollbar-thumb {
+    background: var(--glass-border);
+    border-radius: 10px;
+}
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
 }
 
 .main-content {
@@ -96,7 +113,10 @@ h1, h2, h3 {
 /* Navigation */
 .nav-list {
     list-style: none;
-    margin-top: 3rem;
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 }
 
 .nav-item {

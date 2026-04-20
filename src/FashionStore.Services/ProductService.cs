@@ -9,12 +9,17 @@ namespace FashionStore.Services
     {
         private readonly IProductRepository _productRepository;
         private readonly ICacheService _cacheService;
+        private readonly FashionStore.Core.Interfaces.INotificationService _notificationService;
         private const string CacheKey = "AllProductsWithCategories";
 
-        public ProductService(IProductRepository productRepository, ICacheService cacheService)
+        public ProductService(
+            IProductRepository productRepository, 
+            ICacheService cacheService, 
+            FashionStore.Core.Interfaces.INotificationService notificationService)
         {
             _productRepository = productRepository;
             _cacheService = cacheService;
+            _notificationService = notificationService;
         }
 
         public async Task<IEnumerable<Product>> GetAllProductsWithCategoriesAsync()
@@ -24,9 +29,9 @@ namespace FashionStore.Services
             return products;
         }
 
-        public async Task<PaginatedList<Product>> GetPagedProductsAsync(int pageIndex, int pageSize)
+        public async Task<PaginatedList<Product>> GetPagedProductsAsync(int pageIndex, int pageSize, string? search = null, int? categoryId = null, string? sortBy = null, bool isDescending = false)
         {
-            var (items, totalCount) = await _productRepository.GetPagedWithCategoriesAsync(pageIndex, pageSize);
+            var (items, totalCount) = await _productRepository.GetPagedWithCategoriesAsync(pageIndex, pageSize, search, categoryId, sortBy, isDescending);
             return PaginatedList<Product>.Create(items, totalCount, pageIndex, pageSize);
         }
 
@@ -70,7 +75,22 @@ namespace FashionStore.Services
         {
             // Use the atomic repository method to prevent race conditions during concurrent sales
             bool success = await _productRepository.AdjustStockAsync(productId, delta);
-            if (success) _cacheService.Remove(CacheKey);
+            if (success)
+            {
+                _cacheService.Remove(CacheKey);
+                
+                // Trigger alert if stock is low
+                var product = await _productRepository.GetByIdAsync(productId);
+                if (product != null && product.StockQuantity <= 5)
+                {
+                    await _notificationService.AddNotificationAsync(
+                        "Cảnh báo tồn kho thấp",
+                        $"{product.Name} (Mã: {product.Code}) chỉ còn {product.StockQuantity} sản phẩm trong kho.",
+                        "Warning",
+                        $"/Product/Index?search={product.Code}"
+                    );
+                }
+            }
             return success;
         }
 

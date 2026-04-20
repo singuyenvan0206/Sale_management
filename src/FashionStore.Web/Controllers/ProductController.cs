@@ -23,10 +23,17 @@ namespace FashionStore.Web.Controllers
             _supplierService = supplierService;
         }
 
-        public async Task<IActionResult> Index(int page = 1)
+        public async Task<IActionResult> Index(int page = 1, string? search = null, int? categoryId = null, string? sortBy = null, bool isDescending = false)
         {
             int pageSize = 10;
-            var pagedProducts = await _productService.GetPagedProductsAsync(page, pageSize);
+            var pagedProducts = await _productService.GetPagedProductsAsync(page, pageSize, search, categoryId, sortBy, isDescending);
+            
+            ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
+            ViewBag.CurrentSearch = search;
+            ViewBag.CurrentCategoryId = categoryId;
+            ViewBag.CurrentSortBy = sortBy;
+            ViewBag.IsDescending = isDescending;
+
             return View(pagedProducts);
         }
 

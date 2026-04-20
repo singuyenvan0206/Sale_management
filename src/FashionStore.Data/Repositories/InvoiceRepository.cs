@@ -290,23 +290,37 @@ namespace FashionStore.Data.Repositories
             return await connection.QueryAsync<Invoice>(sql, new { from, to });
         }
 
-        public async Task<IEnumerable<Invoice>> SearchInvoicesAsync(DateTime? from, DateTime? to, int? customerId, string search)
+        public async Task<IEnumerable<Invoice>> SearchInvoicesAsync(DateTime? from, DateTime? to, int? customerId, string search, string? status = null, string? sortBy = null, bool isDescending = true)
         {
             using var connection = GetConnection();
             var sb = new StringBuilder();
             sb.Append(@"SELECT i.Id, i.CustomerId, i.EmployeeId, i.Subtotal, i.TaxPercent, i.TaxAmount, 
                                IFNULL(i.DiscountAmount, 0) AS Discount, i.Total, i.Paid, IFNULL(i.PaymentMethod, 'Cash') AS PaymentMethod, i.CreatedDate, i.VoucherId,
-                               IFNULL(c.Name, '') AS CustomerName
+                               IFNULL(c.Name, '') AS CustomerName, i.Status
                         FROM Invoices i
                         LEFT JOIN Customers c ON c.Id = i.CustomerId
                         WHERE 1=1");
 
             var p = new DynamicParameters();
-            if (from.HasValue) { sb.Append(" AND i.CreatedDate >= @from"); p.Add("@from", from.Value); }
-            if (to.HasValue) { sb.Append(" AND i.CreatedDate <= @to"); p.Add("@to", to.Value); }
-            if (customerId.HasValue) { sb.Append(" AND i.CustomerId = @cust"); p.Add("@cust", customerId.Value); }
-            if (!string.IsNullOrWhiteSpace(search)) { sb.Append(" AND (c.Name LIKE @q OR CAST(i.Id AS CHAR) LIKE @q)"); p.Add("@q", "%" + search + "%"); }
-            sb.Append(" ORDER BY i.Id ASC");
+            if (from.HasValue) { sb.Append(" AND i.CreatedDate >= @from"); p.Add("from", from.Value); }
+            if (to.HasValue) { sb.Append(" AND i.CreatedDate <= @to"); p.Add("to", to.Value); }
+            if (customerId.HasValue) { sb.Append(" AND i.CustomerId = @cust"); p.Add("cust", customerId.Value); }
+            if (!string.IsNullOrWhiteSpace(status)) { sb.Append(" AND i.Status = @status"); p.Add("status", status); }
+            if (!string.IsNullOrWhiteSpace(search)) 
+            { 
+                sb.Append(" AND (c.Name LIKE @q OR CAST(i.Id AS CHAR) LIKE @q OR c.Phone LIKE @q)"); 
+                p.Add("q", "%" + search + "%"); 
+            }
+            
+            string sortField = "i.Id";
+            switch (sortBy?.ToLower())
+            {
+                case "date": sortField = "i.CreatedDate"; break;
+                case "total": sortField = "i.Total"; break;
+                case "customer": sortField = "c.Name"; break;
+            }
+            string direction = isDescending ? "DESC" : "ASC";
+            sb.Append($" ORDER BY {sortField} {direction}");
 
             return await connection.QueryAsync<Invoice>(sb.ToString(), p);
         }

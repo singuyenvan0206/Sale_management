@@ -1,0 +1,126 @@
+@model IEnumerable<FashionStore.Core.Models.EmployeeShift>
+@{
+    ViewData["Title"] = "Quản lý ca làm việc";
+    var currentShift = ViewBag.CurrentShift as FashionStore.Core.Models.EmployeeShift;
+}
+
+<div class="header-actions animate-in" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+        <h1 class="gradient-text">Chấm công & Ca làm việc</h1>
+        <p style="color: var(--text-muted);">Theo dõi thời gian làm việc và đối soát tiền mặt đầu/cuối ca.</p>
+    </div>
+</div>
+
+<div class="dashboard-grid animate-in" style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
+    
+    <!-- Current Session Status -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div class="glass" style="padding: 2rem; text-align: center; border: 1px solid @(currentShift == null ? "var(--glass-border)" : "var(--primary-color)");">
+            @if (currentShift != null)
+            {
+                <div style="font-size: 0.8rem; color: #10b981; font-weight: 700; margin-bottom: 1rem;"><i class="fas fa-circle animate-pulse"></i> ĐANG TRONG CA</div>
+                <div style="font-size: 0.9rem; color: var(--text-muted);">Bắt đầu lúc:</div>
+                <div style="font-size: 1.25rem; font-weight: 700; margin: 0.5rem 0;">@currentShift.ClockIn.ToString("HH:mm - dd/MM/yyyy")</div>
+                <div style="font-size: 0.9rem; color: var(--text-muted); margin-top: 1rem;">Tiền bàn giao đầu ca:</div>
+                <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary-color);">@currentShift.OpeningBalance.ToString("C0")</div>
+                
+                <button onclick="document.getElementById('clockOutModal').style.display='flex'" class="btn-primary" style="width: 100%; margin-top: 2rem; background: #ef4444;">
+                    <i class="fas fa-sign-out-alt"></i> KẾT THÚC CA (CLOCK OUT)
+                </button>
+            }
+            else
+            {
+                <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; margin-bottom: 1rem;">CHƯA BẮT ĐẦU CA</div>
+                <i class="fas fa-user-clock" style="font-size: 4rem; opacity: 0.1; margin: 1rem 0;"></i>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 2rem;">Vui lòng bàn giao tiền mặt và bắt đầu ca để thực hiện các giao dịch bán hàng.</p>
+                
+                <button onclick="document.getElementById('clockInModal').style.display='flex'" class="btn-primary" style="width: 100%;">
+                    <i class="fas fa-sign-in-alt"></i> BẮT ĐẦU CA (CLOCK IN)
+                </button>
+            }
+        </div>
+    </div>
+
+    <!-- History -->
+    <div class="glass" style="padding: 1.5rem;">
+        <h3>Lịch sử ca làm việc</h3>
+        <div class="table-container" style="margin-top: 1.5rem;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nhân viên</th>
+                        <th>Bắt đầu</th>
+                        <th>Kết thúc</th>
+                        <th>Đầu ca</th>
+                        <th>Cuối ca</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var shift in Model)
+                    {
+                        <tr class="glass-hover-row">
+                            <td style="font-weight: 600;">@shift.EmployeeName</td>
+                            <td>@shift.ClockIn.ToString("dd/MM HH:mm")</td>
+                            <td>@(shift.ClockOut?.ToString("dd/MM HH:mm") ?? "-")</td>
+                            <td>@shift.OpeningBalance.ToString("N0")</td>
+                            <td>@(shift.ClosingBalance?.ToString("N0") ?? "-")</td>
+                            <td>
+                                @if (shift.IsActive)
+                                {
+                                    <span style="color: #10b981; font-weight: 700; font-size: 0.7rem;"><i class="fas fa-circle"></i> ĐANG TRỰC</span>
+                                }
+                                else
+                                {
+                                    <span style="color: var(--text-muted); font-size: 0.7rem;">HOÀN TẤT</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Clock In Modal -->
+<div id="clockInModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="glass" style="width: 450px; padding: 2rem; border: 1px solid var(--primary-color);">
+        <h2 class="gradient-text" style="margin-bottom: 1.5rem;">Bắt đầu ca làm việc</h2>
+        <form asp-action="ClockIn" method="post" style="display: flex; flex-direction: column; gap: 1.25rem;">
+            <div>
+                <label>Tiền mặt bàn giao đầu ca (VNĐ)</label>
+                <input type="number" name="openingBalance" class="glass" style="width: 100%; padding: 0.75rem; background: var(--bg-color); color: white; margin-top: 0.5rem;" required value="0" />
+            </div>
+            <div>
+                <label>Ghi chú (Tùy chọn)</label>
+                <textarea name="notes" class="glass" style="width: 100%; padding: 0.75rem; background: var(--bg-color); color: white; margin-top: 0.5rem;" rows="2"></textarea>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <button type="button" onclick="document.getElementById('clockInModal').style.display='none'" class="nav-link glass" style="flex: 1; border: none; text-align: center;">Hủy</button>
+                <button type="submit" class="btn-primary" style="flex: 1;">BẮT ĐẦU</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Clock Out Modal -->
+<div id="clockOutModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="glass" style="width: 450px; padding: 2rem; border: 1px solid #ef4444;">
+        <h2 style="color: #ef4444; margin-bottom: 1.5rem;">Kết thúc ca làm việc</h2>
+        <form asp-action="ClockOut" method="post" style="display: flex; flex-direction: column; gap: 1.25rem;">
+            <div>
+                <label>Tổng tiền mặt cuối ca (VNĐ)</label>
+                <input type="number" name="closingBalance" class="glass" style="width: 100%; padding: 0.75rem; background: var(--bg-color); color: white; margin-top: 0.5rem;" required />
+            </div>
+            <div>
+                <label>Ghi chú đối soát</label>
+                <textarea name="notes" class="glass" style="width: 100%; padding: 0.75rem; background: var(--bg-color); color: white; margin-top: 0.5rem;" rows="2" placeholder="Ví dụ: Lệch 50k do khách không lấy tiền lẻ..."></textarea>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <button type="button" onclick="document.getElementById('clockOutModal').style.display='none'" class="nav-link glass" style="flex: 1; border: none; text-align: center;">Hủy</button>
+                <button type="submit" class="btn-primary" style="flex: 1; background: #ef4444;">HOÀN TẤT CA</button>
+            </div>
+        </form>
+    </div>
+</div>

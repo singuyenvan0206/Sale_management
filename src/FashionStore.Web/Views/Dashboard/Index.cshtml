@@ -15,15 +15,18 @@
     </div>
 
     <div class="stat-card glass glass-hover">
-        <div class="stat-icon" style="color: #f59e0b; font-size: 1.5rem;"><i class="fas fa-hand-holding-usd"></i></div>
-        <div class="stat-value">@ViewBag.MonthlyCost.ToString("N0")</div>
-        <div class="stat-label">Giá vốn (Tháng này)</div>
+        <div class="stat-icon" style="color: #ef4444; font-size: 1.5rem;"><i class="fas fa-file-invoice-dollar"></i></div>
+        <div class="stat-value">@ViewBag.MonthlyExpenses.ToString("N0")</div>
+        <div class="stat-label">Chi phí vận hành (Tháng này)</div>
     </div>
 
-    <div class="stat-card glass glass-hover">
-        <div class="stat-icon" style="color: #10b981; font-size: 1.5rem;"><i class="fas fa-chart-line"></i></div>
-        <div class="stat-value">@ViewBag.MonthlyProfit.ToString("N0")</div>
-        <div class="stat-label">Lợi nhuận (Tháng này)</div>
+    <div class="stat-card glass glass-hover" style="border: 2px solid var(--primary-color);">
+        <div class="stat-icon" style="color: #10b981; font-size: 1.5rem;"><i class="fas fa-hand-holding-usd"></i></div>
+        <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+            <div class="stat-value">@ViewBag.MonthlyNetProfit.ToString("N0")</div>
+            <div style="font-size: 0.75rem; color: #10b981; font-weight: 700;">(@ViewBag.ProfitMargin.ToString("F1")%)</div>
+        </div>
+        <div class="stat-label">Lợi nhuận RÒNG (Tháng này)</div>
     </div>
     
     <div class="stat-card glass glass-hover">

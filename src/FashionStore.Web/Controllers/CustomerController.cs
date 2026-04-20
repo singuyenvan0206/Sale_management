@@ -14,9 +14,14 @@ namespace FashionStore.Web.Controllers
             _customerService = customerService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? search = null, string? sortBy = null, bool isDescending = false)
         {
-            var customers = await _customerService.GetAllCustomersAsync();
+            var customers = await _customerService.SearchCustomersAsync(search, sortBy, isDescending);
+            
+            ViewBag.CurrentSearch = search;
+            ViewBag.CurrentSortBy = sortBy;
+            ViewBag.IsDescending = isDescending;
+
             return View(customers);
         }
 
