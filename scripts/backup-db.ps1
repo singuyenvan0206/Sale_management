@@ -1,10 +1,10 @@
-# MySQL Database Backup Script for Fashion Store POS
+# MySQL Database Backup Script for ShopManager ERP
 # Usage: powershell.exe -File scripts/backup-db.ps1
 
 $DbName = "main"
 $DbUser = "root"
 $DbPass = "" # Set password if applicable
-$BackupDir = "C:\FashionStoreBackups"
+$BackupDir = "C:\ShopManagerBackups"
 $KeepDays = 7
 
 # Ensure backup directory exists

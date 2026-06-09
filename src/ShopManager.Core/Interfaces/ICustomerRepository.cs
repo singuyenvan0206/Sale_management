@@ -1,0 +1,16 @@
+using ShopManager.Core.Models;
+
+namespace ShopManager.Core.Interfaces
+{
+    public interface ICustomerRepository : IRepository<Customer>
+    {
+        Task<Customer?> GetByPhoneAsync(string phone);
+        Task<IEnumerable<Customer>> SearchAsync(string? query = null, string? sortBy = null, bool isDescending = false);
+        Task<bool> UpdateLoyaltyAsync(int customerId, int points, string customerType);
+        Task<IEnumerable<(string Name, decimal TotalSpent)>> GetTopCustomersAsync(int topN);
+        Task<bool> HasInvoicesAsync(int customerId);
+        Task<int> RefreshAllLoyaltyAsync(decimal spendPerPoint, int silverMin, int goldMin, int vipMin);
+        Task<int> BulkImportCustomersAsync(List<Customer> customers);
+        Task<IEnumerable<(int InvoiceId, DateTime CreatedAt, int ItemCount, decimal Total)>> GetCustomerPurchaseHistoryAsync(int customerId);
+    }
+}
