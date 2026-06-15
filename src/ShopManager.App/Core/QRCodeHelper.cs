@@ -1,11 +1,12 @@
-
+using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-
 
 namespace ShopManager.App.Core
 {
@@ -13,7 +14,14 @@ namespace ShopManager.App.Core
     {
         private static readonly HttpClient _http = new HttpClient();
 
-        public static BitmapSource GenerateVietQRCode_Safe(string bankCode, string bankAccount, decimal amount, string description = "", bool includeQueryDownload = false, int size = 370, string accountHolder = "")
+        public static async Task<BitmapSource> GenerateVietQRCode_SafeAsync(
+            string bankCode, 
+            string bankAccount, 
+            decimal amount, 
+            string description = "", 
+            bool includeQueryDownload = false, 
+            int size = 370, 
+            string accountHolder = "")
         {
             try
             {
@@ -64,7 +72,7 @@ namespace ShopManager.App.Core
                 // Request with timeout
                 using (var cts = new System.Threading.CancellationTokenSource(10000)) // 10 seconds timeout
                 {
-                    var resp = _http.GetAsync(url, cts.Token).GetAwaiter().GetResult();
+                    var resp = await _http.GetAsync(url, cts.Token);
 
                     // Check for specific VietQR API errors (523 is "Origin Unreachable")
                     if (!resp.IsSuccessStatusCode || resp.StatusCode == (System.Net.HttpStatusCode)523)
@@ -72,19 +80,49 @@ namespace ShopManager.App.Core
                         return GenerateFallbackQRCode(bankCode, bankAccount, amountInt, desc, size, accountHolder);
                     }
 
-                    var respBody = resp.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult();
+                    var respBody = await resp.Content.ReadAsByteArrayAsync(cts.Token);
 
-                    using (var ms = new MemoryStream(respBody))
+                    var tcs = new TaskCompletionSource<BitmapSource>();
+                    
+                    if (Application.Current != null)
                     {
-                        var bitmap = new BitmapImage();
-                        bitmap.BeginInit();
-                        bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                        bitmap.StreamSource = ms;
-                        bitmap.EndInit();
-                        bitmap.Freeze();
-
-                        return bitmap;
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            try
+                            {
+                                using (var ms = new MemoryStream(respBody))
+                                {
+                                    var bitmap = new BitmapImage();
+                                    bitmap.BeginInit();
+                                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                                    bitmap.StreamSource = ms;
+                                    bitmap.EndInit();
+                                    bitmap.Freeze();
+                                    tcs.SetResult(bitmap);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                tcs.SetException(ex);
+                            }
+                        });
                     }
+                    else
+                    {
+                        // Fallback (e.g. testing context or background initialization)
+                        using (var ms = new MemoryStream(respBody))
+                        {
+                            var bitmap = new BitmapImage();
+                            bitmap.BeginInit();
+                            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                            bitmap.StreamSource = ms;
+                            bitmap.EndInit();
+                            bitmap.Freeze();
+                            tcs.SetResult(bitmap);
+                        }
+                    }
+
+                    return await tcs.Task;
                 }
             }
             catch (System.Threading.Tasks.TaskCanceledException)
@@ -119,6 +157,16 @@ namespace ShopManager.App.Core
                         paymentInfo = $"Bank: {bankCode.ToUpper()}\nAccount: {bankAccount}{accountHolderInfo}\nAmount: {amount:N0}₫\nDesc: {description}";
                     }
 
+                    double pixelsPerDip = 1.0;
+                    try
+                    {
+                        if (Application.Current?.MainWindow != null)
+                        {
+                            pixelsPerDip = VisualTreeHelper.GetDpi(Application.Current.MainWindow).PixelsPerDip;
+                        }
+                    }
+                    catch {}
+
                     // Draw text in the center
                     var formattedText = new FormattedText(
                         paymentInfo,
@@ -127,7 +175,7 @@ namespace ShopManager.App.Core
                         new Typeface("Consolas"),
                         Math.Min(12, size / 20.0),
                         Brushes.RoyalBlue,
-                        VisualTreeHelper.GetDpi(Application.Current?.MainWindow ?? new System.Windows.Window()).PixelsPerDip);
+                        pixelsPerDip);
 
                     // Center the text
                     double x = (size - formattedText.Width) / 2;
@@ -189,32 +237,49 @@ namespace ShopManager.App.Core
 
         private static BitmapSource CreateErrorQRCode(string message = "Lỗi", int size = 200)
         {
-            var drawingVisual = new DrawingVisual();
-            using (var drawingContext = drawingVisual.RenderOpen())
+            try
             {
-                // Draw white background with red border
-                drawingContext.DrawRectangle(Brushes.White, new Pen(Brushes.Red, 2), new Rect(0, 0, size, size));
+                var drawingVisual = new DrawingVisual();
+                using (var drawingContext = drawingVisual.RenderOpen())
+                {
+                    // Draw white background with red border
+                    drawingContext.DrawRectangle(Brushes.White, new Pen(Brushes.Red, 2), new Rect(0, 0, size, size));
 
-                // Draw error text
-                var formattedText = new FormattedText(
-                    message,
-                    CultureInfo.CurrentCulture,
-                    FlowDirection.LeftToRight,
-                    new Typeface("Arial"),
-                    Math.Min(14, size / 12.0), // Adjust font size based on QR size
-                    Brushes.Red,
-                    VisualTreeHelper.GetDpi(Application.Current?.MainWindow ?? new System.Windows.Window()).PixelsPerDip);
+                    double pixelsPerDip = 1.0;
+                    try
+                    {
+                        if (Application.Current?.MainWindow != null)
+                        {
+                            pixelsPerDip = VisualTreeHelper.GetDpi(Application.Current.MainWindow).PixelsPerDip;
+                        }
+                    }
+                    catch {}
 
-                // Center the text
-                double x = (size - formattedText.Width) / 2;
-                double y = (size - formattedText.Height) / 2;
+                    // Draw error text
+                    var formattedText = new FormattedText(
+                        message,
+                        CultureInfo.CurrentCulture,
+                        FlowDirection.LeftToRight,
+                        new Typeface("Arial"),
+                        Math.Min(14, size / 12.0), // Adjust font size based on QR size
+                        Brushes.Red,
+                        pixelsPerDip);
 
-                drawingContext.DrawText(formattedText, new Point(x, y));
+                    // Center the text
+                    double x = (size - formattedText.Width) / 2;
+                    double y = (size - formattedText.Height) / 2;
+
+                    drawingContext.DrawText(formattedText, new Point(x, y));
+                }
+
+                var renderTargetBitmap = new RenderTargetBitmap(size, size, 96, 96, PixelFormats.Pbgra32);
+                renderTargetBitmap.Render(drawingVisual);
+                return renderTargetBitmap;
             }
-
-            var renderTargetBitmap = new RenderTargetBitmap(size, size, 96, 96, PixelFormats.Pbgra32);
-            renderTargetBitmap.Render(drawingVisual);
-            return renderTargetBitmap;
+            catch
+            {
+                return new WriteableBitmap(size, size, 96, 96, PixelFormats.Pbgra32, null);
+            }
         }
     }
 }

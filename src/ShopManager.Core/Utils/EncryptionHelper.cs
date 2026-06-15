@@ -17,7 +17,7 @@ namespace ShopManager.Core.Utils
                 if (bytes.Length == 32) return bytes;
             }
             // Fallback for development - IMPORTANT: MUST be changed in Production via Environment Variable
-            return Encoding.UTF8.GetBytes("Sh0pM4n4g3r_S3cur3_K3y_2026_ERP");
+            return Encoding.UTF8.GetBytes("Sh0pM4n4g3r_S3cur3_K3y_2026_ERPS");
         }
 
         private static byte[] GetIV()

@@ -293,7 +293,7 @@
         async function updateVietQR() {
             const method = document.getElementById('paymentMethod').value;
             const container = document.getElementById('vietqr-container');
-            const total = calculateFinalTotal();
+            const total = Math.round(calculateFinalTotal() + calculateTaxAmount());
 
             if (method === 'Transfer' && total > 0) {
                 if (!currentRefCode) {
@@ -317,7 +317,7 @@
 
         async function checkPayment() {
             if (!currentRefCode) return;
-            const total = calculateFinalTotal();
+            const total = Math.round(calculateFinalTotal() + calculateTaxAmount());
             const btn = document.getElementById('verifyBtn');
             
             btn.disabled = true;
@@ -540,9 +540,10 @@
                 return;
             }
 
-            const subtotal = cart.reduce((acc, i) => acc + i.lineTotal, 0);
-            const total = calculateFinalTotal();
-            const taxAmount = calculateTaxAmount();
+            const subtotal = Math.round(cart.reduce((acc, i) => acc + i.lineTotal, 0));
+            const total = Math.round(calculateFinalTotal());
+            const taxAmount = Math.round(calculateTaxAmount());
+            const discount = Math.round(calculateDiscountAmount());
             const method = document.getElementById('paymentMethod').value;
 
             if (method === 'Transfer' && !isPaymentVerified) {
@@ -558,7 +559,7 @@
                 taxAmount: taxAmount,
                 discount: discount,
                 total: total + taxAmount,
-                paid: total,
+                paid: total + taxAmount,
                 paymentMethod: method,
                 voucherId: appliedVoucher ? appliedVoucher.id : null,
                 items: cart

@@ -904,7 +904,7 @@ namespace ShopManager.App.ViewModels
         #endregion
 
         #region QR Code Logic
-        private void UpdateQRCode(decimal total)
+        private async void UpdateQRCode(decimal total)
         {
             try
             {
@@ -944,7 +944,7 @@ namespace ShopManager.App.ViewModels
                 var description = "FS" + DateTime.Now.ToString("HHmmss");
                 CurrentQRDescription = description;
 
-                QRCodeImage = QRCodeHelper.GenerateVietQRCode_Safe(
+                var qrImage = await QRCodeHelper.GenerateVietQRCode_SafeAsync(
                     paymentSettings.BankCode.ToLower(),
                     paymentSettings.BankAccount,
                     amountDue,
@@ -953,6 +953,7 @@ namespace ShopManager.App.ViewModels
                     370,
                     paymentSettings.AccountHolder);
 
+                QRCodeImage = qrImage;
                 IsQRCodeVisible = true;
                 IsQRPlaceholderVisible = false;
             }

@@ -391,8 +391,8 @@ namespace ShopManager.Data
                     CREATE OR REPLACE VIEW TransactionHistory AS
                     SELECT 
                         i.Id AS InvoiceId,
-                        i.InvoiceDate,
-                        i.TotalAmount,
+                        i.CreatedDate AS InvoiceDate,
+                        i.Total AS TotalAmount,
                         i.PaymentMethod,
                         i.CustomerId,
                         c.Name AS CustomerName,

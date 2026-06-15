@@ -3,6 +3,7 @@ using ShopManager.Core.Models;
 using ShopManager.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace ShopManager.Web.Controllers
 {
@@ -15,6 +16,7 @@ namespace ShopManager.Web.Controllers
         private readonly IVoucherService _voucherService;
         private readonly IBankStatementService _bankService;
         private readonly ICalculationService _calcService;
+        private readonly ILogger<POSController> _logger;
         private readonly ICategoryService _categoryService;
 
         public POSController(
@@ -24,7 +26,8 @@ namespace ShopManager.Web.Controllers
             IVoucherService voucherService,
             IBankStatementService bankService,
             ICalculationService calcService,
-            ICategoryService categoryService)
+            ICategoryService categoryService,
+            ILogger<POSController> logger)
         {
             _productService = productService;
             _customerService = customerService;
@@ -33,6 +36,7 @@ namespace ShopManager.Web.Controllers
             _bankService = bankService;
             _calcService = calcService;
             _categoryService = categoryService;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Index()
@@ -47,9 +51,9 @@ namespace ShopManager.Web.Controllers
             
             var paymentSettings = ShopManager.Core.Settings.PaymentSettingsManager.Load();
             ViewBag.BankConfig = new {
-                Code = paymentSettings.BankCode,
-                Account = paymentSettings.BankAccount,
-                Name = paymentSettings.AccountHolder
+                code = paymentSettings.BankCode,
+                account = paymentSettings.BankAccount,
+                name = paymentSettings.AccountHolder
             };
             
             return View();
@@ -200,8 +204,27 @@ namespace ShopManager.Web.Controllers
         {
             if (string.IsNullOrWhiteSpace(refCode)) return BadRequest();
 
-            var result = await _bankService.VerifyPaymentAsync(amount, refCode);
-            return Ok(new { success = (result != null) });
+            _logger.LogInformation("Checking transaction - RefCode: {RefCode}, Amount: {Amount}", refCode, amount);
+
+            try
+            {
+                var result = await _bankService.VerifyPaymentAsync(amount, refCode);
+                if (result != null)
+                {
+                    _logger.LogInformation("Transaction VERIFIED successfully! - RefCode: {RefCode}, TxId: {TxId}, Amount: {Amount}", refCode, result.Id, result.Amount);
+                    return Ok(new { success = true });
+                }
+                else
+                {
+                    _logger.LogWarning("Transaction NOT FOUND yet - RefCode: {RefCode}, Amount: {Amount}", refCode, amount);
+                    return Ok(new { success = false });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred during payment verification for RefCode: {RefCode}", refCode);
+                return StatusCode(500, "Internal error checking payment status");
+            }
         }
     }
 

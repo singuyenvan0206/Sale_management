@@ -6,6 +6,7 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using ShopManager.Core.Interfaces;
 using ShopManager.Core.Settings;
+using System.Text.Json.Serialization;
 
 namespace ShopManager.Services
 {
@@ -39,7 +40,7 @@ namespace ShopManager.Services
                 _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {sePayToken}");
 
                 // Fetch recent transactions (last 20 items to be quick)
-                var response = await _httpClient.GetAsync("https://api.sepay.vn/user/bank/transactions?limit=20");
+                var response = await _httpClient.GetAsync("https://my.sepay.vn/userapi/transactions/list?limit=20");
                 
                 if (!response.IsSuccessStatusCode) return null;
 
@@ -52,17 +53,19 @@ namespace ShopManager.Services
                 // 3. Happened in the last 24 hours (safety check)
                 var match = data.Transactions.FirstOrDefault(t => 
                     t.Content.Contains(description, StringComparison.OrdinalIgnoreCase) && 
-                    t.AmountIn >= expectedAmount &&
-                    t.TransactionDate >= DateTime.Now.AddDays(-1));
+                    decimal.TryParse(t.AmountIn, out decimal amt) && amt >= expectedAmount &&
+                    DateTime.TryParse(t.TransactionDate, out DateTime dt) && dt >= DateTime.Now.AddDays(-1));
 
                 if (match != null)
                 {
+                    decimal.TryParse(match.AmountIn, out decimal amt);
+                    DateTime.TryParse(match.TransactionDate, out DateTime dt);
                     return new BankTransaction
                     {
-                        Id = match.Id.ToString(),
-                        Amount = match.AmountIn,
+                        Id = match.Id,
+                        Amount = amt,
                         Description = match.Content,
-                        TransactionDate = match.TransactionDate,
+                        TransactionDate = dt,
                         ReferenceCode = match.ReferenceNumber
                     };
                 }
@@ -83,10 +86,19 @@ namespace ShopManager.Services
 
         private class SePayTransaction
         {
-            public long Id { get; set; }
+            [JsonPropertyName("id")]
+            public string Id { get; set; } = string.Empty;
+
+            [JsonPropertyName("transaction_content")]
             public string Content { get; set; } = string.Empty;
-            public decimal AmountIn { get; set; }
-            public DateTime TransactionDate { get; set; }
+
+            [JsonPropertyName("amount_in")]
+            public string AmountIn { get; set; } = "0";
+
+            [JsonPropertyName("transaction_date")]
+            public string TransactionDate { get; set; } = string.Empty;
+
+            [JsonPropertyName("reference_number")]
             public string ReferenceNumber { get; set; } = string.Empty;
         }
     }
