@@ -1,0 +1,17 @@
+{
+   "$schema": "https://alirezanet.github.io/Husky.Net/schema.json",
+   "tasks": [
+      {
+         "name": "dotnet-build",
+         "group": "pre-commit",
+         "command": "dotnet",
+         "args": [ "build", "ShopManager.sln", "--nologo" ]
+      },
+      {
+         "name": "dotnet-test",
+         "group": "pre-commit",
+         "command": "dotnet",
+         "args": [ "test", "src/backend/ShopManager.Tests/ShopManager.Tests.csproj", "--nologo" ]
+      }
+   ]
+}
