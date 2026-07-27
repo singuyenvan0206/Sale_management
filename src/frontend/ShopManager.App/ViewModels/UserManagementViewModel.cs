@@ -122,7 +122,7 @@ namespace ShopManager.App.ViewModels
         private void DeleteUser(UserManagementItem? user)
         {
             if (user == null) return;
-            if (user.Username == "admin")
+            if (user.Username == UserRole.Admin.ToRoleString().ToLowerInvariant())
             {
                 MessageBox.Show("Không thể xóa tài khoản admin!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;

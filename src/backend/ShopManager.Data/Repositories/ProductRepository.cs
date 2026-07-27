@@ -1,4 +1,5 @@
 using Dapper;
+using ShopManager.Core.Enums;
 using ShopManager.Core.Interfaces;
 using ShopManager.Core.Models;
 using System.Collections.Generic;
@@ -46,14 +47,7 @@ namespace ShopManager.Data.Repositories
                 parameters.Add("CategoryId", categoryId.Value);
             }
 
-            string sortField = "p.Id";
-            switch (sortBy?.ToLower())
-            {
-                case "name": sortField = "p.Name"; break;
-                case "price": sortField = "p.SalePrice"; break;
-                case "stock": sortField = "p.StockQuantity"; break;
-                case "code": sortField = "p.Code"; break;
-            }
+            string sortField = ProductSortField.ToDbColumn(sortBy ?? ProductSortField.Id);
             string direction = isDescending ? "DESC" : "ASC";
             string orderClause = $" ORDER BY {sortField} {direction}";
 

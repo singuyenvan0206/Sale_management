@@ -143,7 +143,7 @@ namespace ShopManager.App.ViewModels
             CreatePOCommand = new RelayCommand(CreatePO, _ => SelectedSupplier != null && NewPOItems.Count > 0);
             AddItemCommand = new RelayCommand(AddItem, _ => NewItemProduct != null && NewItemQty > 0);
             RemoveItemCommand = new RelayCommand(RemoveItem);
-            ReceivePOCommand = new RelayCommand(ReceivePO, _ => SelectedPO != null && SelectedPO.Status != "Received");
+            ReceivePOCommand = new RelayCommand(ReceivePO, _ => SelectedPO != null && SelectedPO.Status != PurchaseOrderStatus.Received.ToDbString());
             RefreshCommand = new RelayCommand(_ => LoadData());
             SelectProductCommand = new RelayCommand(obj =>
             {

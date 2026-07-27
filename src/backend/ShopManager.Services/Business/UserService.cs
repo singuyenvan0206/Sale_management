@@ -296,7 +296,7 @@ namespace ShopManager.Services
             
             foreach (var acc in accountsResult.Value)
             {
-                if (acc.Username.ToLower() != "admin") RunSync(() => GetService().DeleteAccountAsync(acc.Username));
+                if (!acc.Role.Equals(UserRole.Admin.ToRoleString(), StringComparison.OrdinalIgnoreCase)) RunSync(() => GetService().DeleteAccountAsync(acc.Username));
             }
             return true;
         }

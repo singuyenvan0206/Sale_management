@@ -1,3 +1,4 @@
+@using ShopManager.Core.Models
 @model IEnumerable<(int Id, string Username, string EmployeeName, string Role)>
 @{
     ViewData["Title"] = "Quản lý tài khoản";
@@ -68,7 +69,7 @@
                                 <a asp-action="Edit" asp-route-username="@user.Username" class="nav-link" style="padding: 0.4rem; color: var(--primary-color);">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                @if (user.Username != User.Identity?.Name && user.Username != "admin")
+                                @if (user.Username != User.Identity?.Name && user.Username != UserRole.Admin.ToRoleString().ToLowerInvariant())
                                 {
                                     <form asp-action="Delete" asp-route-username="@user.Username" method="post" onsubmit="return confirm('Xoá tài khoản này?')" style="display: inline;">
                                         <button type="submit" style="background:transparent; border:none; color:#ef4444; cursor:pointer; padding:0.4rem;">

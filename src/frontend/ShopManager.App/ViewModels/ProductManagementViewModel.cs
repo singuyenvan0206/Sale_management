@@ -1,4 +1,5 @@
 using ShopManager.App.Core;
+using ShopManager.Core.Enums;
 using ShopManager.Core.Models;
 using ShopManager.Core.Settings;
 using ShopManager.Services;
@@ -608,12 +609,12 @@ namespace ShopManager.App.ViewModels
 
             switch (propertyName.ToLower())
             {
-                case "id": sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(p => p.Id) : items => items.OrderByDescending(p => p.Id); break;
-                case "name": sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(p => p.Name) : items => items.OrderByDescending(p => p.Name); break;
-                case "code": sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(p => p.Code) : items => items.OrderByDescending(p => p.Code); break;
-                case "categoryname": sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(p => p.CategoryName) : items => items.OrderByDescending(p => p.CategoryName); break;
-                case "saleprice": sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(p => p.SalePrice) : items => items.OrderByDescending(p => p.SalePrice); break;
-                case "stockquantity": sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(p => p.StockQuantity) : items => items.OrderByDescending(p => p.StockQuantity); break;
+                case ProductSortField.Id:            sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(p => p.Id) : items => items.OrderByDescending(p => p.Id); break;
+                case ProductSortField.Name:          sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(p => p.Name) : items => items.OrderByDescending(p => p.Name); break;
+                case ProductSortField.Code:          sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(p => p.Code) : items => items.OrderByDescending(p => p.Code); break;
+                case ProductSortField.CategoryName:  sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(p => p.CategoryName) : items => items.OrderByDescending(p => p.CategoryName); break;
+                case ProductSortField.SalePrice:     sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(p => p.SalePrice) : items => items.OrderByDescending(p => p.SalePrice); break;
+                case ProductSortField.StockQuantity: sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(p => p.StockQuantity) : items => items.OrderByDescending(p => p.StockQuantity); break;
             }
 
             if (sortFunc != null)

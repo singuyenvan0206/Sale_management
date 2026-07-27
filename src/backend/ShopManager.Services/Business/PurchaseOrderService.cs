@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ShopManager.Core.Enums;
 using ShopManager.Core.Interfaces;
 using ShopManager.Core.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,7 +44,7 @@ namespace ShopManager.Services
         public async Task<bool> ReceiveOrderAsync(int id)
         {
             var po = await _poRepository.GetByIdAsync(id);
-            if (po == null || po.Status == "Received") return false;
+            if (po == null || po.Status == ShopManager.Core.Enums.PurchaseOrderStatus.Received.ToDbString()) return false;
 
             // Update stock and record movement for each item
             foreach (var item in po.Items)

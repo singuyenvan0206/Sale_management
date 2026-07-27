@@ -2,6 +2,12 @@
    "$schema": "https://alirezanet.github.io/Husky.Net/schema.json",
    "tasks": [
       {
+         "name": "check-magic-strings",
+         "group": "pre-commit",
+         "command": "powershell",
+         "args": [ "-ExecutionPolicy", "Bypass", "-File", "scripts/check-magic-strings.ps1" ]
+      },
+      {
          "name": "dotnet-build",
          "group": "pre-commit",
          "command": "dotnet",

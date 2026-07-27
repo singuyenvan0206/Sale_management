@@ -759,7 +759,7 @@ namespace ShopManager.App.ViewModels
             {
                 if (SelectedVoucher != null)
                 {
-                    SelectedDiscountMode = SelectedVoucher.DiscountType == Voucher.TypePercentage || SelectedVoucher.DiscountType == "%" ? "%" : "VND";
+                    SelectedDiscountMode = VoucherDiscountTypeExtensions.ParseVoucherDiscountType(SelectedVoucher.DiscountType) == VoucherDiscountType.Percentage ? "%" : "VND";
                     DiscountValueText = SelectedVoucher.DiscountValue.ToString("G29");
                 }
                 else
@@ -804,7 +804,7 @@ namespace ShopManager.App.ViewModels
                 TierDiscountInlineText = $"(+ Ưu đãi hạng: {tierDiscount:N0}₫" + (redemptionDiscount > 0 ? $" | Dùng điểm: {redemptionDiscount:N0}₫" : "") + ")";
 
                 var totalDiscount = discount + tierDiscount + redemptionDiscount;
-                if (SelectedVoucher != null && (SelectedVoucher.DiscountType == Voucher.TypePercentage || SelectedVoucher.DiscountType == "%") && SelectedVoucher.MaxDiscountAmount > 0)
+                if (SelectedVoucher != null && VoucherDiscountTypeExtensions.ParseVoucherDiscountType(SelectedVoucher.DiscountType) == VoucherDiscountType.Percentage && SelectedVoucher.MaxDiscountAmount > 0)
                 {
                     totalDiscount = Math.Min(totalDiscount, SelectedVoucher.MaxDiscountAmount + tierDiscount + redemptionDiscount);
                 }
@@ -892,7 +892,7 @@ namespace ShopManager.App.ViewModels
                 SelectedVoucher = bestVoucher;
                 if (SelectedVoucher != null)
                 {
-                    SelectedDiscountMode = SelectedVoucher.DiscountType == Voucher.TypePercentage || SelectedVoucher.DiscountType == "%" ? "%" : "VND";
+                    SelectedDiscountMode = VoucherDiscountTypeExtensions.ParseVoucherDiscountType(SelectedVoucher.DiscountType) == VoucherDiscountType.Percentage ? "%" : "VND";
                     DiscountValueText = SelectedVoucher.DiscountValue.ToString("G29");
                 }
                 else
@@ -1048,7 +1048,7 @@ namespace ShopManager.App.ViewModels
 
                 var subtotal = InvoiceItems.Sum(item => item.LineTotal);
                 var discountVal = decimal.TryParse(DiscountValueText, out var dv) ? dv : 0m;
-                var manualDiscount = SelectedDiscountMode == "%" ? Math.Round(subtotal * (discountVal / 100m), 2) : discountVal;
+                var manualDiscount = SelectedDiscountMode == VoucherDiscountType.Percentage.ToDbString() ? Math.Round(subtotal * (discountVal / 100m), 2) : discountVal;
                 var paid = decimal.TryParse(PaidText, out var p) ? p : 0m;
                 var itemsSnapshot = InvoiceItems
                     .Select(i => new InvoiceItemViewModel
@@ -1116,7 +1116,7 @@ namespace ShopManager.App.ViewModels
                     PaymentMethod = NormalizePaymentMethod(SelectedPaymentMethod),
                     VoucherId = voucherId,
                     Note = InvoiceNote,
-                    Status = "Completed",
+                    Status = InvoiceStatus.Completed.ToDbString(),
                     Items = itemsSnapshot.Select(i => new InvoiceItem
                     {
                         ProductId = i.ProductId,
@@ -1206,7 +1206,7 @@ namespace ShopManager.App.ViewModels
             string name = "Khách lẻ " + DateTime.Now.ToString("HH:mm");
             try
             {
-                await _customerService.AddCustomerAsync(new Customer { Name = name, Phone = "0000", Address = "Tại quầy", CustomerType = "Regular" });
+                await _customerService.AddCustomerAsync(new Customer { Name = name, Phone = "0000", Address = "Tại quầy", CustomerType = CustomerType.Regular.ToDbString() });
                 LoadCustomers();
                 var added = _allCustomerItems.OrderByDescending(c => c.Id).FirstOrDefault();
                 if (added != null) SelectCustomer(added);

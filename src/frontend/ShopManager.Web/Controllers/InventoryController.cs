@@ -2,6 +2,7 @@ using ShopManager.Core.Enums;
 using ShopManager.Core.Interfaces;
 using ShopManager.Core.Models;
 using ShopManager.Services;
+using ShopManager.Web.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -35,7 +36,7 @@ namespace ShopManager.Web.Controllers
             ViewBag.AllProducts = products;
             ViewBag.CurrentTab = tab;
 
-            if (tab == "po")
+            if (tab == WebTabKeys.Po)
             {
                 var orders = await _poService.GetAllOrdersAsync();
                 return View("Index", orders);
@@ -47,8 +48,8 @@ namespace ShopManager.Web.Controllers
             }
         }
 
-        public async Task<IActionResult> History() => RedirectToAction(nameof(Index), new { tab = "history" });
-        public async Task<IActionResult> PurchaseOrders() => RedirectToAction(nameof(Index), new { tab = "po" });
+        public async Task<IActionResult> History() => RedirectToAction(nameof(Index), new { tab = WebTabKeys.History });
+        public async Task<IActionResult> PurchaseOrders() => RedirectToAction(nameof(Index), new { tab = WebTabKeys.Po });
 
         [HttpGet]
         public async Task<IActionResult> Import()

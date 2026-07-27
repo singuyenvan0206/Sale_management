@@ -15,7 +15,7 @@ namespace ShopManager.Services
         public decimal CalculateDiscount(decimal amount, string mode, decimal value)
         {
             var discountType = VoucherDiscountTypeExtensions.ParseVoucherDiscountType(mode);
-            if (discountType == VoucherDiscountType.Percentage || mode == "%")
+            if (discountType == VoucherDiscountType.Percentage)
             {
                 return Math.Round(amount * (value / 100m), 2);
             }
@@ -33,7 +33,7 @@ namespace ShopManager.Services
 
             decimal discount;
             var discountType = VoucherDiscountTypeExtensions.ParseVoucherDiscountType(voucher.DiscountType);
-            if (discountType == VoucherDiscountType.Percentage || voucher.DiscountType == "%")
+            if (discountType == VoucherDiscountType.Percentage)
             {
                 discount = Math.Round(subtotal * (voucher.DiscountValue / 100m), 2);
             }

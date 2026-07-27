@@ -1,8 +1,10 @@
 @using ShopManager.Core.Models
+@using ShopManager.Core.Enums
+@using ShopManager.Web.Constants
 @model dynamic
 @{
     ViewData["Title"] = "Quản lý Kho";
-    var currentTab = ViewBag.CurrentTab as string ?? "history";
+    var currentTab = ViewBag.CurrentTab as string ?? WebTabKeys.History;
     var productsMap = ViewBag.ProductsMap as Dictionary<int, string>;
     var suppliers = ViewBag.Suppliers as IEnumerable<Supplier>;
     var allProducts = ViewBag.AllProducts as IEnumerable<Product>;
@@ -17,10 +19,10 @@
 
 <!-- Navigation Tabs -->
 <div class="glass animate-in" style="padding: 0.5rem; display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-radius: 15px;">
-    <a asp-action="Index" asp-route-tab="history" class="nav-link @(currentTab == "history" ? "active" : "")" style="flex: 1; text-align: center; padding: 0.75rem; border-radius: 10px; text-decoration: none;">
+    <a asp-action="Index" asp-route-tab="@WebTabKeys.History" class="nav-link @(currentTab == WebTabKeys.History ? "active" : "")" style="flex: 1; text-align: center; padding: 0.75rem; border-radius: 10px; text-decoration: none;">
         <i class="fas fa-history"></i> Biến động kho
     </a>
-    <a asp-action="Index" asp-route-tab="po" class="nav-link @(currentTab == "po" ? "active" : "")" style="flex: 1; text-align: center; padding: 0.75rem; border-radius: 10px; text-decoration: none;">
+    <a asp-action="Index" asp-route-tab="@WebTabKeys.Po" class="nav-link @(currentTab == WebTabKeys.Po ? "active" : "")" style="flex: 1; text-align: center; padding: 0.75rem; border-radius: 10px; text-decoration: none;">
         <i class="fas fa-truck-loading"></i> Đơn nhập hàng (PO)
     </a>
     <a asp-action="Index" asp-route-tab="import" class="nav-link @(currentTab == "import" ? "active" : "")" style="flex: 1; text-align: center; padding: 0.75rem; border-radius: 10px; text-decoration: none;">
@@ -28,7 +30,7 @@
     </a>
 </div>
 
-@if (currentTab == "history")
+@if (currentTab == WebTabKeys.History)
 {
     var movements = Model as IEnumerable<StockMovement>;
     <div class="glass animate-in" style="animation-delay: 0.1s;">
@@ -54,9 +56,9 @@
                             <td>
                                 @switch (move.MovementType)
                                 {
-                                    case "Import": <span style="color: #10b981;"><i class="fas fa-arrow-down"></i> Nhập</span> break;
-                                    case "Sale": <span style="color: #6366f1;"><i class="fas fa-arrow-up"></i> Bán</span> break;
-                                    case "Adjustment": <span style="color: #f59e0b;"><i class="fas fa-sync"></i> Điều chỉnh</span> break;
+                                    case nameof(StockMovementType.Import): <span style="color: #10b981;"><i class="fas fa-arrow-down"></i> Nhập</span> break;
+                                    case nameof(StockMovementType.Sale): <span style="color: #6366f1;"><i class="fas fa-arrow-up"></i> Bán</span> break;
+                                    case nameof(StockMovementType.Adjustment): <span style="color: #f59e0b;"><i class="fas fa-sync"></i> Điều chỉnh</span> break;
                                     default: <span>@move.MovementType</span> break;
                                 }
                             </td>
@@ -71,7 +73,7 @@
         </div>
     </div>
 }
-else if (currentTab == "po")
+else if (currentTab == WebTabKeys.Po)
 {
     var orders = Model as IEnumerable<PurchaseOrder>;
     <div class="glass animate-in" style="animation-delay: 0.1s;">

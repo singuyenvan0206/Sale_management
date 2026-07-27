@@ -32,7 +32,7 @@
                         <td style="font-weight: 800; color: var(--secondary-color); letter-spacing: 0.05em;">@voucher.Code</td>
                         <td>@voucher.DiscountType</td>
                         <td style="font-weight: 700;">
-                            @if (voucher.DiscountType == "Percentage")
+                            @if (VoucherDiscountTypeExtensions.ParseVoucherDiscountType(voucher.DiscountType) == VoucherDiscountType.Percentage)
                             {
                                 <span>@voucher.DiscountValue %</span>
                             }

@@ -44,13 +44,12 @@ namespace ShopManager.Data.Repositories
                 p.Add("Q", $"%{query}%");
             }
 
-            string sortField = "Id";
-            switch (sortBy?.ToLower())
+            string sortField = CustomerSortField.ToDbColumn(sortBy ?? CustomerSortField.Id);
+            // Fallback for unrecognised keys
+            if (sortField == CustomerSortField.ToDbColumn(CustomerSortField.Id) && !string.IsNullOrEmpty(sortBy)
+                && !sortBy.Equals(CustomerSortField.Id, StringComparison.OrdinalIgnoreCase))
             {
-                case "name": sortField = "Name"; break;
-                case "spent": sortField = "TotalSpent"; break;
-                case "points": sortField = "Points"; break;
-                case "type": sortField = "CustomerType"; break;
+                sortField = "Id";
             }
             string direction = isDescending ? "DESC" : "ASC";
             sb.Append($" ORDER BY {sortField} {direction} LIMIT 1000;");

@@ -18,7 +18,8 @@ namespace ShopManager.Core.Enums
         public static VoucherDiscountType ParseVoucherDiscountType(string? value) => value?.Trim().ToLowerInvariant() switch
         {
             "fixedamount" or "fixed" or "vnd" => VoucherDiscountType.FixedAmount,
-            _ => VoucherDiscountType.Percentage
+            "percentage" or "%"               => VoucherDiscountType.Percentage,
+            _                                 => VoucherDiscountType.Percentage
         };
     }
 }

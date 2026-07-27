@@ -1,3 +1,4 @@
+using ShopManager.App.Constants;
 using ShopManager.App.Core;
 using ShopManager.App.Views;
 using ShopManager.Services;
@@ -52,7 +53,7 @@ namespace ShopManager.App.ViewModels
             }
 
             string roleStatus = UserService.ValidateLogin(Username, password);
-            if (roleStatus == "true")
+            if (roleStatus == UiStrings.LoginSuccess)
             {
                 var userRole = UserService.GetUserRoleEnum(Username);
 

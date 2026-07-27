@@ -1,4 +1,5 @@
 using ShopManager.App.Core;
+using ShopManager.Core.Enums;
 using ShopManager.Core.Models;
 using ShopManager.Core.Settings;
 using ShopManager.Services;
@@ -194,7 +195,7 @@ namespace ShopManager.App.ViewModels
             if (SelectedVoucher is Voucher v)
             {
                 Code = v.Code;
-                DiscountTypeIndex = (v.DiscountType == Voucher.TypePercentage || v.DiscountType == "%") ? 1 : 0;
+                DiscountTypeIndex = VoucherDiscountTypeExtensions.ParseVoucherDiscountType(v.DiscountType) == VoucherDiscountType.Percentage ? 1 : 0;
                 DiscountValue = v.DiscountValue.ToString("F0");
                 MinInvoice = v.MinInvoiceAmount.ToString("F0");
                 StartDate = v.StartDate;

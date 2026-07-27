@@ -1,4 +1,5 @@
 using ShopManager.App.Core;
+using ShopManager.Core.Enums;
 using ShopManager.Core.Models;
 using ShopManager.Core.Settings;
 using ShopManager.Services;
@@ -26,10 +27,10 @@ namespace ShopManager.App.ViewModels
         private string _address = "";
         public string Address { get => _address; set => SetProperty(ref _address, value); }
 
-        private string _customerType = "Regular";
+        private string _customerType = ShopManager.Core.Enums.CustomerType.Regular.ToDbString();
         public string CustomerType { get => _customerType; set => SetProperty(ref _customerType, value); }
 
-        private string _tier = "Regular";
+        private string _tier = ShopManager.Core.Enums.CustomerType.Regular.ToDbString();
         public string Tier { get => _tier; set => SetProperty(ref _tier, value); }
 
         private int _points;
@@ -477,13 +478,13 @@ namespace ShopManager.App.ViewModels
 
             switch (propertyName.ToLower())
             {
-                case "id": sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(c => c.Id) : items => items.OrderByDescending(c => c.Id); break;
-                case "name": sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(c => c.Name) : items => items.OrderByDescending(c => c.Name); break;
-                case "phone": sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(c => c.Phone) : items => items.OrderByDescending(c => c.Phone); break;
-                case "email": sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(c => c.Email) : items => items.OrderByDescending(c => c.Email); break;
-                case "address": sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(c => c.Address) : items => items.OrderByDescending(c => c.Address); break;
-                case "tier": sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(c => c.Tier) : items => items.OrderByDescending(c => c.Tier); break;
-                case "points": sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(c => c.Points) : items => items.OrderByDescending(c => c.Points); break;
+                case CustomerSortField.Id:      sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(c => c.Id) : items => items.OrderByDescending(c => c.Id); break;
+                case CustomerSortField.Name:    sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(c => c.Name) : items => items.OrderByDescending(c => c.Name); break;
+                case CustomerSortField.Phone:   sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(c => c.Phone) : items => items.OrderByDescending(c => c.Phone); break;
+                case CustomerSortField.Email:   sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(c => c.Email) : items => items.OrderByDescending(c => c.Email); break;
+                case CustomerSortField.Address: sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(c => c.Address) : items => items.OrderByDescending(c => c.Address); break;
+                case CustomerSortField.Tier:    sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(c => c.Tier) : items => items.OrderByDescending(c => c.Tier); break;
+                case CustomerSortField.Points:  sortFunc = direction == System.ComponentModel.ListSortDirection.Ascending ? items => items.OrderBy(c => c.Points) : items => items.OrderByDescending(c => c.Points); break;
             }
 
             if (sortFunc != null)

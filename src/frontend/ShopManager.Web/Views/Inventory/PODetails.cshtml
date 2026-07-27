@@ -80,8 +80,8 @@
                 <div>
                      @{
                         var statusStyle = "color: #94a3b8;";
-                        if (Model.Status == "Received") statusStyle = "color: #10b981;";
-                        if (Model.Status == "Cancelled") statusStyle = "color: #ef4444;";
+                        if (Model.Status == PurchaseOrderStatus.Received.ToDbString()) statusStyle = "color: #10b981;";
+                        if (Model.Status == PurchaseOrderStatus.Cancelled.ToDbString()) statusStyle = "color: #ef4444;";
                     }
                     <strong style="@statusStyle">@Model.Status</strong>
                 </div>

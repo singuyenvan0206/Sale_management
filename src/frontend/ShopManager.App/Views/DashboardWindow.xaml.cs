@@ -1,3 +1,4 @@
+using ShopManager.App.Constants;
 using ShopManager.App.ViewModels;
 using ShopManager.Core.Models;
 using ShopManager.Services;
@@ -216,7 +217,7 @@ namespace ShopManager.App.Views
                 string? tab = item.Content?.ToString();
                 if (string.IsNullOrWhiteSpace(tab)) return;
 
-                if (tab == "🏠 Trang Chủ" || tab == "Home")
+                if (tab == UiStrings.HomeTabVi || tab == UiStrings.HomeTabEn)
                 {
                     MainContentHost.Visibility = System.Windows.Visibility.Collapsed;
                     DefaultContentScrollViewer.Visibility = System.Windows.Visibility.Visible;
@@ -243,7 +244,7 @@ namespace ShopManager.App.Views
                     _ => null
                 };
 
-                if (tab == "🚪 Đăng Xuất" || tab == "Logout")
+                if (tab == UiStrings.LogoutTabVi || tab == UiStrings.LogoutTabEn)
                 {
                     if (_viewModel.LogoutCommand.CanExecute(this))
                     {

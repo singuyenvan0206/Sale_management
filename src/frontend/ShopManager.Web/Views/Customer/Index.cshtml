@@ -1,3 +1,4 @@
+@using ShopManager.Core.Enums
 @model IEnumerable<ShopManager.Core.Models.Customer>
 @{
     ViewData["Title"] = "Quản lý khách hàng";
@@ -42,11 +43,11 @@
         <div style="width: 200px;">
             <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Sắp xếp theo</label>
             <select name="sortBy" style="width: 100%; padding: 0.75rem; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03); color: var(--text-main); outline: none; cursor: pointer;">
-                <option value="id" selected="@(ViewBag.CurrentSortBy == "id")">Mặc định</option>
-                <option value="name" selected="@(ViewBag.CurrentSortBy == "name")">Tên khách hàng</option>
-                <option value="points" selected="@(ViewBag.CurrentSortBy == "points")">Điểm tích luỹ</option>
-                <option value="spent" selected="@(ViewBag.CurrentSortBy == "spent")">Tổng chi tiêu</option>
-                <option value="type" selected="@(ViewBag.CurrentSortBy == "type")">Hạng thành viên</option>
+                <option value="@CustomerSortField.Id"     selected="@(ViewBag.CurrentSortBy == CustomerSortField.Id)">Mặc định</option>
+                <option value="@CustomerSortField.Name"   selected="@(ViewBag.CurrentSortBy == CustomerSortField.Name)">Tên khách hàng</option>
+                <option value="@CustomerSortField.Points" selected="@(ViewBag.CurrentSortBy == CustomerSortField.Points)">Điểm tích luỹ</option>
+                <option value="@CustomerSortField.Spent"  selected="@(ViewBag.CurrentSortBy == CustomerSortField.Spent)">Tổng chi tiêu</option>
+                <option value="@CustomerSortField.Type"   selected="@(ViewBag.CurrentSortBy == CustomerSortField.Type)">Hạng thành viên</option>
             </select>
         </div>
         <div style="width: 150px;">
@@ -102,13 +103,13 @@
                         <td>
                             @switch (customer.CustomerType)
                             {
-                                case "VIP":
+                                case nameof(CustomerType.VIP):
                                     <span style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 0.35rem 0.8rem; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">VIP</span>
                                     break;
-                                case "Gold":
+                                case nameof(CustomerType.Gold):
                                     <span style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 0.35rem 0.8rem; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; border: 1px solid rgba(245, 158, 11, 0.2);">Vàng</span>
                                     break;
-                                case "Silver":
+                                case nameof(CustomerType.Silver):
                                     <span style="background: rgba(148, 163, 184, 0.15); color: #94a3b8; padding: 0.35rem 0.8rem; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; border: 1px solid rgba(148, 163, 184, 0.2);">Bạc</span>
                                     break;
                                 default:

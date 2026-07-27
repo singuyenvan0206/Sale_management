@@ -1,4 +1,5 @@
 
+using ShopManager.App.Constants;
 using System.Windows;
 using MessageBox = System.Windows.MessageBox;
 
@@ -103,9 +104,9 @@ namespace ShopManager.App.Views
                     MessageBoxButton.OKCancel,
                     MessageBoxImage.Stop);
 
-                string userInput = (confirmResult == MessageBoxResult.OK) ? "DELETE ALL" : "";
+                string userInput = (confirmResult == MessageBoxResult.OK) ? UiStrings.DeleteAllConfirmation : "";
 
-                if (userInput == "DELETE ALL")
+                if (userInput == UiStrings.DeleteAllConfirmation)
                 {
                     try
                     {

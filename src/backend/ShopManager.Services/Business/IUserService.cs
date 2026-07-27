@@ -5,7 +5,7 @@ namespace ShopManager.Services
 {
     public interface IUserService
     {
-        Task<Result> RegisterAccountAsync(string username, string employeeName, string password, string role = "Cashier");
+        Task<Result> RegisterAccountAsync(string username, string employeeName, string password, string? role = null);
         Task<Result<bool>> ValidateLoginAsync(string username, string password);
         Task<Result<string>> GetUserRoleAsync(string username);
         Task<Result<UserRole>> GetUserRoleEnumAsync(string username);

@@ -17,9 +17,9 @@ namespace ShopManager.Core.Models
             get => _discountType;
             set
             {
-                if (value == "%") _discountType = TypePercentage;
-                else if (value == "VND") _discountType = TypeFixedAmount;
-                else _discountType = value;
+                // Use the enum parser which recognises both DB values and legacy display aliases (%, VND)
+                var parsed = VoucherDiscountTypeExtensions.ParseVoucherDiscountType(value);
+                _discountType = parsed.ToDbString();
             }
         }
 
